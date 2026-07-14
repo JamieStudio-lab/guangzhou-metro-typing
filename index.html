@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b101c">
-<script>document.documentElement.dataset.theme=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";</script>
+<script>let _t=null;try{_t=localStorage.getItem("theme")}catch(e){}
+document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");</script>
 <title>拼音快线 · Guangzhou Metro Pinyin Express</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -17,9 +18,10 @@
     <small>GUANGZHOU METRO · PINYIN EXPRESS</small>
   </div>
   <div class="hspace"></div>
-  <button class="hbtn on" id="soundBtn" aria-label="Sound on or off" aria-pressed="true">音效 SOUND</button>
-  <button class="hbtn" id="themeBtn" aria-label="Switch theme">深色 DARK</button>
-  <button class="hbtn" id="homeBtn" hidden>⏏ 退出 Quit</button>
+  <button class="hbtn on" id="soundBtn" aria-label="Sound on or off" aria-pressed="true">音效</button>
+  <button class="hbtn" id="themeBtn" aria-label="Switch theme">深色</button>
+  <button class="hbtn" id="langBtn" aria-label="Switch language · 切换语言">中文</button>
+  <button class="hbtn" id="homeBtn" hidden data-i18n="quitBtn">⏏ 退出</button>
 </header>
 
 <!-- ================= MENU ================= -->
@@ -27,10 +29,9 @@
   <div class="blobs" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
   <div class="hero">
     <div class="eyebrow">TYPE · RIDE · MASTER PINYIN</div>
-    <h2>用拼音开动广州地铁</h2>
-    <p>选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。
-       打得越快越准，车速越高、连击越长。Choose a line, type each stop's pinyin, and drive the train
-       from terminus to terminus.</p>
+    <h2 data-i18n="heroTitle">用拼音开动广州地铁</h2>
+    <p data-i18n="heroP">选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。
+       打得越快越准，车速越高、连击越长。</p>
   </div>
 
   <div class="mapcard">
@@ -38,18 +39,10 @@
     <div class="legend" id="legend"></div>
   </div>
 
-  <div class="howto">
-    <div class="step"><b>① 选择线路 Pick a line</b><span>每条线按「站名长度」分级：字母越多，难度越高。可换方向行驶。</span></div>
-    <div class="step"><b>② 输入拼音 Type the pinyin</b><span>看着汉字与拼音提示，用英文键盘输入。打对一个字母亮一格，打完整个站名即发车。</span></div>
-    <div class="step"><b>③ 列车前进 Watch it go</b><span>速度表、里程、WPM、连击实时更新；地图上的车站会按你的表现染上颜色。</span></div>
-  </div>
-
   <div class="cards" id="cards"></div>
 
   <p class="footnote">☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），
-    站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。<br>
-    Fan-made typing practice. Classic main-line segments only; distances are approximate.
-    Records live in this session only.</p>
+    站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。</p>
 </section>
 
 <!-- ================= GAME ================= -->
@@ -59,12 +52,12 @@
       <svg id="gauge" viewBox="0 0 200 128" aria-label="Speedometer"></svg>
     </div>
     <div class="chips">
-      <div class="chip"><label>用时 TIME</label><b id="cTime">0:00</b></div>
-      <div class="chip"><label>里程 DIST</label><b id="cDist">0.0<small> km</small></b></div>
-      <div class="chip"><label>键速 WPM</label><b id="cWpm">0</b></div>
-      <div class="chip"><label>准确率 ACC</label><b id="cAcc">100<small>%</small></b></div>
-      <div class="chip" id="chipCombo"><label>连击 COMBO</label><b id="cCombo">0</b></div>
-      <div class="chip"><label>得分 SCORE</label><b id="cScore">0</b></div>
+      <div class="chip"><label data-i18n="chipTime">用时</label><b id="cTime">0:00</b></div>
+      <div class="chip"><label data-i18n="chipDist">里程</label><b id="cDist">0.0<small> km</small></b></div>
+      <div class="chip"><label data-i18n="chipWpm">键速</label><b id="cWpm">0</b></div>
+      <div class="chip"><label data-i18n="chipAcc">准确率</label><b id="cAcc">100<small>%</small></b></div>
+      <div class="chip" id="chipCombo"><label data-i18n="chipCombo">连击</label><b id="cCombo">0</b></div>
+      <div class="chip"><label data-i18n="chipScore">得分</label><b id="cScore">0</b></div>
     </div>
   </div>
 
@@ -75,16 +68,16 @@
 
   <div id="bossStage">
     <div class="bossIn">
-      <h3>长站名挑战 · LONG-NAME GAUNTLET</h3>
-      <p>13 个最长站名 · 限时输入 · 超时扣 ♥</p>
+      <h3 data-i18n="bossTitle">长站名挑战</h3>
+      <p data-i18n="bossDesc">13 个最长站名 · 限时输入 · 超时扣 ♥</p>
       <div id="lives">♥♥♥</div>
     </div>
   </div>
 
   <div id="board">
     <div class="brow">
-      <span class="nx" id="brdLabel">下一站 NEXT STOP</span>
-      <span class="tag good" id="dTag">短 SHORT</span>
+      <span class="nx" id="brdLabel">下一站</span>
+      <span class="tag good" id="dTag">短</span>
       <span class="cnt" id="cnt">1/15</span>
       <span class="tspace"></span>
       <span id="ringBox">
@@ -99,8 +92,8 @@
     <div id="inRow">
       <span id="pop">+120</span>
       <input id="pyin" type="text" autocomplete="off" autocorrect="off" autocapitalize="off"
-        spellcheck="false" enterkeyhint="go" placeholder="在此输入拼音 type pinyin…" aria-label="Type the station name in pinyin">
-      <span id="inHint">无声调 · 空格可省<br>toneless · no spaces needed</span>
+        spellcheck="false" enterkeyhint="go" placeholder="在此输入拼音…" aria-label="Type the station name in pinyin">
+      <span id="inHint" data-i18n="inHint">无声调 · 空格可省</span>
     </div>
     <div id="pbar"></div>
   </div>
@@ -122,8 +115,8 @@
     <div id="heatstrip" title="每站颜色 = 输入速度"></div>
     <p id="fastslow"></p>
     <div class="rbtns">
-      <button class="go" id="rAgain" style="--cc:var(--amber)">再来一次 REPLAY</button>
-      <button class="alt" id="rBack">选择线路 CHOOSE LINE</button>
+      <button class="go" id="rAgain" style="--cc:var(--amber)" data-i18n="again">再来一次</button>
+      <button class="alt" id="rBack" data-i18n="back">选择线路</button>
     </div>
   </div>
 </section>

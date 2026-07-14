@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.5";
+const APP_VERSION="0.0.6";
 
 // normalize station tuples → objects, compute keys
 for(const L of LINES){
@@ -21,8 +21,88 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const easeIO=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 const fmtT=ms=>{const s=Math.floor(ms/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 const alpha=(hex,a)=>hex+Math.round(a*255).toString(16).padStart(2,"0");
-function diffOf(len){return len<=7?{k:"good",t:"短 SHORT"}:len<=12?{k:"mid",t:"中 MEDIUM"}:{k:"bad",t:"长 LONG"}}
+function diffOf(len){return len<=7?{k:"good",t:"diffShort"}:len<=12?{k:"mid",t:"diffMid"}:{k:"bad",t:"diffLong"}}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* ---------- i18n ---------- */
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const T={
+zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
+  heroTitle:"用拼音开动广州地铁",
+  heroP:"选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。打得越快越准，车速越高、连击越长。",
+  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。",
+  chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
+  bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
+  nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
+  diffShort:"短",diffMid:"中",diffLong:"长",
+  placeholder:"在此输入拼音…",inHint:"无声调 · 空格可省",inputAria:"输入站名拼音（无声调）",
+  kbWarn:"请切换到英文键盘",
+  depart:z=>`始发站 ${z} · 输入下一站拼音即发车`,arriveAt:(z,p)=>`到达 ${z} · ${p}`,
+  terminusReached:"到达终点站！",quitConfirm:"退出本次行程？",
+  titles:["见习司机","熟练司机","王牌司机"],
+  bossSub:(d,n,h)=>`长站名挑战 · 完成 ${d}/${n} · 剩余 ${h}`,
+  lineSub:(L,a,b)=>`${L.zh} · ${a} → ${b}`,
+  rTime:"用时",rCleared:"完成",rLives:"生命",rDist:"里程",rTop:"极速",rSpeed:"键速",
+  rAcc:"准确率",rCombo:"最高连击",rErr:"失误",rScore:"得分",
+  fastest:(z,s)=>`⚡ 最快：<b>${z}</b>（${s}s）　`,slowest:(z,s)=>`🐢 最慢：<b>${z}</b>（${s}s）`,
+  heatTitle:"每站颜色 = 输入速度",again:"再来一次",back:"选择线路",
+  lvl:l=>`LEVEL ${l} · 难度`,lineName:L=>L.zh,revTitle:"换向",
+  meta:L=>`${L.stations.length} 站 · ≈${Math.round(L.km)} km · 平均 ${L.avgLen.toFixed(1)} 字母/站`,
+  best:b=>`本次最佳：${b.score} 分 · ${b.time} · ${b.acc}%`,
+  go:"出发",challenge:"挑战",
+  bossMeta:`${BOSS.length} 个最长站名 · 限时输入 · ♥ ×3`,
+  bossFact:`全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。`,
+  interchange:"换乘站"},
+en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
+  heroTitle:"Drive the Guangzhou Metro with pinyin",
+  heroP:"Pick a line and type each stop's name in pinyin (toneless, spaces optional) to drive the train forward. The faster and cleaner you type, the higher the speed and the longer the combo.",
+  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Scores live in this session only and reset on refresh.",
+  chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
+  bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
+  nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
+  diffShort:"SHORT",diffMid:"MEDIUM",diffLong:"LONG",
+  placeholder:"type pinyin here…",inHint:"toneless · no spaces needed",inputAria:"Type the station name in pinyin",
+  kbWarn:"Please switch to an English keyboard",
+  depart:z=>`Origin ${z} · type the next stop to depart`,arriveAt:(z,p)=>`Now at ${z} · ${p}`,
+  terminusReached:"Terminus reached!",quitConfirm:"Quit this run?",
+  titles:["TRAINEE DRIVER","SKILLED DRIVER","ACE DRIVER"],
+  bossSub:(d,n,h)=>`Long-Name Gauntlet · cleared ${d}/${n} · ${h} left`,
+  lineSub:(L,a,b)=>`${L.en} · ${a} → ${b}`,
+  rTime:"TIME",rCleared:"CLEARED",rLives:"LIVES",rDist:"DIST",rTop:"TOP SPEED",rSpeed:"SPEED",
+  rAcc:"ACC",rCombo:"MAX COMBO",rErr:"ERRORS",rScore:"SCORE",
+  fastest:(z,s)=>`⚡ Fastest: <b>${z}</b> (${s}s)　`,slowest:(z,s)=>`🐢 Slowest: <b>${z}</b> (${s}s)`,
+  heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
+  lvl:l=>`LEVEL ${l} · Difficulty`,lineName:L=>L.en,revTitle:"Reverse direction",
+  meta:L=>`${L.stations.length} stops · ≈${Math.round(L.km)} km · avg ${L.avgLen.toFixed(1)} letters/stop`,
+  best:b=>`Session best: ${b.score} pts · ${b.time} · ${b.acc}%`,
+  go:"DEPART",challenge:"CHALLENGE",
+  bossMeta:`The ${BOSS.length} longest names · timed · ♥ ×3`,
+  bossFact:`The network's longest station names, from ${BOSS[BOSS.length-1].zh} all the way up to ${BOSS[0].zh} (${BOSS[0].key.length} letters!). Run out of time and you lose a heart.`,
+  interchange:"Interchange"}};
+let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en");
+const t=(k,...a)=>{const v=T[LANG][k];return typeof v==="function"?v(...a):v};
+// facts in data.js are "中文 · English" — pick the half for the current language
+const factOf=L=>{const i=L.fact.indexOf(" · ");return i<0?L.fact:LANG==="zh"?L.fact.slice(0,i):L.fact.slice(i+3)};
+function setLang(l){LANG=l;store.set("lang",l);
+  document.documentElement.lang=l==="zh"?"zh-Hans":"en";
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  $("langBtn").textContent=t("lang");
+  $("soundBtn").textContent=muted?t("muted"):t("sound");
+  $("themeBtn").textContent=document.documentElement.dataset.theme==="light"?t("light"):t("dark");
+  document.querySelector("#menu .footnote").textContent=t("footnote")+" · v"+APP_VERSION;
+  inp.placeholder=t("placeholder");inp.setAttribute("aria-label",t("inputAria"));
+  $("heatstrip").title=t("heatTitle");
+  renderLegend();renderCards();
+  if(S.screen==="game")refreshBoardLang();
+  if(S.screen==="result")showResult(true)}
+function refreshBoardLang(){const st=curStation();
+  if(S.mode==="boss"){$("brdLabel").textContent=t("beatClock");
+    if(st&&!S.done)$("dTag").textContent=t(diffOf(st.key.length).t)+" · "+st.key.length}
+  else if(st){$("brdLabel").textContent=t("nextStop");
+    $("dTag").textContent=t(diffOf(st.key.length).t)}
+  else{$("brdLabel").textContent=t("arriving");$("zhTxt").textContent=t("terminus")}}
+$("langBtn").onclick=()=>setLang(LANG==="zh"?"en":"zh");
 
 /* ---------- sound ---------- */
 let AC=null,muted=false;
@@ -40,20 +120,21 @@ const sCombo=()=>{tone(659,.07);tone(784,.07,.06);tone(988,.12,.12)};
 const sWin =()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.16,i*.11))};
 const sLose=()=>{tone(330,.18);tone(262,.26,.16)};
 $("soundBtn").onclick=()=>{muted=!muted;const b=$("soundBtn");
-  b.textContent=muted?"静音 MUTED":"音效 SOUND";
+  b.textContent=muted?t("muted"):t("sound");
   b.classList.toggle("on",!muted);b.setAttribute("aria-pressed",String(!muted))};
 
 /* ---------- theme ---------- */
 const themeMeta=document.querySelector('meta[name="theme-color"]');
 const sysLight=matchMedia("(prefers-color-scheme: light)");
-let themeManual=false;
-function setTheme(t){document.documentElement.dataset.theme=t;
-  $("themeBtn").textContent=t==="light"?"浅色 LIGHT":"深色 DARK";
-  themeMeta.setAttribute("content",t==="light"?"#f5f1e8":"#0b101c")}
-setTheme(sysLight.matches?"light":"dark");
+let themeManual=!!store.get("theme");
+function setTheme(th){document.documentElement.dataset.theme=th;
+  $("themeBtn").textContent=th==="light"?t("light"):t("dark");
+  themeMeta.setAttribute("content",th==="light"?"#f5f1e8":"#0b101c")}
+setTheme(store.get("theme")||(sysLight.matches?"light":"dark"));
 sysLight.addEventListener("change",e=>{if(!themeManual)setTheme(e.matches?"light":"dark")});
 $("themeBtn").onclick=()=>{themeManual=true;
-  setTheme(document.documentElement.dataset.theme==="light"?"dark":"light")};
+  const th=document.documentElement.dataset.theme==="light"?"dark":"light";
+  setTheme(th);store.set("theme",th)};
 
 function confetti(){const fx=$("fx"),cols=["#f3d03e","#1d80c4","#f0862b","#2fbf71","#ffb020"];
   for(let i=0;i<30;i++){const e=document.createElement("i");
@@ -186,7 +267,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   placeTrain(o.x,o.y,angleTo(0,1));$("trainG").setAttribute("opacity","1");
   requestAnimationFrame(()=>{fitAll(true);setTimeout(()=>{camFollow=true},700)});
   S.idx=1;setPrompt();movePulse();
-  announce(`始发站 ${o.zh} · 输入下一站拼音即发车 Type the next stop to depart`);
+  announce(t("depart",o.zh));
   setTimeout(()=>inp.focus(),80)}
 
 function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
@@ -214,23 +295,23 @@ function curStation(){return S.mode==="boss"?S.bossList[S.bossI]:S.seq[S.idx]}
 
 function setPrompt(){const st=S.seq[S.idx];
   if(!st){ // terminus reached (all names typed) — waiting on final arrival
-    $("zhTxt").textContent="终点站 · Terminus";$("py").innerHTML="";
-    $("brdLabel").textContent="即将到达 ARRIVING";$("cnt").textContent="";
+    $("zhTxt").textContent=t("terminus");$("py").innerHTML="";
+    $("brdLabel").textContent=t("arriving");$("cnt").textContent="";
     $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updPbar();return}
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;
   inp.disabled=false;inp.value="";
-  $("brdLabel").textContent="下一站 NEXT STOP";
+  $("brdLabel").textContent=t("nextStop");
   $("zhTxt").textContent=st.zh;
-  const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=d.t;
+  const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t);
   $("cnt").textContent=S.idx+"/"+(S.seq.length-1);
   paintPy();updPbar();flashBoard()}
 
 function setBossPrompt(){const st=S.bossList[S.bossI];
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;S.revealing=false;
   inp.disabled=false;inp.value="";
-  $("brdLabel").textContent="限时挑战 BEAT THE CLOCK";
+  $("brdLabel").textContent=t("beatClock");
   $("zhTxt").textContent=st.zh;
-  const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=d.t+" · "+st.key.length;
+  const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t)+" · "+st.key.length;
   $("cnt").textContent=(S.bossI+1)+"/"+S.bossList.length;
   S.bossSec=Math.max(6,Math.round(st.key.length*0.55));
   S.deadline=performance.now()+S.bossSec*1000;
@@ -260,7 +341,7 @@ document.addEventListener("keydown",e=>{
 
 function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
-  if(/[\u3400-\u9fff]/.test(raw))announce("请切换到英文键盘 · Please switch to an English keyboard");
+  if(/[\u3400-\u9fff]/.test(raw))announce(t("kbWarn"));
   let v="";for(const ch of raw.toLowerCase()){const c=TONE[ch]||ch;if(c>="a"&&c<="z")v+=c}
   let ok=0;while(ok<v.length&&ok<S.key.length&&v[ok]===S.key[ok])ok++;
   if(v.length>ok){S.errors+=v.length-ok;S.errSt=true;
@@ -311,7 +392,7 @@ function arrive(tr){S.distDone+=tr.km;S.dist=S.distDone;
     if(n.zh)n.zh.classList.add("passed")}
   movePulse();
   if(tr.idx===S.seq.length-1){finishRun()}
-  else announce(`到达 ${st.zh} · ${st.py}`)}
+  else announce(t("arriveAt",st.zh,st.py))}
 
 function movePulse(){gMap.querySelectorAll(".pulseHolder").forEach(p=>{p.setAttribute("opacity","0");p.classList.remove("pulse")});
   const st=S.seq[S.idx];if(!st)return;const n=nodes[st.zh];
@@ -324,7 +405,7 @@ function announce(msg){const t=$("toast");t.textContent=msg;t.classList.add("on"
 
 function finishRun(){S.done=true;S.endT=performance.now();
   inp.disabled=true;camFollow=false;fitAll(false);
-  sWin();confetti();announce("终点站 · Terminus reached!");
+  sWin();confetti();announce(t("terminusReached"));
   setTimeout(showResult,1200)}
 
 /* ---------- boss flow ---------- */
@@ -351,7 +432,7 @@ function bossFinish(){S.done=true;S.endT=performance.now();inp.disabled=true;
   setTimeout(showResult,900)}
 
 /* ---------- result ---------- */
-function showResult(){show("result");
+function showResult(rerender){show("result");
   const boss=S.mode==="boss";
   const total=(S.endT&&S.t0)?S.endT-S.t0:0;
   const min=Math.max(total/60000,.001);
@@ -361,20 +442,20 @@ function showResult(){show("result");
   let stars=1;if(acc>=88&&avgPerf>=.65)stars=2;if(acc>=96&&avgPerf>=1.1)stars=3;
   if(boss&&S.lives<=0)stars=1;
   const medal=stars===3?"🏆":stars===2?"🥈":"🥉";
-  const title=stars===3?"王牌司机 ACE DRIVER":stars===2?"熟练司机 SKILLED DRIVER":"见习司机 TRAINEE DRIVER";
+  const title=t("titles")[stars-1];
   $("rMedal").textContent=medal;$("rStars").textContent="★★★".slice(0,stars)+"☆☆☆".slice(0,3-stars);
   const nb=$("newbest");$("rTitle").childNodes[0].nodeValue=title;
   const col=boss?"#e5484d":S.line.color;
   $("rcard").style.setProperty("--lc",col);
   $("rAgain").style.setProperty("--cc",col);
   $("rSub").textContent=boss
-    ?`长站名挑战 · 完成 ${S.bossDone}/${S.bossList.length} · 剩余 ${"♥".repeat(S.lives)||"—"}`
-    :`${S.line.num} 号线 ${S.line.en} · ${S.seq[0].zh} → ${S.seq[S.seq.length-1].zh}`;
-  const cells=[["用时 TIME",fmtT(total),""],
-    boss?["完成 CLEARED",S.bossDone+"/"+S.bossList.length,""]:["里程 DIST",S.dist.toFixed(1),"km"],
-    boss?["生命 LIVES",S.lives,"♥"]:["极速 TOP SPEED",Math.round(S.topV),"km/h"],
-    ["键速 SPEED",wpm,"wpm"],["准确率 ACC",acc,"%"],["最高连击 COMBO","×"+S.maxCombo,""],
-    ["失误 ERRORS",S.errors,""],["得分 SCORE",S.score,""]];
+    ?t("bossSub",S.bossDone,S.bossList.length,"♥".repeat(S.lives)||"—")
+    :t("lineSub",S.line,S.seq[0].zh,S.seq[S.seq.length-1].zh);
+  const cells=[[t("rTime"),fmtT(total),""],
+    boss?[t("rCleared"),S.bossDone+"/"+S.bossList.length,""]:[t("rDist"),S.dist.toFixed(1),"km"],
+    boss?[t("rLives"),S.lives,"♥"]:[t("rTop"),Math.round(S.topV),"km/h"],
+    [t("rSpeed"),wpm,"wpm"],[t("rAcc"),acc,"%"],[t("rCombo"),"×"+S.maxCombo,""],
+    [t("rErr"),S.errors,""],[t("rScore"),S.score,""]];
   $("rGrid").innerHTML=cells.map(c=>`<div class="rcell"><label>${c[0]}</label><b>${c[1]}<small> ${c[2]}</small></b></div>`).join("");
   // heat strip + fastest/slowest
   const hs=$("heatstrip");hs.innerHTML="";
@@ -387,16 +468,19 @@ function showResult(){show("result");
     cell.title=st.zh+(t!=null?` · ${t.toFixed(1)}s`:"");
     if(t!=null&&(boss?true:i>0)){if(fi<0||t<S.times[fi])fi=i;if(si<0||t>S.times[si])si=i}
     hs.appendChild(cell)});
-  $("fastslow").innerHTML=(fi>=0?`⚡ 最快 Fastest：<b>${list[fi].zh}</b>（${S.times[fi].toFixed(1)}s）　`:"")+
-    (si>=0?`🐢 最慢 Slowest：<b>${list[si].zh}</b>（${S.times[si].toFixed(1)}s）`:"");
-  // session best
-  const key=boss?"boss":S.line.id;
-  const isBest=!bests[key]||S.score>bests[key].score;
-  if(isBest)bests[key]={score:S.score,time:fmtT(total),acc};
-  nb.hidden=!isBest;
+  $("fastslow").innerHTML=(fi>=0?t("fastest",list[fi].zh,S.times[fi].toFixed(1)):"")+
+    (si>=0?t("slowest",list[si].zh,S.times[si].toFixed(1)):"");
+  // session best (skip re-scoring when only re-rendering for a language switch)
+  if(!rerender){const key=boss?"boss":S.line.id;
+    S.isBest=!bests[key]||S.score>bests[key].score;
+    if(S.isBest)bests[key]={score:S.score,time:fmtT(total),acc}}
+  nb.hidden=!S.isBest;
   renderCards()}
 
 /* ---------- menu cards ---------- */
+function renderLegend(){
+  $("legend").innerHTML=LINES.map(L=>`<span class="lg"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
+    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
   order.forEach((L,i)=>{const lvl=i+1,rev=!!dirState[L.id];
@@ -404,15 +488,15 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
     const best=bests[L.id];
     const card=document.createElement("div");card.className="card";card.style.setProperty("--cc",L.color);
     card.innerHTML=`
-      <div class="lvl">LEVEL ${lvl} · 难度 <b>${"★".repeat(lvl)}${"☆".repeat(3-lvl)}</b></div>
+      <div class="lvl">${t("lvl",lvl)} <b>${"★".repeat(lvl)}${"☆".repeat(3-lvl)}</b></div>
       <div class="lrow"><div class="lnum">${L.num}</div>
-        <div class="lname">${L.zh}<small>${L.en}</small></div></div>
+        <div class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></div></div>
       <div class="term"><span class="tt">${rev?b:a} → ${rev?a:b}</span>
-        <button class="rev" title="换向 Reverse direction">⇄</button></div>
-      <div class="meta">${L.stations.length} 站 · ≈${Math.round(L.km)} km · 平均 ${L.avgLen.toFixed(1)} 字母/站</div>
-      <div class="fact">${L.fact}</div>
-      ${best?`<div class="best">本次最佳 Session best：${best.score} 分 · ${best.time} · ${best.acc}%</div>`:""}
-      <button class="go">出发 DEPART</button>`;
+        <button class="rev" title="${t("revTitle")}">⇄</button></div>
+      <div class="meta">${t("meta",L)}</div>
+      <div class="fact">${factOf(L)}</div>
+      ${best?`<div class="best">${t("best",best)}</div>`:""}
+      <button class="go">${t("go")}</button>`;
     card.querySelector(".rev").onclick=e=>{e.stopPropagation();dirState[L.id]=!dirState[L.id];
       card.querySelector(".tt").textContent=dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`};
     card.querySelector(".go").onclick=()=>startLine(L,!!dirState[L.id]);
@@ -423,11 +507,11 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   bc.innerHTML=`
     <div class="lvl">LEVEL 4 · <b style="color:var(--bad)">BOSS</b></div>
     <div class="lrow"><div class="lnum">★</div>
-      <div class="lname">长站名挑战<small>LONG-NAME GAUNTLET</small></div></div>
-    <div class="meta">${BOSS.length} 个最长站名 · 限时输入 · ♥ ×3</div>
-    <div class="fact">全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。</div>
-    ${bb?`<div class="best">本次最佳 Session best：${bb.score} 分 · ${bb.time} · ${bb.acc}%</div>`:""}
-    <button class="go" style="background:linear-gradient(90deg,var(--bad),var(--amber))">挑战 CHALLENGE</button>`;
+      <div class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></div></div>
+    <div class="meta">${t("bossMeta")}</div>
+    <div class="fact">${t("bossFact")}</div>
+    ${bb?`<div class="best">${t("best",bb)}</div>`:""}
+    <button class="go" style="background:linear-gradient(90deg,var(--bad),var(--amber))">${t("challenge")}</button>`;
   bc.querySelector(".go").onclick=startBoss;
   wrap.appendChild(bc)}
 
@@ -497,7 +581,7 @@ requestAnimationFrame(tick);
 
 /* ---------- quit / nav ---------- */
 function quit(){if(S.screen!=="game")return;
-  if(S.done||confirm("退出本次行程？Quit this run?")){show("menu");renderCards()}}
+  if(S.done||confirm(t("quitConfirm"))){show("menu");renderCards()}}
 $("homeBtn").onclick=quit;
 $("rAgain").onclick=()=>{if(!lastRun)return;lastRun.mode==="boss"?startBoss():startLine(lastRun.L,lastRun.rev)};
 $("rBack").onclick=()=>{show("menu");renderCards()};
@@ -508,12 +592,9 @@ $("rBack").onclick=()=>{show("menu");renderCards()};
   requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
     ov.setAttribute("viewBox",`${bb.x-p} ${bb.y-p} ${bb.width+p*2} ${bb.height+p*2}`)}catch(e){
     ov.setAttribute("viewBox","0 0 1050 1180")}});
-  $("legend").innerHTML=LINES.map(L=>`<span class="lg"><i style="background:${L.color}"></i>${L.num} 号线 ${L.en}</span>`).join("")+
-    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>换乘站 Interchange</span>`;
   ov.addEventListener("click",e=>{const p=e.target.closest(".lpath");if(!p)return;
     document.querySelectorAll(".card").forEach(c=>{if(c.querySelector(".lnum")&&c.style.getPropertyValue("--cc")===LINES.find(L=>L.id===p.dataset.line).color){
       c.scrollIntoView({behavior:"smooth",block:"center"})}})});
-  renderCards();
-  document.querySelector("#menu .footnote").insertAdjacentText("beforeend"," · v"+APP_VERSION);
+  setLang(LANG); // renders all i18n text + legend + cards
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
 })();
