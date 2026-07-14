@@ -3,8 +3,7 @@
 ._*
 Thumbs.db
 
-# Editors / IDEs
-.vscode/
+# Editors / IDEs (shared .vscode settings are committed)
 .idea/
 *.swp
 

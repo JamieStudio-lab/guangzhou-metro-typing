@@ -1,8 +1,10 @@
 # 拼音快线 · Guangzhou Metro Pinyin Express
 
-A single-file browser game: drive trains along Guangzhou Metro **Lines 1, 2, and 3** by typing each station's pinyin. Faster, more accurate typing means higher train speed, longer combos, and bigger scores.
+A browser game: drive trains along Guangzhou Metro **Lines 1, 2, and 3** by typing each station's pinyin. Faster, more accurate typing means higher train speed, longer combos, and bigger scores.
 
-**Play it:** open `index.html` in any browser — no build step, no dependencies, works offline. (If GitHub Pages is enabled for this repo, it plays directly from the Pages URL.)
+**Play it:** https://jamiestudio-lab.github.io/guangzhou-metro-typing/ — or open `index.html` locally in any browser. No build step, no dependencies, works offline.
+
+Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/data.js` (station data), and `js/game.js` (engine). Version history lives in [CHANGELOG.md](CHANGELOG.md); each release is also tagged on GitHub.
 
 ## How to play
 
@@ -16,7 +18,7 @@ A single-file browser game: drive trains along Guangzhou Metro **Lines 1, 2, and
 - Schematic SVG network map with the Pearl River, interchange rings, real transfer badges, and a camera that follows your train
 - Progress shown in color everywhere: per-letter lighting on the board, heat-colored stations and progress bar (green/amber/red by typing speed), and an end-of-run heat strip with fastest/slowest stop callouts
 - Combo multipliers, medals (trainee → skilled → ace driver), arrival chimes (mutable), and per-line session-best records
-- Vanilla HTML/CSS/JS in one file; responsive from phone to desktop; respects `prefers-reduced-motion`
+- Vanilla HTML/CSS/JS with zero dependencies; responsive from phone to desktop; respects `prefers-reduced-motion`
 
 ## Data notes
 
