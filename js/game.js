@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.2";
+const APP_VERSION="0.0.3";
 
 // normalize station tuples → objects, compute keys
 for(const L of LINES){
@@ -39,7 +39,21 @@ const sErr =()=>tone(140,.11,0,"square",.05);
 const sCombo=()=>{tone(659,.07);tone(784,.07,.06);tone(988,.12,.12)};
 const sWin =()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.16,i*.11))};
 const sLose=()=>{tone(330,.18);tone(262,.26,.16)};
-$("soundBtn").onclick=()=>{muted=!muted;$("soundBtn").textContent=muted?"🔇 静音":"🔊 音效"};
+$("soundBtn").onclick=()=>{muted=!muted;const b=$("soundBtn");
+  b.textContent=muted?"静音 MUTED":"音效 SOUND";
+  b.classList.toggle("on",!muted);b.setAttribute("aria-pressed",String(!muted))};
+
+/* ---------- theme ---------- */
+const themeMeta=document.querySelector('meta[name="theme-color"]');
+const sysLight=matchMedia("(prefers-color-scheme: light)");
+let themeManual=false;
+function setTheme(t){document.documentElement.dataset.theme=t;
+  $("themeBtn").textContent=t==="light"?"浅色 LIGHT":"深色 DARK";
+  themeMeta.setAttribute("content",t==="light"?"#eef2f7":"#0a0f1a")}
+setTheme(sysLight.matches?"light":"dark");
+sysLight.addEventListener("change",e=>{if(!themeManual)setTheme(e.matches?"light":"dark")});
+$("themeBtn").onclick=()=>{themeManual=true;
+  setTheme(document.documentElement.dataset.theme==="light"?"dark":"light")};
 
 function confetti(){const fx=$("fx"),cols=["#f3d03e","#1d80c4","#f0862b","#2fbf71","#ffb020"];
   for(let i=0;i<30;i++){const e=document.createElement("i");
@@ -93,8 +107,8 @@ function buildMap(svg,opts){
     s+=`<g class="stg" data-st="${zh}">`;
     s+=`<circle class="pulseHolder" data-p="${zh}" cx="${st.x}" cy="${st.y}" r="9" fill="none" stroke="#ffb020" stroke-width="2" opacity="0"/>`;
     s+=`<circle class="heat" data-h="${zh}" cx="${st.x}" cy="${st.y}" r="${inter?12:10}" fill="none" stroke="none" stroke-width="2.5"/>`;
-    if(inter)s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="8" fill="#e9eef6" stroke="#0a0f1a" stroke-width="3"/>`;
-    else s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="5.5" fill="#0a0f1a" stroke="${st.lines[0].color}" stroke-width="3"/>`;
+    if(inter)s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="8" style="fill:var(--map-inter);stroke:var(--map-inter-ring)" stroke-width="3"/>`;
+    else s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="5.5" style="fill:var(--map-dot-bg)" stroke="${st.lines[0].color}" stroke-width="3"/>`;
     s+=labelMarkup(st)+"</g>"}
   if(opts&&opts.train){
     s+=`<g id="trainG" opacity="0"><g id="trainR">
@@ -167,7 +181,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   gMap.querySelectorAll(".stg").forEach(g=>{g.style.opacity=mine.has(g.dataset.st)?"1":".22"});
   // origin visuals
   const o=S.seq[0];
-  if(REG.get(o.zh).lines.length<=1)nodes[o.zh].dot.setAttribute("fill",L.color);
+  if(REG.get(o.zh).lines.length<=1)nodes[o.zh].dot.style.fill=L.color;
   buildPbar();setGauge(0,L.cap);
   placeTrain(o.x,o.y,angleTo(0,1));$("trainG").setAttribute("opacity","1");
   requestAnimationFrame(()=>{fitAll(true);setTimeout(()=>{camFollow=true},700)});
@@ -292,9 +306,9 @@ function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x
 
 function arrive(tr){S.distDone+=tr.km;S.dist=S.distDone;
   const st=tr.b,n=nodes[st.zh],reg=REG.get(st.zh);
-  if(n){if(reg&&reg.lines.length<=1)n.dot.setAttribute("fill",S.line.color);
+  if(n){if(reg&&reg.lines.length<=1)n.dot.style.fill=S.line.color;
     n.heat.setAttribute("stroke",HEATC[S.heats[tr.idx]||"good"]);
-    if(n.zh)n.zh.style.fill=S.line.color}
+    if(n.zh)n.zh.classList.add("passed")}
   movePulse();
   if(tr.idx===S.seq.length-1){finishRun()}
   else announce(`到达 ${st.zh} · ${st.py}`)}
@@ -420,19 +434,19 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
 /* ---------- gauge ---------- */
 let gaugeCap=80;
 function setGauge(v,cap){gaugeCap=cap;const g=$("gauge");
-  let s=`<path d="M 26 104 A 74 74 0 0 1 174 104" fill="none" stroke="#1a2540" stroke-width="9" stroke-linecap="round"/>`;
+  let s=`<path d="M 26 104 A 74 74 0 0 1 174 104" fill="none" style="stroke:var(--rail)" stroke-width="9" stroke-linecap="round"/>`;
   // redline (last ~18% of the sweep)
   const rx=(100+74*Math.cos(Math.PI*.18)).toFixed(1),ry=(104-74*Math.sin(Math.PI*.18)).toFixed(1);
   s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="9" stroke-linecap="round"/>`;
   for(let i=0;i<=8;i++){const ang=Math.PI*i/8,c=Math.cos(ang),si=Math.sin(ang);
-    s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" stroke="#3a4a68" stroke-width="2"/>`}
-  s+=`<text x="24" y="120" fill="#55627a" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="168" y="120" fill="#55627a" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
-  s+=`<text x="100" y="34" fill="#55627a" font-size="9" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
-  s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" stroke="#ffb020" stroke-width="3.5" stroke-linecap="round"/></g>`;
-  s+=`<circle cx="100" cy="104" r="6" fill="#0b1322" stroke="#3a4a68" stroke-width="2"/>`;
-  s+=`<text id="gaugeV" x="100" y="86" fill="#e9eef6" font-size="24" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="100" y="99" fill="#55627a" font-size="8.5" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
+    s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" style="stroke:var(--tick)" stroke-width="2"/>`}
+  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
+  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="9" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
+  s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--amber)" stroke-width="3.5" stroke-linecap="round"/></g>`;
+  s+=`<circle cx="100" cy="104" r="6" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
+  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="24" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="8.5" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
   g.innerHTML=s}
 function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const n=document.getElementById("needleG");if(n)n.setAttribute("transform",`rotate(${deg},100,104)`);
@@ -495,7 +509,7 @@ $("rBack").onclick=()=>{show("menu");renderCards()};
     ov.setAttribute("viewBox",`${bb.x-p} ${bb.y-p} ${bb.width+p*2} ${bb.height+p*2}`)}catch(e){
     ov.setAttribute("viewBox","0 0 1050 1180")}});
   $("legend").innerHTML=LINES.map(L=>`<span class="lg"><i style="background:${L.color}"></i>${L.num} 号线 ${L.en}</span>`).join("")+
-    `<span class="lg"><i style="background:#e9eef6"></i>换乘站 Interchange</span>`;
+    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>换乘站 Interchange</span>`;
   ov.addEventListener("click",e=>{const p=e.target.closest(".lpath");if(!p)return;
     document.querySelectorAll(".card").forEach(c=>{if(c.querySelector(".lnum")&&c.style.getPropertyValue("--cc")===LINES.find(L=>L.id===p.dataset.line).color){
       c.scrollIntoView({behavior:"smooth",block:"center"})}})});
