@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.3";
+const APP_VERSION="0.0.4";
 
 // normalize station tuples → objects, compute keys
 for(const L of LINES){
@@ -49,7 +49,7 @@ const sysLight=matchMedia("(prefers-color-scheme: light)");
 let themeManual=false;
 function setTheme(t){document.documentElement.dataset.theme=t;
   $("themeBtn").textContent=t==="light"?"浅色 LIGHT":"深色 DARK";
-  themeMeta.setAttribute("content",t==="light"?"#eef2f7":"#0a0f1a")}
+  themeMeta.setAttribute("content",t==="light"?"#f5f1e8":"#0b101c")}
 setTheme(sysLight.matches?"light":"dark");
 sysLight.addEventListener("change",e=>{if(!themeManual)setTheme(e.matches?"light":"dark")});
 $("themeBtn").onclick=()=>{themeManual=true;
@@ -366,7 +366,7 @@ function showResult(){show("result");
   const nb=$("newbest");$("rTitle").childNodes[0].nodeValue=title;
   const col=boss?"#e5484d":S.line.color;
   $("rcard").style.setProperty("--lc",col);
-  $("rAgain").style.setProperty("--cc",col);$("rAgain").style.background=col;
+  $("rAgain").style.setProperty("--cc",col);
   $("rSub").textContent=boss
     ?`长站名挑战 · 完成 ${S.bossDone}/${S.bossList.length} · 剩余 ${"♥".repeat(S.lives)||"—"}`
     :`${S.line.num} 号线 ${S.line.en} · ${S.seq[0].zh} → ${S.seq[S.seq.length-1].zh}`;
