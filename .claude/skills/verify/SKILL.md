@@ -29,8 +29,9 @@ const ctx = await browser.newContext({ viewport:{width:1440,height:900}, colorSc
 - Game globals are top-level `const` in classic scripts — still reachable from `page.evaluate` (e.g. `S.key` = current station's toneless pinyin).
 - Start a run: `page.click('.card .go')` (cards are difficulty-ordered: first = Line 3). Boss: `.card.boss .go`.
 - Type a station: `await page.type('#pyin', await page.evaluate(() => S.key))`. Loop until `#result` unhides (~10 s for a full line; travels are queued, wait ≤60 s).
-- Checks that catch regressions: `#menu .footnote` contains `v<APP_VERSION>`; `#py .c.done` count after partial typing; `.chip` background is line-tinted; in light theme `#board` background stays the dark gradient and `#pyin`/`#zhTxt` colors stay light-on-dark.
+- Checks that catch regressions: `#menu .footnote` contains `v<APP_VERSION>`; `#py .c.done` count after partial typing; `.chip` background is line-tinted (near-white in light theme since v0.0.5); `#board` is a light tonal card in light theme (light gradient, dark text, `#zhTxt` glow off) but keeps the dark gradient + glow in dark theme.
+- Chrome may report computed colors as `color(srgb 0.99 0.98 0.95)` floats, not `rgb(…)` — parse both when asserting luminance.
 
 ## Flows worth driving
 
-Menu (dark+light, fullPage screenshot) → run with a wrong-input probe (`zzz` → cleared, combo reset) → full line to result → light-theme run (LED board must stay dark) → boss mode (countdown ring visible) → 390px mobile viewport.
+Menu (dark+light, fullPage screenshot) → run with a wrong-input probe (`zzz` → cleared, combo reset) → full line to result → light-theme run (light LED board, dark-theme board unchanged) → boss mode (countdown ring visible) → 390px mobile viewport.

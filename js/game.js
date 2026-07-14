@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.4";
+const APP_VERSION="0.0.5";
 
 // normalize station tuples → objects, compute keys
 for(const L of LINES){

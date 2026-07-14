@@ -23,32 +23,33 @@
   --sans:-apple-system,"SF Pro Text","Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
 }
 :root[data-theme="light"]{
-  --ink:#f5f1e8; --panel:#fdfbf5; --panel2:#eee8da; --edge:#e2dac6; --edge2:#c8bda1;
-  --paper:#1f1b12; --mut:#6a6350; --dim:#98907c;
+  --ink:#eef0f4; --panel:#fdfdfe; --panel2:#e8ebf0; --edge:#dde1e8; --edge2:#bfc8d5;
+  --paper:#171d28; --mut:#5f6a7c; --dim:#8f98a7;
   --amber:#dd8f00; --good:#1f9d5c; --mid:#c9920e;
-  --hd1:#fbf8f0; --hd2:#f5f1e8; --map1:#fdfbf6; --map2:#ece7db;
-  --boss1:#ece5d5; --boss2:#f4efe3;
-  --toast-bg:rgba(253,251,245,.94); --pill-bg:rgba(253,251,245,.85);
-  --rail:#ded6c3; --tick:#a89e86; --riv:#c9dcee;
-  --st-zh:#2f2a1c; --st-py:#8a8268; --st-tr:#a49b83;
-  --map-dot-bg:#fdfbf5; --map-inter:#fdfbf5; --map-inter-ring:#2f2a1c;
-  --done:#178a52; --todo:#c9c0a9;
-  --sh1:0 1px 2px rgba(62,50,20,.1),0 2px 8px rgba(62,50,20,.07);
-  --sh2:0 2px 4px rgba(62,50,20,.12),0 6px 18px rgba(62,50,20,.09);
-  --sh3:0 4px 10px rgba(62,50,20,.14),0 12px 32px rgba(62,50,20,.11);
+  --hd1:#f8fafc; --hd2:#eef0f4; --map1:#fbfcfe; --map2:#e9ecf1;
+  --boss1:#e5e9ef; --boss2:#f1f3f7;
+  --toast-bg:rgba(253,253,254,.94); --pill-bg:rgba(253,253,254,.85);
+  --rail:#d9dee6; --tick:#9aa5b4; --riv:#c9dcee;
+  --st-zh:#232b39; --st-py:#7e8798; --st-tr:#99a2b2;
+  --map-dot-bg:#fdfdfe; --map-inter:#fdfdfe; --map-inter-ring:#232b39;
+  --done:#178a52; --todo:#c4cbd6;
+  --sh1:0 1px 2px rgba(24,32,48,.1),0 2px 8px rgba(24,32,48,.07);
+  --sh2:0 2px 4px rgba(24,32,48,.12),0 6px 18px rgba(24,32,48,.09);
+  --sh3:0 4px 10px rgba(24,32,48,.14),0 12px 32px rgba(24,32,48,.11);
   --blob-op:.32;
 }
-/* LED board stays a dark hardware panel in both themes */
+/* LED board: dark hardware panel in dark theme, light tonal card in light theme */
 :root[data-theme="light"] #board{
-  --paper:#e9eef6; --mut:#8a96ab; --dim:#55627a;
-  --amber:#ffb020; --good:#2fbf71; --mid:#f0b429;
-  --rail:#1a2540; --todo:#3a4a68; --done:#3bd98c;
-  --edge2:#2c3c60; --lct:var(--lc,var(--amber));
+  --brd1:#fdfdfe; --brd2:#eef1f6; --brd-edge:#dde1e8;
+  --brd-dot:rgba(23,32,48,.06); --brd-sheen:rgba(255,255,255,.6);
+  --input-bg:#e9edf3;
 }
+:root[data-theme="light"] #zhTxt{text-shadow:none}
+:root[data-theme="light"] #py .c.done{text-shadow:none}
 /* line color used as text: darkened in light theme for contrast */
 body{--lct:var(--lc,var(--amber));--tint:color-mix(in srgb,var(--lc,var(--amber)) 8%,var(--panel2))}
 :root[data-theme="light"] body{--lct:color-mix(in srgb,var(--lc,var(--amber)) 72%,#15243c);
-  --tint:color-mix(in srgb,var(--lc,var(--amber)) 5%,var(--panel2))}
+  --tint:color-mix(in srgb,var(--lc,var(--amber)) 6%,var(--panel))}
 :root[data-theme="light"] #bossStage h3{text-shadow:none}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
