@@ -29,25 +29,50 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
 <section id="menu">
   <div class="blobs" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
   <div class="hero">
-    <h2 data-i18n="heroTitle">指尖出发，一键到底</h2>
-    <p data-i18n="heroP">每敲对一个站名，列车就前进一站；每经过一站，都路过一段广州城事。
-       指尖越快，城市越近——一键到底！</p>
+    <svg class="rails back" viewBox="0 0 1080 640" preserveAspectRatio="none" aria-hidden="true">
+      <path class="r1" style="--i:0" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 80 C 240 50 480 120 700 85 S 990 55 1100 75"/>
+      <path class="r2" style="--i:1" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 150 C 300 115 560 195 780 245 S 1010 285 1100 262"/>
+      <path class="r3" style="--i:2" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 545 C 280 575 520 480 750 420 S 1000 385 1100 398"/>
+      <path class="r4" style="--i:3" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 600 C 300 625 560 560 800 585 S 1030 610 1100 598"/>
+      <path class="g" style="--i:0" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 80 C 240 50 480 120 700 85 S 990 55 1100 75"/>
+      <path class="g" style="--i:1" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 150 C 300 115 560 195 780 245 S 1010 285 1100 262"/>
+      <path class="g" style="--i:2" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 545 C 280 575 520 480 750 420 S 1000 385 1100 398"/>
+      <path class="g" style="--i:3" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 600 C 300 625 560 560 800 585 S 1030 610 1100 598"/>
+    </svg>
+    <img class="tower" src="assets/guangzhou-tower.png" alt="" width="800" height="1066" decoding="async">
+    <svg class="rails front" viewBox="0 0 1080 640" preserveAspectRatio="none" aria-hidden="true">
+      <path class="r5" style="--i:4" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 520 C 260 550 520 465 780 505 S 1030 540 1100 522"/>
+      <path class="r6" style="--i:5" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 628 C 320 602 600 638 840 610 S 1050 592 1100 600"/>
+      <path class="g" style="--i:4" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 520 C 260 550 520 465 780 505 S 1030 540 1100 522"/>
+      <path class="g" style="--i:5" pathLength="1" vector-effect="non-scaling-stroke" d="M-20 628 C 320 602 600 638 840 610 S 1050 592 1100 600"/>
+    </svg>
+    <div class="heroTx">
+      <h2 data-i18n="heroTitle">指尖出发，一键到底</h2>
+      <p data-i18n="heroP">每敲对一个站名，列车就前进一站；每经过一站，都路过一段广州城事。
+         指尖越快，城市越近——一键到底！</p>
+      <button class="go" id="startBtn" data-i18n="startBtn">开始游戏</button>
+    </div>
+    <div class="scue" aria-hidden="true">⌄</div>
   </div>
 
-  <div class="mapcard">
-    <svg id="ovMap" role="img" aria-label="Guangzhou Metro network map: Lines 1, 2, 3"></svg>
-    <div class="legend" id="legend"></div>
+  <div id="pick">
+    <div class="mapcard">
+      <svg id="ovMap" role="img" aria-label="Guangzhou Metro network map: Lines 1, 2, 3"></svg>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="lbcard">
+      <div class="lbhead"><h3 data-i18n="lbTitle">全球排行榜</h3><div class="lbtabs" id="lbTabs"></div></div>
+      <div class="lbbody" id="lbBody"></div>
+    </div>
+
+    <p class="footnote">☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），
+      站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。</p>
   </div>
 
-  <div class="cards" id="cards"></div>
-
-  <div class="lbcard">
-    <div class="lbhead"><h3 data-i18n="lbTitle">全球排行榜</h3><div class="lbtabs" id="lbTabs"></div></div>
-    <div class="lbbody" id="lbBody"></div>
-  </div>
-
-  <p class="footnote">☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），
-    站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。</p>
+  <button class="fab" id="backTop" data-i18n="backTop">↑ 首页</button>
 </section>
 
 <!-- ================= GAME ================= -->
