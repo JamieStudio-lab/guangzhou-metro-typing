@@ -1,6 +1,6 @@
-# 拼音快线 · Guangzhou Metro Pinyin Express
+# 一键到站 · Keys to the City
 
-A browser game: drive trains along Guangzhou Metro **Lines 1, 2, and 3** by typing each station's pinyin. Faster, more accurate typing means higher train speed, longer combos, and bigger scores.
+A typing speed run through the Guangzhou Metro: pick a line (**1, 2, or 3**), type each station's pinyin, and every stop is one keystroke away. Faster, more accurate typing means higher train speed, longer combos, and bigger scores — and you ride past the real geography of the city while you're at it.
 
 **Play it:** https://jamiestudio-lab.github.io/guangzhou-metro-typing/ — or open `index.html` locally in any browser. No build step, no dependencies, works offline.
 
@@ -22,6 +22,6 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 
 ## Data notes
 
-Fan-made typing practice, not affiliated with Guangzhou Metro. Covers the classic **main-line segments** of Lines 1, 2, and 3 (no extensions or the airport branch); inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
+Fan-made typing game, not affiliated with Guangzhou Metro. Covers the classic **main-line segments** of Lines 1, 2, and 3 (no extensions or the airport branch); inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
 
 `js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (all 19 numbered lines + Guangfo + APM, 367 stations), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — the groundwork for adding more playable lines. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.

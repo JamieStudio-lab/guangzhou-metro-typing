@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.9";
+const APP_VERSION="0.1.0";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -40,9 +40,9 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
-  heroTitle:"用拼音开动广州地铁",
-  heroP:"选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。打得越快越准，车速越高、连击越长。",
-  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
+  heroTitle:"下一站，由你敲出来",
+  heroP:"选一条线路，敲出站名拼音，列车立刻出发。手速越快，广州在车窗外飞得越快——这不是拼音课，是一场城市速度赛。",
+  footnote:"☆ 本作为粉丝自制打字游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
   nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
@@ -86,9 +86,9 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
-  heroTitle:"Drive the Guangzhou Metro with pinyin",
-  heroP:"Pick a line and type each stop's name in pinyin (toneless, spaces optional) to drive the train forward. The faster and cleaner you type, the higher the speed and the longer the combo.",
-  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
+  heroTitle:"Every stop is one keystroke away",
+  heroP:"Pick a line and type each station's pinyin to keep the train rolling. Not a pinyin drill — a typing speed run through Guangzhou, one station at a time.",
+  footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
   nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",

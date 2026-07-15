@@ -1,8 +1,15 @@
 # Changelog
 
-All notable changes to 拼音快线 · Guangzhou Metro Pinyin Express are documented here.
+All notable changes to 一键到站 · Keys to the City (拼音快线 · Guangzhou Metro Pinyin Express before v0.1.0) are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
+
+## [0.1.0] - 2026-07-15
+
+### Changed
+- **Rebrand: 拼音快线 · Guangzhou Metro Pinyin Express is now 一键到站 · Keys to the City.** The old name framed the game as a pinyin drill; the new one is a double pun — 一键到站 riffs on 一键直达 ("the next stop is one keystroke away"), and the English "keys" are both keyboard keys and keys to the city — matching what the game is actually about: fun, typing speed, and discovering Guangzhou.
+- New hero copy in both languages (中文「下一站，由你敲出来」 / English "Every stop is one keystroke away"), new eyebrow (TYPE · RIDE · EXPLORE GUANGZHOU), new page title, and header brand.
+- The footnote now says "typing game" (打字游戏) instead of "typing practice" (打字练习游戏); README and docs updated to the new positioning.
 
 ## [0.0.9] - 2026-07-15
 
@@ -97,6 +104,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.9...v0.1.0
 [0.0.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.6...v0.0.7
