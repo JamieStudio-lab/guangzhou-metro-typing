@@ -116,7 +116,7 @@ function paintCloudNote(){
 /* ---------- leaderboard ---------- */
 function renderLbTabs(){
   $("lbTabs").innerHTML=LINES.map(L=>
-    `<button class="lbtab${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color}">${t("lineName",L)}</button>`).join("")+
+    `<button class="lbtab${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}">${t("lineName",L)}</button>`).join("")+
     `<button class="lbtab${LB_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
   $("lbTabs").querySelectorAll(".lbtab").forEach(b=>
     b.onclick=()=>{LB_MODE=b.dataset.m;renderLbTabs();loadLb(LB_MODE)})}

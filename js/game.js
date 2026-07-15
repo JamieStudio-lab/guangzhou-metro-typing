@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.8";
+const APP_VERSION="0.0.9";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -58,8 +58,9 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   rAcc:"准确率",rCombo:"最高连击",rErr:"失误",rScore:"得分",
   fastest:(z,s)=>`⚡ 最快：<b>${z}</b>（${s}s）　`,slowest:(z,s)=>`🐢 最慢：<b>${z}</b>（${s}s）`,
   heatTitle:"每站颜色 = 输入速度",again:"再来一次",back:"选择线路",
-  lvl:l=>`LEVEL ${l} · 难度`,lineName:L=>L.zh,revTitle:"换向",
-  meta:L=>`${L.stations.length} 站 · ≈${Math.round(L.km)} km · 平均 ${L.avgLen.toFixed(1)} 字母/站`,
+  lineName:L=>L.zh,revTitle:"换向",revBtn:"换向",
+  stops:n=>`${n} 站`,bossCount:n=>`${n} 词`,diffStars:l=>`难度 ${l}/3`,
+  meta:L=>`≈${Math.round(L.km)} km · 平均 ${L.avgLen.toFixed(1)} 字母/站`,
   best:b=>`本次最佳：${b.score} 分 · ${b.time} · ${b.acc}%`,
   go:"出发",challenge:"挑战",
   bossMeta:`${BOSS.length} 个最长站名 · 限时输入 · ♥ ×3`,
@@ -103,8 +104,9 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   rAcc:"ACC",rCombo:"MAX COMBO",rErr:"ERRORS",rScore:"SCORE",
   fastest:(z,s)=>`⚡ Fastest: <b>${z}</b> (${s}s)　`,slowest:(z,s)=>`🐢 Slowest: <b>${z}</b> (${s}s)`,
   heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
-  lvl:l=>`LEVEL ${l} · Difficulty`,lineName:L=>L.en,revTitle:"Reverse direction",
-  meta:L=>`${L.stations.length} stops · ≈${Math.round(L.km)} km · avg ${L.avgLen.toFixed(1)} letters/stop`,
+  lineName:L=>L.en,revTitle:"Reverse direction",revBtn:"Reverse",
+  stops:n=>`${n} stops`,bossCount:n=>`${n} words`,diffStars:l=>`Difficulty ${l}/3`,
+  meta:L=>`≈${Math.round(L.km)} km · avg ${L.avgLen.toFixed(1)} letters/stop`,
   best:b=>`Session best: ${b.score} pts · ${b.time} · ${b.acc}%`,
   go:"DEPART",challenge:"CHALLENGE",
   bossMeta:`The ${BOSS.length} longest names · timed · ♥ ×3`,
@@ -318,7 +320,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   $("board").style.setProperty("--lc",L.color);
   $("board").style.setProperty("--lcg",alpha(L.color,.38));
   $("toast").style.setProperty("--lc",L.color);
-  $("zhChip").textContent=L.num;$("zhChip").style.background=L.color;
+  $("zhChip").textContent=L.num;$("zhChip").style.background=L.color;$("zhChip").style.color=txOn(L.color);
   buildMap(gMap,{train:true});collectNodes();
   $("trainBand").setAttribute("fill",L.color);
   // dim other lines + their exclusive stations
@@ -341,7 +343,7 @@ function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   const c="#e5484d";
   document.body.style.setProperty("--lc",c);
   $("board").style.setProperty("--lc",c);$("board").style.setProperty("--lcg",alpha(c,.35));
-  $("zhChip").textContent="★";$("zhChip").style.background=c;
+  $("zhChip").textContent="★";$("zhChip").style.background=c;$("zhChip").style.color=txOn(c);
   $("lives").textContent="♥♥♥";buildPbar();
   setBossPrompt();setTimeout(()=>inp.focus(),80)}
 
@@ -549,50 +551,99 @@ function showResult(rerender){show("result");
 
 /* ---------- menu cards ---------- */
 const LINE_STS=new Map(LINES.map(L=>[L.id,new Set(L.stations.map(s=>s.zh))]));
+// readable text color for a hex background: dark ink on light colors, white on dark ones
+const lumOf=hex=>{const n=hex.replace("#","");const[r,g,b]=[0,2,4].map(i=>parseInt(n.slice(i,i+2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return .2126*r+.7152*g+.0722*b};
+const txOn=hex=>lumOf(hex)>.19?"#0a0f1a":"#fff";
+const REDUCED=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 function ovHighlight(id){const ov=$("ovMap");
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
   const mine=id&&LINE_STS.get(id);
   ov.querySelectorAll(".stg").forEach(g=>{g.style.opacity=!mine||mine.has(g.dataset.st)?"":".25"})}
+// zoom the overview map to one line's bbox (null → back to the full network)
+let FULL_VB=null,ovAnim=0;
+function ovZoom(id){const ov=$("ovMap");let tgt=FULL_VB;
+  if(id){const p=ov.querySelector(`.lpath[data-line="${id}"]`);
+    if(p){const b=p.getBBox(),pd=34;tgt=[b.x-pd,b.y-pd,b.width+pd*2,b.height+pd*2]}}
+  if(!tgt)return;
+  cancelAnimationFrame(ovAnim);
+  const set=v=>ov.setAttribute("viewBox",v.map(n=>n.toFixed(1)).join(" "));
+  const vb=ov.viewBox.baseVal,from=[vb.x,vb.y,vb.width,vb.height];
+  if(REDUCED()||!from[2]){set(tgt);return}
+  const t0=performance.now();
+  const step=now=>{const p=Math.min(1,(now-t0)/420),e=1-Math.pow(1-p,3);
+    set(from.map((f,i)=>f+(tgt[i]-f)*e));
+    if(p<1)ovAnim=requestAnimationFrame(step)};
+  ovAnim=requestAnimationFrame(step)}
+// accordion state: which card is open ("l1"… or "boss"); survives re-renders
+let expandedId=null;
+const expandedLine=()=>expandedId&&expandedId!=="boss"?expandedId:null;
+function toggleCard(id){expandedId=expandedId===id?null:id;
+  document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
+    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
+  ovHighlight(expandedLine());ovZoom(expandedLine())}
 function renderLegend(){
   $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
     `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`;
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{
-    const on=()=>ovHighlight(el.dataset.line),off=()=>ovHighlight(null);
+    const on=()=>ovHighlight(el.dataset.line),off=()=>ovHighlight(expandedLine());
     el.addEventListener("mouseenter",on);el.addEventListener("mouseleave",off);
     el.addEventListener("focus",on);el.addEventListener("blur",off)})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
+  const chips=sts=>`<div class="stchips">${sts.map(s=>`<span class="stchip">${s.zh}<i>${s.py}</i></span>`).join("")}</div>`;
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
-  order.forEach((L,i)=>{const lvl=i+1,rev=!!dirState[L.id];
+  order.forEach((L,i)=>{const lvl=i+1;
     const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
+    const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
+    const stList=()=>dirState[L.id]?[...L.stations].reverse():L.stations;
     const best=bests[L.id];
-    const card=document.createElement("div");card.className="card";card.style.setProperty("--cc",L.color);
+    const card=document.createElement("div");card.className="card";card.dataset.line=L.id;
+    card.style.setProperty("--cc",L.color);card.style.setProperty("--cc-tx",txOn(L.color));
     card.innerHTML=`
-      <div class="lvl">${t("lvl",lvl)} <b>${"★".repeat(lvl)}${"☆".repeat(3-lvl)}</b></div>
-      <div class="lrow"><div class="lnum">${L.num}</div>
-        <div class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></div></div>
-      <div class="term"><span class="tt">${rev?b:a} → ${rev?a:b}</span>
-        <button class="rev" title="${t("revTitle")}">⇄</button></div>
-      <div class="meta">${t("meta",L)}</div>
-      <div class="fact">${factOf(L)}</div>
-      ${best?`<div class="best">${t("best",best)}</div>`:""}
-      <button class="go">${t("go")}</button>`;
-    card.querySelector(".rev").onclick=e=>{e.stopPropagation();dirState[L.id]=!dirState[L.id];
-      card.querySelector(".tt").textContent=dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`};
+      <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
+        <span class="dstars" role="img" aria-label="${t("diffStars",lvl)}">${"★".repeat(lvl)}${"☆".repeat(3-lvl)}</span>
+        <span class="lnum">${L.num}</span>
+        <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>
+        <span class="tt">${tt()}</span>
+        <span class="stct">${t("stops",L.stations.length)}</span><span class="chev" aria-hidden="true">▾</span>
+      </button>
+      <div class="cbody" id="cb-${L.id}"><div class="cinner">
+        <p class="fact">${factOf(L)}</p>
+        <div class="meta">${t("meta",L)}</div>
+        ${best?`<div class="best">${t("best",best)}</div>`:""}
+        ${chips(stList())}
+        <div class="cacts">
+          <button class="rev" title="${t("revTitle")}">⇄ ${t("revBtn")}</button>
+          <button class="go">${t("go")}</button>
+        </div>
+      </div></div>`;
+    card.querySelector(".chead").onclick=()=>toggleCard(L.id);
+    card.querySelector(".rev").onclick=()=>{dirState[L.id]=!dirState[L.id];
+      card.querySelector(".tt").textContent=tt();
+      card.querySelector(".stchips").outerHTML=chips(stList())};
     card.querySelector(".go").onclick=()=>startLine(L,!!dirState[L.id]);
     wrap.appendChild(card)});
   // boss card
   const bb=bests["boss"];
-  const bc=document.createElement("div");bc.className="card boss";
+  const bc=document.createElement("div");bc.className="card boss";bc.dataset.line="boss";
   bc.innerHTML=`
-    <div class="lvl">LEVEL 4 · <b style="color:var(--bad)">BOSS</b></div>
-    <div class="lrow"><div class="lnum">★</div>
-      <div class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></div></div>
-    <div class="meta">${t("bossMeta")}</div>
-    <div class="fact">${t("bossFact")}</div>
-    ${bb?`<div class="best">${t("best",bb)}</div>`:""}
-    <button class="go" style="background:linear-gradient(90deg,var(--bad),var(--amber))">${t("challenge")}</button>`;
+    <button class="chead" aria-expanded="false" aria-controls="cb-boss">
+      <span class="dstars" role="img" aria-label="BOSS">★★★★</span>
+      <span class="lnum">★</span>
+      <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>
+      <span class="stct">${t("bossCount",BOSS.length)}</span><span class="chev" aria-hidden="true">▾</span>
+    </button>
+    <div class="cbody" id="cb-boss"><div class="cinner">
+      <p class="fact">${t("bossFact")}</p>
+      <div class="meta">${t("bossMeta")}</div>
+      ${bb?`<div class="best">${t("best",bb)}</div>`:""}
+      ${chips(BOSS)}
+      <div class="cacts"><button class="go">${t("challenge")}</button></div>
+    </div></div>`;
+  bc.querySelector(".chead").onclick=()=>toggleCard("boss");
   bc.querySelector(".go").onclick=startBoss;
-  wrap.appendChild(bc)}
+  wrap.appendChild(bc);
+  if(expandedId){const c=wrap.querySelector(`.card[data-line="${expandedId}"]`);
+    if(c){c.classList.add("open");c.querySelector(".chead").setAttribute("aria-expanded","true")}}}
 
 /* ---------- gauge ---------- */
 let gaugeCap=80;
@@ -603,13 +654,13 @@ function setGauge(v,cap){gaugeCap=cap;const g=$("gauge");
   s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="9" stroke-linecap="round"/>`;
   for(let i=0;i<=8;i++){const ang=Math.PI*i/8,c=Math.cos(ang),si=Math.sin(ang);
     s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" style="stroke:var(--tick)" stroke-width="2"/>`}
-  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="10" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
-  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="9" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
+  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="11" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="11" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
+  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
   s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--amber)" stroke-width="3.5" stroke-linecap="round"/></g>`;
   s+=`<circle cx="100" cy="104" r="6" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
-  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="24" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="8.5" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
+  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="26" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="9.5" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
   g.innerHTML=s}
 function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const n=document.getElementById("needleG");if(n)n.setAttribute("transform",`rotate(${deg},100,104)`);
@@ -669,11 +720,12 @@ $("rBack").onclick=()=>{show("menu");renderCards()};
 (function boot(){
   const ov=$("ovMap");buildMap(ov,{});
   requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
-    ov.setAttribute("viewBox",`${bb.x-p} ${bb.y-p} ${bb.width+p*2} ${bb.height+p*2}`)}catch(e){
-    ov.setAttribute("viewBox","0 0 760 1300")}});
+    FULL_VB=[bb.x-p,bb.y-p,bb.width+p*2,bb.height+p*2]}catch(e){FULL_VB=[0,0,760,1300]}
+    ov.setAttribute("viewBox",FULL_VB.join(" "))});
   ov.addEventListener("click",e=>{const p=e.target.closest(".lpath");if(!p)return;
-    document.querySelectorAll(".card").forEach(c=>{if(c.querySelector(".lnum")&&c.style.getPropertyValue("--cc")===LINES.find(L=>L.id===p.dataset.line).color){
-      c.scrollIntoView({behavior:"smooth",block:"center"})}})});
+    if(expandedId!==p.dataset.line)toggleCard(p.dataset.line);
+    const c=document.querySelector(`#cards .card[data-line="${p.dataset.line}"]`);
+    if(c)c.scrollIntoView({behavior:REDUCED()?"auto":"smooth",block:"center"})});
   setLang(LANG); // renders all i18n text + legend + cards
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
 })();

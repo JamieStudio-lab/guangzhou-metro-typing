@@ -4,6 +4,21 @@ All notable changes to 拼音快线 · Guangzhou Metro Pinyin Express are docume
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.0.9] - 2026-07-15
+
+### Added
+- **Accordion line cards.** The menu cards are now a single-column stack of slim, full-width rows showing only the essentials: difficulty stars, line-number badge, line name, termini, and stop count. Clicking a card expands it in place (one at a time) to reveal the line's description, ≈km and average letters per stop, your session best, a preview strip of every station as 汉字 + pinyin chips (in travel direction), and the ⇄换向 / 出发 buttons. The boss card follows the same pattern with its word list.
+- **Map zoom-to-line.** Expanding a card animates the overview map's viewBox to that line's bounding box and dims the other lines; collapsing zooms back out to the whole network (instant under `prefers-reduced-motion`). Clicking a line on the map now opens its card. The open card — and the zoom — survive language switches and returning from a run.
+- Automatic per-color button text: elements painted in a line's color (出发 buttons, line badges, leaderboard tabs, the LED board's line chip) now pick black or white text by the color's luminance — Line 2's dark blue gets white text (6.5:1) instead of the old near-black (2.9:1, a WCAG failure).
+
+### Changed
+- Whole-app type-scale and spacing pass: bigger fonts and more breathing room on the menu (hero, legend, cards, leaderboard, footnote) with a modest bump for the in-game HUD, LED board, input, and result screen.
+- The left color bar and the "LEVEL N" labels are gone from the cards; difficulty reads from the stars alone.
+- The header wraps on narrow screens instead of overflowing horizontally.
+
+### Fixed
+- WCAG AA (≥4.5:1) contrast across both themes, verified programmatically: secondary text (`--dim` both themes, light `--mut`), amber used as text (new `--amber-tx` token — eyebrow, stars, combo chip, top-3 ranks, countdown, active pinyin letter), light-theme `--good`/`--mid`/`--bad` (session best, difficulty tags on the light LED board, boss accents), and the focus outline.
+
 ## [0.0.8] - 2026-07-14
 
 ### Added
@@ -82,6 +97,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.0.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.5...v0.0.6
