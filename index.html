@@ -21,6 +21,7 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
   <button class="hbtn on" id="soundBtn" aria-label="Sound on or off" aria-pressed="true">音效</button>
   <button class="hbtn" id="themeBtn" aria-label="Switch theme">深色</button>
   <button class="hbtn" id="langBtn" aria-label="Switch language · 切换语言">中文</button>
+  <button class="hbtn" id="accBtn" aria-label="Account · 账号">登录</button>
   <button class="hbtn" id="homeBtn" hidden data-i18n="quitBtn">⏏ 退出</button>
 </header>
 
@@ -41,8 +42,13 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
 
   <div class="cards" id="cards"></div>
 
+  <div class="lbcard">
+    <div class="lbhead"><h3 data-i18n="lbTitle">全球排行榜</h3><div class="lbtabs" id="lbTabs"></div></div>
+    <div class="lbbody" id="lbBody"></div>
+  </div>
+
   <p class="footnote">☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），
-    站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。</p>
+    站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。</p>
 </section>
 
 <!-- ================= GAME ================= -->
@@ -114,6 +120,8 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
     <div class="rgrid" id="rGrid"></div>
     <div id="heatstrip" title="每站颜色 = 输入速度"></div>
     <p id="fastslow"></p>
+    <div class="bdgs" id="newBadges" hidden></div>
+    <p class="cloudnote" id="cloudNote" hidden></p>
     <div class="rbtns">
       <button class="go" id="rAgain" style="--cc:var(--amber)" data-i18n="again">再来一次</button>
       <button class="alt" id="rBack" data-i18n="back">选择线路</button>
@@ -122,9 +130,11 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
 </section>
 
 <div id="fx" aria-hidden="true"></div>
+<dialog id="accDlg" class="accdlg"></dialog>
 
 <script src="js/geo.js"></script>
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
+<script src="js/cloud.js"></script>
 </body>
 </html>

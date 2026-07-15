@@ -4,6 +4,21 @@ All notable changes to 拼音快线 · Guangzhou Metro Pinyin Express are docume
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.0.8] - 2026-07-14
+
+### Added
+- **Optional player accounts** (Supabase, free tier): a new header button opens a sign in / sign up dialog (email + password, no confirmation email needed; nickname shown on the leaderboard). Signing up requires an **invite code**, validated and consumed server-side, so registrations stay throttled to people you invited. Signed-out play is unchanged and still works fully offline / from `file://`.
+- **Global leaderboard** on the menu — top-10 best scores per mode (Line 1 / 2 / 3 / Gauntlet), visible to everyone, with your own row highlighted when signed in.
+- **Score upload**: finished runs of signed-in players upload automatically; the result screen shows your worldwide rank.
+- **Badges**: ten achievements (first ride, each line cleared, triple star, gauntlet clear, 60/100 WPM, 20× combo, 100% accuracy) awarded on the result screen and collected in the account dialog.
+- **Settings sync**: language and theme preferences save to your account and apply on any device you sign in from.
+- `js/cloud.js` — a zero-dependency cloud layer (plain `fetch` against Supabase's auth/REST HTTP APIs; no SDK, no build step) that degrades gracefully whenever the network or backend is unavailable.
+- `supabase/setup.sql` — the backend schema: tables, row-level security (users can only write their own rows; score sanity caps as cheap anti-cheat), and the best-score-per-player leaderboard view.
+
+### Changed
+- The menu footnote now says: signed out, scores remain session-only; signed in, they upload to the leaderboard.
+- `localStorage` additionally stores the Supabase session (`sb_session`) beside the existing `lang`/`theme` preferences.
+
 ## [0.0.7] - 2026-07-14
 
 ### Added
@@ -67,6 +82,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.0.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.4...v0.0.5

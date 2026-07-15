@@ -1,4 +1,4 @@
-const APP_VERSION="0.0.7";
+const APP_VERSION="0.0.8";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -42,7 +42,7 @@ const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
   heroTitle:"用拼音开动广州地铁",
   heroP:"选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。打得越快越准，车速越高、连击越长。",
-  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
+  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
   nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
@@ -64,11 +64,30 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   go:"出发",challenge:"挑战",
   bossMeta:`${BOSS.length} 个最长站名 · 限时输入 · ♥ ×3`,
   bossFact:`全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。`,
-  interchange:"换乘站"},
+  interchange:"换乘站",
+  accLogin:"登录",accTitle:"账号",accNick:"昵称",accEmail:"邮箱",accPw:"密码",
+  accDoReg:"注册",accToReg:"没有账号？注册一个 →",accToLogin:"已有账号？直接登录 →",
+  accClose:"关闭",accLogout:"退出登录",
+  accSync:"语言与主题随账号同步，完成行程后成绩自动上传排行榜。",
+  accBadges:"我的徽章",accNoBadges:"还没有徽章 — 跑完一条线路就能拿到第一枚！",
+  accNeedNick:"起个昵称吧（显示在排行榜上，2–20 个字符）",
+  accNickTaken:"昵称已被占用，换一个试试",accNickShort:"昵称至少 2 个字符",
+  accBadCred:"邮箱或密码不正确",accEmailUsed:"该邮箱已注册，试试直接登录",
+  accWeakPw:"密码至少 6 位",accBadEmail:"邮箱格式不正确",
+  accInvite:"邀请码",accNeedInvite:"请输入邀请码",accBadInvite:"邀请码无效或已用完",
+  accStale:"登录状态已失效（账号可能已被删除），请重新注册",
+  accNetErr:"网络不可用，可继续离线游玩",accConfirm:"请先到邮箱确认，再回来登录",
+  lbTitle:"全球排行榜",lbBoss:"长站名",lbLoading:"加载中…",
+  lbEmpty:"虚位以待 — 登录后完成一局即可上榜！",lbErr:"排行榜暂时加载不出来",
+  cloudSaved:r=>`☁ 成绩已上传 · 当前全球第 ${r} 名`,cloudSavedNoRank:"☁ 成绩已上传",
+  cloudErr:"☁ 成绩上传失败（本局成绩仍在本页显示）",badgeNew:"新徽章",
+  badge_first:"初次通勤",badge_l1:"一号线通关",badge_l2:"二号线通关",badge_l3:"三号线通关",
+  badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
+  badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
   heroTitle:"Drive the Guangzhou Metro with pinyin",
   heroP:"Pick a line and type each stop's name in pinyin (toneless, spaces optional) to drive the train forward. The faster and cleaner you type, the higher the speed and the longer the combo.",
-  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Scores live in this session only and reset on refresh. Map data © OpenStreetMap contributors (ODbL).",
+  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
   nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
@@ -90,7 +109,26 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   go:"DEPART",challenge:"CHALLENGE",
   bossMeta:`The ${BOSS.length} longest names · timed · ♥ ×3`,
   bossFact:`The network's longest station names, from ${BOSS[BOSS.length-1].zh} all the way up to ${BOSS[0].zh} (${BOSS[0].key.length} letters!). Run out of time and you lose a heart.`,
-  interchange:"Interchange"}};
+  interchange:"Interchange",
+  accLogin:"SIGN IN",accTitle:"Account",accNick:"Nickname",accEmail:"Email",accPw:"Password",
+  accDoReg:"SIGN UP",accToReg:"No account? Sign up →",accToLogin:"Have an account? Sign in →",
+  accClose:"CLOSE",accLogout:"SIGN OUT",
+  accSync:"Language & theme sync with your account; finished runs upload to the leaderboard.",
+  accBadges:"My badges",accNoBadges:"No badges yet — finish any line to earn your first!",
+  accNeedNick:"Pick a nickname (shown on the leaderboard, 2–20 chars)",
+  accNickTaken:"Nickname taken — try another",accNickShort:"Nickname needs 2+ characters",
+  accBadCred:"Wrong email or password",accEmailUsed:"Email already registered — try signing in",
+  accWeakPw:"Password needs 6+ characters",accBadEmail:"That email doesn't look right",
+  accInvite:"Invite code",accNeedInvite:"Enter an invite code",accBadInvite:"Invalid or used-up invite code",
+  accStale:"Session no longer valid (account may have been deleted) — please sign up again",
+  accNetErr:"Network unavailable — offline play still works",accConfirm:"Confirm your email first, then sign in",
+  lbTitle:"GLOBAL LEADERBOARD",lbBoss:"GAUNTLET",lbLoading:"Loading…",
+  lbEmpty:"Nobody here yet — sign in and finish a run to claim it!",lbErr:"Leaderboard unavailable right now",
+  cloudSaved:r=>`☁ Score uploaded · #${r} worldwide`,cloudSavedNoRank:"☁ Score uploaded",
+  cloudErr:"☁ Upload failed (score still shown here)",badgeNew:"NEW",
+  badge_first:"First Ride",badge_l1:"Line 1 Cleared",badge_l2:"Line 2 Cleared",badge_l3:"Line 3 Cleared",
+  badge_star3:"Triple Star",badge_boss:"Gauntlet Slayer",badge_wpm60:"Bullet Train",badge_wpm100:"Maglev",
+  badge_combo20:"Combo Master",badge_acc100:"Flawless"}};
 let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en");
 const t=(k,...a)=>{const v=T[LANG][k];return typeof v==="function"?v(...a):v};
 // facts in data.js are "中文 · English" — pick the half for the current language
@@ -105,6 +143,7 @@ function setLang(l){LANG=l;store.set("lang",l);
   inp.placeholder=t("placeholder");inp.setAttribute("aria-label",t("inputAria"));
   $("heatstrip").title=t("heatTitle");
   renderLegend();renderCards();
+  if(typeof cloudLangRefresh==="function")cloudLangRefresh();
   if(S.screen==="game")refreshBoardLang();
   if(S.screen==="result")showResult(true)}
 function refreshBoardLang(){const st=curStation();
@@ -499,7 +538,12 @@ function showResult(rerender){show("result");
   // session best (skip re-scoring when only re-rendering for a language switch)
   if(!rerender){const key=boss?"boss":S.line.id;
     S.isBest=!bests[key]||S.score>bests[key].score;
-    if(S.isBest)bests[key]={score:S.score,time:fmtT(total),acc}}
+    if(S.isBest)bests[key]={score:S.score,time:fmtT(total),acc};
+    if(typeof cloudOnResult==="function")cloudOnResult({
+      key,mode:boss?"boss":"line",score:S.score,wpm,acc,maxCombo:S.maxCombo,
+      durS:+(total/1000).toFixed(1),stars,
+      cleared:boss?S.bossDone:S.seq.length-1,total:boss?S.bossList.length:S.seq.length-1,
+      lives:boss?S.lives:3})}
   nb.hidden=!S.isBest;
   renderCards()}
 
