@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 - **Rebrand: 拼音快线 · Guangzhou Metro Pinyin Express is now 一键到底 · Metro Typing · Guangzhou.** The old name framed the game as a pinyin drill; 一键到底 puns on riding the line all the way to the end, one keystroke at a time — matching what the game is actually about: fun, typing speed, and discovering Guangzhou.
-- New couplet-style hero copy in both languages (中文「指尖出发，一键到底」——每敲对一个站名，列车就前进一站 / English "Fingertips ready — one key to the end of the line"), new page title, and header brand.
+- New couplet-style hero copy in both languages (中文「指尖出发，一键到底」——每敲对一个站名，列车就前进一站 / English "Ready for metro typing!"), new page title, and header brand.
 - The footnote now says "typing game" (打字游戏) instead of "typing practice" (打字练习游戏); README and docs updated to the new positioning.
 
 ### Removed
