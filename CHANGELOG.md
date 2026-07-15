@@ -4,6 +4,18 @@ All notable changes to 拼音快线 · Guangzhou Metro Pinyin Express are docume
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.0.7] - 2026-07-14
+
+### Added
+- `js/geo.js`: real geographic data for the **whole 2026 Guangzhou Metro network** — all 19 numbered lines plus the Guangfo Line and APM (367 stations with 汉字/English names and coordinates, plus each line's official color), generated from OpenStreetMap via the new dev script `tools/fetch-geo.js` (re-run it to refresh; it fail-hards if any playable station is missing). Only Lines 1/2/3 are rendered so far; the rest of the data is ready for future lines.
+- OpenStreetMap ODbL attribution in the menu footnote and README.
+
+### Changed
+- Both maps now draw the **real geography** of Lines 1/2/3: station positions are projected from latitude/longitude (equirectangular), so Line 1 hooks north to 广州东站, Line 2 bends around 洛溪 island, and Line 3 runs its long Panyu diagonal. Line paths get smoothed rounded corners at bends; the Pearl River decoration was redrawn to match the projected geography.
+- Line colors switched to the official palette: Line 1 `#F3D03E`, Line 2 `#00629B`, Line 3 `#ECA154` (previously approximate hues for 2/3).
+- The map legend is now a vertical column beside the overview map (wrapping back below it on narrow screens), and hovering or focusing a legend entry highlights that line while dimming the others.
+- Station labels re-placed for the geographic layout (new upper-right/below-right label positions).
+
 ## [0.0.6] - 2026-07-14
 
 ### Added
@@ -55,6 +67,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.0.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.3...v0.0.4

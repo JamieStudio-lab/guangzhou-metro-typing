@@ -1,8 +1,19 @@
-const APP_VERSION="0.0.6";
+const APP_VERSION="0.0.7";
 
-// normalize station tuples → objects, compute keys
+// project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
+// Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
+// Keying by 汉字 gives transfer stations identical coords on every line.
+const GEOPOS=(()=>{if(typeof GEO==="undefined")return null;
+  const pos=new Map(),K=3800,COS=Math.cos(23.09*Math.PI/180),LON0=113.1981,LAT0=23.2557;
+  for(const gl of GEO.lines)for(const s of gl.stations)
+    if(!pos.has(s.zh))pos.set(s.zh,{x:+((s.lon-LON0)*COS*K).toFixed(1),y:+((LAT0-s.lat)*K).toFixed(1)});
+  return pos})();
+
+// normalize station tuples → objects, compute keys (x/y from geo, tuple values as fallback)
 for(const L of LINES){
-  L.stations=L.st.map(t=>({zh:t[0],py:t[1],x:t[2],y:t[3],lb:t[4],tr:t[5]||null,key:normPy(t[1])}));
+  L.stations=L.st.map(t=>{const g=GEOPOS&&GEOPOS.get(t[0]);
+    if(GEOPOS&&!g)console.warn("no geo position for "+t[0]);
+    return{zh:t[0],py:t[1],x:g?g.x:t[2],y:g?g.y:t[3],lb:t[4],tr:t[5]||null,key:normPy(t[1])}});
   delete L.st;
   L.km=L.segKm.reduce((a,b)=>a+b,0);
   L.avgLen=L.stations.reduce((a,s)=>a+s.key.length,0)/L.stations.length;
@@ -31,7 +42,7 @@ const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
   heroTitle:"用拼音开动广州地铁",
   heroP:"选择一条线路，照着站名输入拼音（不带声调，空格可省略），列车就会向前开。打得越快越准，车速越高、连击越长。",
-  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。",
+  footnote:"☆ 本作为粉丝自制打字练习游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。成绩仅保存在本次会话中，刷新页面后清零。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
   nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
@@ -57,7 +68,7 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
   heroTitle:"Drive the Guangzhou Metro with pinyin",
   heroP:"Pick a line and type each stop's name in pinyin (toneless, spaces optional) to drive the train forward. The faster and cleaner you type, the higher the speed and the longer the combo.",
-  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Scores live in this session only and reset on refresh.",
+  footnote:"☆ Fan-made typing practice, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Scores live in this session only and reset on refresh. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
   nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
@@ -136,18 +147,20 @@ $("themeBtn").onclick=()=>{themeManual=true;
   const th=document.documentElement.dataset.theme==="light"?"dark":"light";
   setTheme(th);store.set("theme",th)};
 
-function confetti(){const fx=$("fx"),cols=["#f3d03e","#1d80c4","#f0862b","#2fbf71","#ffb020"];
+function confetti(){const fx=$("fx"),cols=["#F3D03E","#00629B","#ECA154","#2fbf71","#ffb020"];
   for(let i=0;i<30;i++){const e=document.createElement("i");
     e.style.left=Math.random()*100+"vw";e.style.background=cols[i%cols.length];
     e.style.animationDuration=1.5+Math.random()*1.2+"s";e.style.animationDelay=Math.random()*.3+"s";
     fx.appendChild(e);setTimeout(()=>e.remove(),3200)}}
 
 /* ============================================================
-   MAP BUILDING (schematic SVG)
+   MAP BUILDING (geographic SVG — station positions from js/geo.js)
 ============================================================ */
+// Pearl River, sketched in projected coords: front channel past 白鹅潭/海珠广场/广州塔,
+// back channel between 南洲·沥滘 and the 洛溪 island
 const RIVERS=[
- "M 40 762 C 200 772 320 640 420 612 C 520 585 604 588 700 575 C 800 564 900 586 960 588",
- "M 40 905 C 250 912 350 894 430 885 C 560 872 620 792 700 757 C 780 726 900 744 960 740"];
+ "M 20 680 C 70 640 105 590 130 562 C 170 520 245 548 330 545 C 390 537 400 530 440 528 C 520 524 620 545 700 535",
+ "M 130 562 C 150 620 200 680 280 730 C 330 762 370 775 430 782 C 510 791 600 780 680 800"];
 
 function buildRegistry(){const reg=new Map();
   for(const L of LINES)for(const s of L.stations){
@@ -168,8 +181,10 @@ function labelMarkup(st){
     case"r": st.tr?set("start",st.x+16,st.y-8,st.y+5,st.y+16):set("start",st.x+16,st.y-2,st.y+11,0);break;
     case"a": set("middle",st.x,st.y-20,st.y-8,st.y-32);break;
     case"b": set("middle",st.x,st.y+22,st.y+35,st.y+47);break;
-    case"ul":set("end",st.x-11,st.y-16,st.y-4,st.y-28);break;
+    case"ul":set("end",st.x-11,st.y-18,st.y-6,st.y-30);break;
+    case"ur":set("start",st.x+11,st.y-18,st.y-6,st.y-30);break;
     case"bl":set("end",st.x-12,st.y+30,st.y+44,st.y+56);break;
+    case"br":set("start",st.x+12,st.y+30,st.y+44,st.y+56);break;
   }
   let out=`<g text-anchor="${A.anchor}">`;
   out+=zh.replace("<text ",`<text x="${A.x}" y="${A.zy}" `);
@@ -177,12 +192,23 @@ function labelMarkup(st){
   if(trt)out+=trt.replace("<text ",`<text x="${A.x}" y="${A.ty}" `);
   return out+"</g>"}
 
+// polyline through the stations with rounded corners: each interior vertex becomes
+// a quadratic bend, radius clamped to half the shorter adjacent segment
+function roundPath(pts,rMax=14){
+  let d="M"+pts[0].x+" "+pts[0].y;
+  const f=n=>+n.toFixed(1);
+  for(let i=1;i<pts.length-1;i++){const a=pts[i-1],v=pts[i],b=pts[i+1];
+    const l1=Math.hypot(v.x-a.x,v.y-a.y)||1,l2=Math.hypot(b.x-v.x,b.y-v.y)||1;
+    const r=Math.min(rMax,l1/2,l2/2);
+    d+=` L${f(v.x-(v.x-a.x)/l1*r)} ${f(v.y-(v.y-a.y)/l1*r)}`;
+    d+=` Q${v.x} ${v.y} ${f(v.x+(b.x-v.x)/l2*r)} ${f(v.y+(b.y-v.y)/l2*r)}`}
+  return d+" L"+pts[pts.length-1].x+" "+pts[pts.length-1].y}
+
 function buildMap(svg,opts){
   let s="";
   for(const r of RIVERS)s+=`<path class="riv" d="${r}"/>`;
-  for(const L of LINES){
-    const d=L.stations.map((p,i)=>(i?"L":"M")+p.x+" "+p.y).join(" ");
-    s+=`<path class="lpath" data-line="${L.id}" d="${d}" stroke="${L.color}"/>`}
+  for(const L of LINES)
+    s+=`<path class="lpath" data-line="${L.id}" d="${roundPath(L.stations)}" stroke="${L.color}"/>`;
   for(const [zh,st] of REG){
     const inter=st.lines.length>1;
     s+=`<g class="stg" data-st="${zh}">`;
@@ -214,7 +240,7 @@ const dirState={},bests={};
 let lastRun=null;
 
 const gMap=$("gMap"),mapWrap=$("mapWrap"),inp=$("pyin");
-let cam={cx:500,cy:575,w:1100},camT={cx:500,cy:575,w:1100},camFollow=false;
+let cam={cx:370,cy:633,w:1150},camT={cx:370,cy:633,w:1150},camFollow=false;
 let nodes=null; // {dot,heat,pulse,zh} per 汉字 for game map
 
 function collectNodes(){nodes={};
@@ -478,9 +504,18 @@ function showResult(rerender){show("result");
   renderCards()}
 
 /* ---------- menu cards ---------- */
+const LINE_STS=new Map(LINES.map(L=>[L.id,new Set(L.stations.map(s=>s.zh))]));
+function ovHighlight(id){const ov=$("ovMap");
+  ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
+  const mine=id&&LINE_STS.get(id);
+  ov.querySelectorAll(".stg").forEach(g=>{g.style.opacity=!mine||mine.has(g.dataset.st)?"":".25"})}
 function renderLegend(){
-  $("legend").innerHTML=LINES.map(L=>`<span class="lg"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
-    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`}
+  $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
+    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`;
+  $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{
+    const on=()=>ovHighlight(el.dataset.line),off=()=>ovHighlight(null);
+    el.addEventListener("mouseenter",on);el.addEventListener("mouseleave",off);
+    el.addEventListener("focus",on);el.addEventListener("blur",off)})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
   order.forEach((L,i)=>{const lvl=i+1,rev=!!dirState[L.id];
@@ -591,7 +626,7 @@ $("rBack").onclick=()=>{show("menu");renderCards()};
   const ov=$("ovMap");buildMap(ov,{});
   requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
     ov.setAttribute("viewBox",`${bb.x-p} ${bb.y-p} ${bb.width+p*2} ${bb.height+p*2}`)}catch(e){
-    ov.setAttribute("viewBox","0 0 1050 1180")}});
+    ov.setAttribute("viewBox","0 0 760 1300")}});
   ov.addEventListener("click",e=>{const p=e.target.closest(".lpath");if(!p)return;
     document.querySelectorAll(".card").forEach(c=>{if(c.querySelector(".lnum")&&c.style.getPropertyValue("--cc")===LINES.find(L=>L.id===p.dataset.line).color){
       c.scrollIntoView({behavior:"smooth",block:"center"})}})});
