@@ -1,15 +1,18 @@
 # Changelog
 
-All notable changes to 一键到站 · Keys to the City (拼音快线 · Guangzhou Metro Pinyin Express before v0.1.0) are documented here.
+All notable changes to 一键到底 · Metro Typing · Guangzhou (拼音快线 · Guangzhou Metro Pinyin Express before v0.1.0) are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
 ## [0.1.0] - 2026-07-15
 
 ### Changed
-- **Rebrand: 拼音快线 · Guangzhou Metro Pinyin Express is now 一键到站 · Keys to the City.** The old name framed the game as a pinyin drill; the new one is a double pun — 一键到站 riffs on 一键直达 ("the next stop is one keystroke away"), and the English "keys" are both keyboard keys and keys to the city — matching what the game is actually about: fun, typing speed, and discovering Guangzhou.
-- New hero copy in both languages (中文「下一站，由你敲出来」 / English "Every stop is one keystroke away"), new eyebrow (TYPE · RIDE · EXPLORE GUANGZHOU), new page title, and header brand.
+- **Rebrand: 拼音快线 · Guangzhou Metro Pinyin Express is now 一键到底 · Metro Typing · Guangzhou.** The old name framed the game as a pinyin drill; 一键到底 puns on riding the line all the way to the end, one keystroke at a time — matching what the game is actually about: fun, typing speed, and discovering Guangzhou.
+- New couplet-style hero copy in both languages (中文「指尖出发，一键到底」——每敲对一个站名，列车就前进一站 / English "Fingertips ready — one key to the end of the line"), new page title, and header brand.
 - The footnote now says "typing game" (打字游戏) instead of "typing practice" (打字练习游戏); README and docs updated to the new positioning.
+
+### Removed
+- The hero eyebrow line ("TYPE · RIDE · MASTER PINYIN") and its stylesheet rule.
 
 ## [0.0.9] - 2026-07-15
 

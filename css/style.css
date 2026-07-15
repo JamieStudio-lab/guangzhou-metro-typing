@@ -93,7 +93,6 @@ header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:
 #menu{max-width:1080px;margin:0 auto;padding:24px 20px 64px;position:relative;overflow:hidden;z-index:0}
 .blobs{z-index:-1}
 .hero{margin:6px 0 20px;background:var(--panel2);border-radius:var(--r-2xl);padding:26px 28px}
-.hero .eyebrow{color:var(--amber-tx);font-family:var(--mono);font-size:12px;letter-spacing:.28em}
 .hero h2{font-size:clamp(26px,5vw,40px);font-weight:700;letter-spacing:.03em;margin:8px 0 6px}
 .hero p{color:var(--mut);font-size:16px;max-width:64ch;line-height:1.6}
 .mapcard{margin:16px 0 8px;background:radial-gradient(1100px 520px at 62% 36%,var(--map1),var(--map2));

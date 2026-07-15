@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Project overview
 
-一键到站 · Keys to the City (Guangzhou Metro typing game; named 拼音快线 · Pinyin Express before v0.1.0) — a browser typing game. Players pick a Guangzhou Metro line (1/2/3), type each station name in toneless pinyin to drive the train forward, and are scored on speed, accuracy, and combos. Difficulty levels derive from station-name length; progress is shown with colors on an SVG map drawn from real station geography.
+一键到底 · Metro Typing · Guangzhou (named 拼音快线 · Pinyin Express before v0.1.0) — a browser typing game. Players pick a Guangzhou Metro line (1/2/3), type each station name in toneless pinyin to drive the train forward, and are scored on speed, accuracy, and combos. Difficulty levels derive from station-name length; progress is shown with colors on an SVG map drawn from real station geography.
 
 - **Vanilla HTML/CSS/JS, no build step, no dependencies, no package manager.** Keep it that way — do not introduce tooling or frameworks unless explicitly asked.
 - Run it by opening `index.html` in a browser or via any static server (VS Code Live Server is the recommended workflow). Must keep working from `file://` — so **plain `<script>` tags only, never ES modules**.
