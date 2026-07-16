@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.10] - 2026-07-16
+
+### Changed
+- **Smaller, cleaner expand arrow on the line cards.** The circled arrow at the right edge of each line card (and the boss card) shrinks from 52px to 40px — the same height as the line-number circle — and the text triangle `▾` is replaced by a round-capped SVG chevron that fills more of the circle. It still takes the line's color and still flips upward when the card opens.
+
 ## [0.1.9] - 2026-07-16
 
 ### Changed
@@ -193,6 +198,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.6...v0.1.7

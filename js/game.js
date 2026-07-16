@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.9";
+const APP_VERSION="0.1.10";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -611,6 +611,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const DIFF=[["easy","diffEasy"],["mid","diffMedium"],["hard","diffHard"]];
   const cap=(cls,key)=>`<span class="dcap ${cls}" aria-label="${t("diffAria",t(key))}">${t(key)}</span>`;
   const tile=(v,u,lb)=>`<div class="lstat"><b>${v}${u?`<i>${u}</i>`:""}</b><span>${lb}</span></div>`;
+  const chev=`<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
   order.forEach((L,i)=>{const[dcls,dkey]=DIFF[Math.min(i,DIFF.length-1)];
     const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
@@ -624,7 +625,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
         <span class="lnum">${L.num}</span>
         <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>
         <span class="tt">${tt()}</span>
-        <span class="stct">${t("stops",L.stations.length)}</span><span class="chev" aria-hidden="true">▾</span>
+        <span class="stct">${t("stops",L.stations.length)}</span>${chev}
       </button>
       <div class="cbody" id="cb-${L.id}"><div class="cinner">
         <p class="fact">${descOf(L)}</p>
@@ -652,7 +653,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
       ${cap("imp","diffImp")}
       <span class="lnum">★</span>
       <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>
-      <span class="stct">${t("bossCount",BOSS.length)}</span><span class="chev" aria-hidden="true">▾</span>
+      <span class="stct">${t("bossCount",BOSS.length)}</span>${chev}
     </button>
     <div class="cbody" id="cb-boss"><div class="cinner">
       <p class="fact">${t("bossFact")}</p>

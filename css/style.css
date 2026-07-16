@@ -224,9 +224,9 @@ button{font-family:inherit;cursor:pointer}
   background:var(--cct);margin-right:7px;vertical-align:1px}
 .tt::after{margin:0 0 0 7px}
 .stct{font-family:var(--mono);font-size:13.5px;color:var(--mut);flex:none;white-space:nowrap}
-.chev{width:52px;height:52px;flex:none;border-radius:50%;border:2px solid var(--cct);color:var(--cct);
-  display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;
-  padding-bottom:3px;transition:transform .3s var(--ease)}
+.chev{width:40px;height:40px;flex:none;border-radius:50%;border:2px solid var(--cct);color:var(--cct);
+  display:flex;align-items:center;justify-content:center;transition:transform .3s var(--ease)}
+.chev svg{width:26px;height:26px;display:block}
 .card.open .chev{transform:rotate(180deg)}
 .cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
 .card.open .cbody{grid-template-rows:1fr}
