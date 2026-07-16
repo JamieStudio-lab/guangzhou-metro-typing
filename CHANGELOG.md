@@ -4,6 +4,16 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.7] - 2026-07-16
+
+### Fixed
+- **Title-screen rails render whole again.** The six decorative rails could appear cut off mid-run — with the glider "trains" sailing past the visible end of their line — because `vector-effect="non-scaling-stroke"` makes browsers compute dash metrics in screen space while the `pathLength="1"` draw/glide dash tricks assume user space, so the "full-length" dash only covered part of each path at most window sizes. The attribute is gone from all twelve paths; dashing now matches the geometry exactly at any viewport.
+
+### Changed
+- **Flat title type.** The 地铁键速 logotype loses its dark drop shadow and per-character amber glow, and METRO TYPING · GUANGZHOU loses its shadow too — clean flat text over the scene (the LED flicker intro is unchanged).
+- **Tricolor ribbon removed.** The line-colored bar + interchange dot under the Latin subtitle is gone, along with its intro animations.
+- **Theme scrims under the rails.** Two semi-transparent masks — black in the dark theme, white in light — now sandwich the scene (one over the city photo beneath the back rails, one over the tower cutout beneath the front rails), so lines and trains pop against the artwork in both themes. They replace the old center vignette and the dark theme's whole-scene veil, which sat *above* the back rails and dimmed them; light-theme rail opacity is raised slightly now that the scrim guarantees contrast.
+
 ## [0.1.6] - 2026-07-16
 
 ### Changed
@@ -173,6 +183,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.3...v0.1.4

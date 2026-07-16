@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.6";
+const APP_VERSION="0.1.7";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.

@@ -106,30 +106,26 @@ button{font-family:inherit;cursor:pointer}
 /* opening page since v0.1.6: fullscreen title screen — city scene + tower cutout in front of the logo,
    6 line-colored orthogonal rails (rounded 90° turns), staged boot intro (doors→rails→train→LED) */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  --hv:color-mix(in srgb,var(--ink) 32%,transparent)}
-:root[data-theme="light"] .hero{--hv:transparent}
+  --hmask:rgba(0,0,0,.30)}
+:root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.34)}
 .hbg,.hfg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 62%;
   pointer-events:none}
 .hbg{z-index:0}
 .hfg{z-index:4}
-.hero::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:radial-gradient(48% 38% at 50% 46%,color-mix(in srgb,var(--ink) 46%,transparent),transparent 72%)}
-.hero::after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;
-  background:linear-gradient(0deg,var(--hv),var(--hv)),linear-gradient(180deg,transparent 76%,var(--ink) 99.5%)}
+/* theme scrims under the rails/trains: m1 over the city photo, m2 over the tower cutout */
+.hmask{position:absolute;inset:0;background:var(--hmask);pointer-events:none}
+.hmask.m1{z-index:1}
+.hmask.m2{z-index:5}
+.hero::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;
+  background:linear-gradient(180deg,transparent 76%,var(--ink) 99.5%)}
 .heroTx{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;padding:0 20px;pointer-events:none}
 .heroTx .go{pointer-events:auto}
 .logo{font-size:clamp(56px,10vw,120px);font-weight:800;letter-spacing:.12em;margin-right:-.12em;
-  line-height:1.05;color:var(--paper);text-shadow:0 3px 26px color-mix(in srgb,var(--ink) 60%,transparent)}
-.logo b{font-weight:800;text-shadow:0 0 30px color-mix(in srgb,var(--amber) 45%,transparent)}
+  line-height:1.05;color:var(--paper)}
 .latin{display:block;margin-top:12px;font-family:var(--mono);font-size:clamp(11px,1.5vw,14.5px);
-  letter-spacing:.44em;margin-right:-.44em;color:var(--paper);
-  text-shadow:0 1px 14px color-mix(in srgb,var(--ink) 55%,transparent)}
-.tline{display:flex;align-items:center;gap:9px;margin-top:20px;width:min(44vw,400px)}
-.tline .bar{flex:1;height:6px;border-radius:var(--r-full);
-  background:linear-gradient(90deg,var(--l1),var(--l2),var(--l3))}
-.tline .dot{width:13px;height:13px;border-radius:50%;background:var(--paper);border:3px solid var(--ink)}
-#startBtn{flex:none;margin-top:30px;padding:16px 52px;font-size:18px}
+  letter-spacing:.44em;margin-right:-.44em;color:var(--paper)}
+#startBtn{flex:none;margin-top:34px;padding:16px 52px;font-size:18px}
 /* boot intro — runs only while .hero carries .intro (set in markup, removed once by game.js) */
 .hero.intro .logo b{opacity:0;animation:ledon .62s linear both}
 .hero.intro .logo b:nth-child(1){animation-delay:1.7s}
@@ -139,18 +135,12 @@ button{font-family:inherit;cursor:pointer}
 @keyframes ledon{0%,34%{opacity:0}42%{opacity:1}52%{opacity:.2}62%{opacity:1}74%{opacity:.35}
   100%{opacity:1}}
 .hero.intro .latin{opacity:0;animation:fadeup .55s var(--ease) 2.45s both}
-.hero.intro .tline .bar{transform:scaleX(0);transform-origin:left;animation:ribbon .5s var(--ease) 2.4s both}
-.hero.intro .tline .dot{transform:scale(0);animation:pop .32s var(--ease) 2.62s both,ringp 1.1s var(--ease) 2.95s 1}
 .hero.intro #startBtn{opacity:0;animation:fadeup .55s var(--ease) 2.6s both}
-@keyframes ribbon{to{transform:scaleX(1)}}
-@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
-@keyframes ringp{from{box-shadow:0 0 0 0 color-mix(in srgb,var(--amber) 60%,transparent)}
-  to{box-shadow:0 0 0 20px transparent}}
 @keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes fadein{to{opacity:1}}
 .rails{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.rails.back{z-index:1}
-.rails.front{z-index:5}
+.rails.back{z-index:2}
+.rails.front{z-index:6}
 .rails path{fill:none;stroke-width:7;stroke-linecap:round;opacity:.8;stroke-dasharray:1 1;stroke-dashoffset:0}
 .hero.intro .rails path:not(.g){stroke-dashoffset:1;
   animation:draw .95s var(--ease) forwards;animation-delay:calc(.5s + var(--i,0)*.12s)}
@@ -159,8 +149,8 @@ button{font-family:inherit;cursor:pointer}
 .rails .r4{stroke:var(--l4)} .rails .r5{stroke:var(--l5)} .rails .r6{stroke:var(--l6)}
 .rails .g{stroke:#fff;stroke-dasharray:.05 .95;opacity:0;
   animation:glide 6.5s linear infinite;animation-delay:calc(3.4s + var(--i,0)*1.05s)}
-:root[data-theme="light"] .rails path{opacity:.62}
-:root[data-theme="light"] .rails.front path{opacity:.34}
+:root[data-theme="light"] .rails path{opacity:.75}
+:root[data-theme="light"] .rails.front path{opacity:.42}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes glide{0%{stroke-dashoffset:1;opacity:0}8%{opacity:.95}92%{opacity:.95}
   100%{stroke-dashoffset:0;opacity:0}}
@@ -176,7 +166,7 @@ button{font-family:inherit;cursor:pointer}
 .doors i:nth-child(2){right:0;border-left:3px solid var(--amber);animation:doorR .72s var(--ease) .15s both}
 @keyframes doorL{92%{opacity:1}to{transform:translateX(-103%);opacity:0;visibility:hidden}}
 @keyframes doorR{92%{opacity:1}to{transform:translateX(103%);opacity:0;visibility:hidden}}
-.scue{position:absolute;left:50%;bottom:10px;z-index:7;transform:translateX(-50%);
+.scue{position:absolute;left:50%;bottom:10px;z-index:8;transform:translateX(-50%);
   color:var(--paper);text-shadow:0 1px 8px color-mix(in srgb,var(--ink) 60%,transparent);
   font-size:24px;line-height:1;pointer-events:none;animation:bnc 1.8s ease-in-out infinite}
 .hero.intro .scue{opacity:0;animation:fadein .5s var(--ease) 3s both,bnc 1.8s ease-in-out 3s infinite}
@@ -193,7 +183,6 @@ button{font-family:inherit;cursor:pointer}
   .hbg,.hfg{object-position:37% 64%}  /* tower hugs the left edge, clear of the logo */
   .logo{font-size:clamp(46px,14vw,76px)}
   .latin{font-size:10.5px;letter-spacing:.3em;margin-right:-.3em}
-  .tline{width:min(64vw,320px)}
   .train{top:40%;width:56vw}}
 .mapcard{margin:16px 0 8px;background:radial-gradient(1100px 520px at 62% 36%,var(--map1),var(--map2));
   border-radius:var(--r-xl);overflow:hidden;position:relative;box-shadow:var(--sh1);
