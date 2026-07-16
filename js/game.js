@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.3";
+const APP_VERSION="0.1.4";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -261,8 +261,8 @@ function buildMap(svg,opts){
     const inter=st.lines.length>1;
     s+=`<g class="stg" data-st="${zh}">`;
     s+=`<circle class="pulseHolder" data-p="${zh}" cx="${st.x}" cy="${st.y}" r="9" fill="none" stroke="#ffb020" stroke-width="2" opacity="0"/>`;
-    s+=`<circle class="heat" data-h="${zh}" cx="${st.x}" cy="${st.y}" r="${inter?12:10}" fill="none" stroke="none" stroke-width="2.5"/>`;
-    if(inter)s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="8" style="fill:var(--map-inter);stroke:var(--map-inter-ring)" stroke-width="3"/>`;
+    s+=`<circle class="heat" data-h="${zh}" cx="${st.x}" cy="${st.y}" r="${inter?14:10}" fill="none" stroke="none" stroke-width="2.5"/>`;
+    if(inter)s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="10" style="fill:var(--map-inter);stroke:var(--map-inter-ring)" stroke-width="3"/>`;
     else s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="5.5" style="fill:var(--map-dot-bg)" stroke="${st.lines[0].color}" stroke-width="3"/>`;
     s+=labelMarkup(st)+"</g>"}
   if(opts&&opts.train){
@@ -566,6 +566,9 @@ function ovHighlight(id){const ov=$("ovMap");
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
   const mine=id&&LINE_STS.get(id);
   ov.querySelectorAll(".stg").forEach(g=>{g.style.opacity=!mine||mine.has(g.dataset.st)?"":".25"})}
+// station-name labels follow the zoom focus (card expand / legend pin), never hover
+function ovLabels(id){const mine=id&&LINE_STS.get(id);
+  $("ovMap").querySelectorAll(".stg").forEach(g=>g.classList.toggle("lbl",!!mine&&mine.has(g.dataset.st)))}
 // zoom the overview map to one line's bbox (null → back to the full network)
 let FULL_VB=null,ovAnim=0;
 function ovZoom(id){const ov=$("ovMap");let tgt=FULL_VB;
@@ -593,7 +596,7 @@ function toggleCard(id){expandedId=expandedId===id?null:id;
   document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
     c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
   setPin(null);$("legend").classList.toggle("off",!!expandedId);
-  ovHighlight(expandedLine());ovZoom(expandedLine())}
+  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
 const legendLeave=()=>ovHighlight(legendBase());
 function renderLegend(){
   $("legend").innerHTML=LINES.map(L=>`<span class="lg${L.id===pinnedLine?" pin":""}" data-line="${L.id}" role="button" tabindex="0" aria-pressed="${L.id===pinnedLine}"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
@@ -604,7 +607,7 @@ function renderLegend(){
     el.addEventListener("mouseenter",on);el.addEventListener("focus",on);
     el.addEventListener("blur",legendLeave);
     el.addEventListener("click",()=>{setPin(pinnedLine===id?null:id);
-      ovHighlight(legendBase());ovZoom(legendBase())});
+      ovHighlight(legendBase());ovZoom(legendBase());ovLabels(legendBase())});
     el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const DIFF=[["easy","diffEasy"],["mid","diffMedium"],["hard","diffHard"]];

@@ -4,6 +4,14 @@ All notable changes to 一键到底 · Metro Typing · Guangzhou (拼音快线 �
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.4] - 2026-07-16
+
+### Changed
+- **Solid difficulty capsules.** The line cards' difficulty capsules drop the outlined/tonal look for a solid fill in the difficulty color (dark ink text in the dark theme, white in light), and grow to 40px tall — flush with the line-number badge.
+- The expand chevron's outlined circle grows from 40px to 52px with a larger, optically centered ▾ glyph.
+- **Station names on demand.** The overview map no longer shows station-name labels by default or on legend hover — a line's 汉字/pinyin labels fade in only while that line is focused, via its expanded card or a legend click-to-pin, keeping the resting map (and the other lines during focus) clean.
+- Interchange stations read more clearly: their dots grow from r=8 to r=10 (heat rings 12 → 14) on both the overview and game maps, versus r=5.5 regular stops.
+
 ## [0.1.3] - 2026-07-16
 
 ### Added
@@ -144,6 +152,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.0...v0.1.1

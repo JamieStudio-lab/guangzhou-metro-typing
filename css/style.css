@@ -163,9 +163,10 @@ header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:
 .card:hover{background:color-mix(in srgb,var(--cc,var(--amber)) 6%,var(--panel));box-shadow:var(--sh2)}
 .chead{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;
   color:var(--paper);text-align:left;padding:16px 20px;font-family:inherit}
-.dcap{width:92px;flex:none;text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;
-  padding:6px 0;border-radius:var(--r-full);border:1.5px solid var(--dc,var(--mut));color:var(--dc,var(--mut));
-  background:color-mix(in srgb,var(--dc,var(--mut)) 12%,var(--panel2))}
+.dcap{width:92px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;letter-spacing:.1em;
+  border-radius:var(--r-full);color:#0a0f1a;background:var(--dc,var(--mut))}
+:root[data-theme="light"] .dcap{color:#fff}
 .dcap.easy{--dc:var(--good)} .dcap.mid{--dc:var(--mid)} .dcap.hard{--dc:var(--hard)} .dcap.imp{--dc:var(--bad)}
 .lnum{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:18px;color:var(--cc-tx,#0a0f1a);background:var(--cc);flex:none}
@@ -176,8 +177,9 @@ header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:
   background:var(--cct);margin-right:7px;vertical-align:1px}
 .tt::after{margin:0 0 0 7px}
 .stct{font-family:var(--mono);font-size:13.5px;color:var(--mut);flex:none;white-space:nowrap}
-.chev{width:40px;height:40px;flex:none;border-radius:50%;border:2px solid var(--cct);color:var(--cct);
-  display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .3s var(--ease)}
+.chev{width:52px;height:52px;flex:none;border-radius:50%;border:2px solid var(--cct);color:var(--cct);
+  display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;
+  padding-bottom:3px;transition:transform .3s var(--ease)}
 .card.open .chev{transform:rotate(180deg)}
 .cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
 .card.open .cbody{grid-template-rows:1fr}
@@ -422,6 +424,8 @@ text{font-family:var(--sans);pointer-events:none}
   transition:opacity .25s var(--ease)}
 .lpath.dimline{opacity:.16}
 .stg{transition:opacity .25s var(--ease)}
+#ovMap .stg text{opacity:0;transition:opacity .25s var(--ease)}
+#ovMap .stg.lbl text{opacity:1}
 
 /* confetti + misc */
 #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
@@ -435,6 +439,6 @@ text{font-family:var(--sans);pointer-events:none}
   .rails .g{display:none}
   .scue{animation:none}
   .fab{transition:none}
-  .cbody,.chev,.lpath,.stg{transition:none}
+  .cbody,.chev,.lpath,.stg,#ovMap .stg text{transition:none}
   .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active{transform:none}
 }
