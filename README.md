@@ -25,3 +25,5 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 Fan-made typing game, not affiliated with Guangzhou Metro. Covers the classic **main-line segments** of Lines 1, 2, and 3 (no extensions or the airport branch); inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
 
 `js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (all 19 numbered lines + Guangfo + APM, 367 stations), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — the groundwork for adding more playable lines. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.
+
+Typefaces (all [SIL OFL 1.1](https://openfontlicense.org/), subset for the web by `tools/subset-fonts.js`, licenses in `assets/fonts/`): [资源圆体 Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) (Chinese), [Nunito](https://github.com/googlefonts/nunito) (Latin), and [Sono](https://github.com/sursly/sono) (monospace).

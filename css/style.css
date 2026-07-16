@@ -1,3 +1,13 @@
+/* ---------- webfonts · rounded open-source trio (SIL OFL, subset via tools/subset-fonts.js) ---------- */
+@font-face{font-family:"Nunito";src:url("../assets/fonts/Nunito-VF.woff2") format("woff2");
+  font-weight:200 1000;font-style:normal;font-display:swap}
+@font-face{font-family:"Sono";src:url("../assets/fonts/Sono-VF.woff2") format("woff2");
+  font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:"Resource Han Rounded";src:url("../assets/fonts/RHR-Regular.woff2") format("woff2");
+  font-weight:100 500;font-style:normal;font-display:swap}
+@font-face{font-family:"Resource Han Rounded";src:url("../assets/fonts/RHR-Bold.woff2") format("woff2");
+  font-weight:600 900;font-style:normal;font-display:swap}
+
 /* ---------- MD3 tokens · amber seed over navy tonal surfaces ---------- */
 :root{
   --ink:#0b101c; --panel:#151d30; --panel2:#101726; --edge:#1f2a44; --edge2:#2c3c60;
@@ -20,8 +30,8 @@
   --sh2:0 2px 4px rgba(1,4,10,.4),0 6px 18px rgba(1,4,10,.3);
   --sh3:0 4px 10px rgba(1,4,10,.45),0 12px 32px rgba(1,4,10,.35);
   --blob-op:.22;
-  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-  --sans:-apple-system,"SF Pro Text","Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  --mono:"Sono","Resource Han Rounded",ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Nunito","Resource Han Rounded",-apple-system,"SF Pro Text","Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
 }
 :root[data-theme="light"]{
   --ink:#eef0f4; --panel:#fdfdfe; --panel2:#e8ebf0; --edge:#dde1e8; --edge2:#bfc8d5;

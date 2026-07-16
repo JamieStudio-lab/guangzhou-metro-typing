@@ -14,5 +14,8 @@ tmp/
 # Guard in case tooling is ever added
 node_modules/
 
+# Full source fonts for tools/subset-fonts.js (tens of MB; download on demand)
+tools/fonts-src/
+
 # Claude Code local settings
 .claude/settings.local.json

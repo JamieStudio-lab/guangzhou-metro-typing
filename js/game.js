@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.4";
+const APP_VERSION="0.1.5";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -681,13 +681,13 @@ function setGauge(v,cap){gaugeCap=cap;const g=$("gauge");
   s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="9" stroke-linecap="round"/>`;
   for(let i=0;i<=8;i++){const ang=Math.PI*i/8,c=Math.cos(ang),si=Math.sin(ang);
     s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" style="stroke:var(--tick)" stroke-width="2"/>`}
-  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="11" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="11" font-family="ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
-  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
+  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="11" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="11" font-family="Sono,ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
+  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
   s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--amber)" stroke-width="3.5" stroke-linecap="round"/></g>`;
   s+=`<circle cx="100" cy="104" r="6" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
-  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="26" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="9.5" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
+  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="26" font-weight="700" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="9.5" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
   g.innerHTML=s}
 function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const n=document.getElementById("needleG");if(n)n.setAttribute("transform",`rotate(${deg},100,104)`);
