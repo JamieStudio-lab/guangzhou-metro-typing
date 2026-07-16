@@ -106,16 +106,16 @@ button{font-family:inherit;cursor:pointer}
 /* opening page since v0.1.6: fullscreen title screen — city scene + tower cutout in front of the logo,
    6 line-colored orthogonal rails (rounded 90° turns), staged boot intro (doors→rails→train→LED) */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  --hmask:rgba(0,0,0,.30)}
-:root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.34)}
+  --hmask:rgba(0,0,0,.45)}
+:root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.48)}
 .hbg,.hfg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 62%;
   pointer-events:none}
 .hbg{z-index:0}
 /* theme scrim under the rails/trains — the tower cutout gets the equivalent dimming via
    filter instead of a second overlay, so the title text (z3) never sits under a mask */
 .hmask{position:absolute;inset:0;z-index:1;background:var(--hmask);pointer-events:none}
-.hfg{z-index:4;filter:brightness(.7)}
-:root[data-theme="light"] .hfg{filter:contrast(.49) brightness(1.34)}
+.hfg{z-index:4;filter:brightness(.55)}
+:root[data-theme="light"] .hfg{filter:contrast(.35) brightness(1.48)}
 .hero::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;
   background:linear-gradient(180deg,transparent 76%,var(--ink) 99.5%)}
 .heroTx{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
