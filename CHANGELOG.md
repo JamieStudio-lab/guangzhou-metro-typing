@@ -4,6 +4,16 @@ All notable changes to 一键到底 · Metro Typing · Guangzhou (拼音快线 �
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.2] - 2026-07-16
+
+### Added
+- **Legend click-to-pin.** Clicking a legend pill pins its line — the overview map highlights and zooms to it (reusing the card zoom) until the pill is clicked again or a line card is opened. Pills are now real buttons: `role="button"`, `aria-pressed`, Enter/Space support, and an amber-tinted pinned state; the pin survives language switches.
+
+### Changed
+- **Sticky legend highlight.** Moving the pointer between legend pills no longer flickers the map back to the full network mid-move — the last hovered line stays highlighted until the pointer reaches the next pill or leaves the legend area (then it reverts to the pinned or expanded line, or the full network).
+- Each legend pill's interactive area is invisibly enlarged (≈5–6px on every side), bridging the gaps between pills.
+- The legend hides while any line/boss card is expanded, giving the zoomed map the full card width; it returns when the card collapses.
+
 ## [0.1.1] - 2026-07-15
 
 ### Added
@@ -119,6 +129,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.9...v0.1.0
 [0.0.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.0.8...v0.0.9

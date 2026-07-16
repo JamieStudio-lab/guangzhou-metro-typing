@@ -146,7 +146,11 @@ header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:
 .lg{display:flex;align-items:center;gap:7px;background:var(--pill-bg);border:1px solid var(--edge);
   border-radius:var(--r-full);padding:5px 12px;font-size:13px;color:var(--mut);white-space:nowrap;
   transition:border-color .2s var(--ease),color .2s var(--ease)}
+.lg[data-line]{position:relative;cursor:pointer}
+.lg[data-line]::after{content:"";position:absolute;inset:-5px -6px} /* invisible hit zone bridging the 10px gaps */
 .lg[data-line]:hover,.lg[data-line]:focus-visible{border-color:var(--edge2);color:var(--paper)}
+.lg.pin{border-color:var(--edge2);color:var(--paper);background:color-mix(in srgb,var(--amber) 10%,var(--pill-bg))}
+.legend.off{display:none}
 .lg i{width:14px;height:5px;border-radius:3px;display:block}
 @media(max-width:700px){
   .mapcard{flex-direction:column}

@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.1";
+const APP_VERSION="0.1.2";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -577,19 +577,30 @@ function ovZoom(id){const ov=$("ovMap");let tgt=FULL_VB;
     if(p<1)ovAnim=requestAnimationFrame(step)};
   ovAnim=requestAnimationFrame(step)}
 // accordion state: which card is open ("l1"… or "boss"); survives re-renders
-let expandedId=null;
+let expandedId=null,pinnedLine=null;
 const expandedLine=()=>expandedId&&expandedId!=="boss"?expandedId:null;
+// resting highlight: a legend pin wins over the expanded card
+const legendBase=()=>pinnedLine||expandedLine();
+function setPin(id){pinnedLine=id;
+  $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{const on=el.dataset.line===id;
+    el.classList.toggle("pin",on);el.setAttribute("aria-pressed",on)})}
 function toggleCard(id){expandedId=expandedId===id?null:id;
   document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
     c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
+  setPin(null);$("legend").classList.toggle("off",!!expandedId);
   ovHighlight(expandedLine());ovZoom(expandedLine())}
+const legendLeave=()=>ovHighlight(legendBase());
 function renderLegend(){
-  $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
+  $("legend").innerHTML=LINES.map(L=>`<span class="lg${L.id===pinnedLine?" pin":""}" data-line="${L.id}" role="button" tabindex="0" aria-pressed="${L.id===pinnedLine}"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
     `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`;
+  $("legend").addEventListener("mouseleave",legendLeave); // no per-pill mouseleave: highlight sticks across the gaps
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{
-    const on=()=>ovHighlight(el.dataset.line),off=()=>ovHighlight(expandedLine());
-    el.addEventListener("mouseenter",on);el.addEventListener("mouseleave",off);
-    el.addEventListener("focus",on);el.addEventListener("blur",off)})}
+    const id=el.dataset.line,on=()=>ovHighlight(id);
+    el.addEventListener("mouseenter",on);el.addEventListener("focus",on);
+    el.addEventListener("blur",legendLeave);
+    el.addEventListener("click",()=>{setPin(pinnedLine===id?null:id);
+      ovHighlight(legendBase());ovZoom(legendBase())});
+    el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const chips=sts=>`<div class="stchips">${sts.map(s=>`<span class="stchip">${s.zh}<i>${s.py}</i></span>`).join("")}</div>`;
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
