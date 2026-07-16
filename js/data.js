@@ -14,7 +14,8 @@ function normPy(s){let o="";for(const ch of s.toLowerCase()){const c=TONE[ch]||c
 
 const LINES=[
 {id:"l1",num:"1",zh:"一号线",en:"Line 1",color:"#F3D03E",cap:80,
- fact:"广州首条地铁线，1997 年开通 · Guangzhou's first metro line (opened 1997).",
+ desc:{zh:"广州首条地铁：1997 年西塱—黄沙首段通车，1999 年全线运营，也是中国大陆首条由地方政府自筹资金兴建的地铁。线路沿中山路横贯荔湾、越秀、天河三区，串起陈家祠、公园前等老城地标，并以沉管隧道下穿珠江，客运强度常年位居全国前列。",
+  en:"Guangzhou's first metro — the Xilang–Huangsha section opened in 1997 and the full line in 1999, making Guangzhou only the fourth mainland Chinese city with a metro. Following Zhongshan Road through Liwan, Yuexiu and Tianhe, it links old-town landmarks like Chen Clan Academy and crosses the Pearl River in an immersed-tube tunnel; it remains one of China's most intensively used lines."},
  st:[
   ["西塱","Xīlǎng",100,950,"l",["GF","22"]],
   ["坑口","Kēngkǒu",140,901,"l"],
@@ -36,7 +37,8 @@ const LINES=[
  segKm:[1.4,0.9,0.9,1.7,0.9,0.9,0.8,0.9,1.0,0.9,1.2,1.6,1.8,1.0,1.6]},
 
 {id:"l2",num:"2",zh:"二号线",en:"Line 2",color:"#00629B",cap:80,
- fact:"纵贯南北，一线连起广州南站与广州火车站两大铁路枢纽 · Links both major railway hubs.",
+ desc:{zh:"2002 年底开通，是中国大陆首条配备屏蔽门、集中空调与刚性接触网的地铁线。2010 年拆解改线后成为纵贯南北的大动脉，24 座车站全部位于地下，一线连起广州南站与广州火车站两大铁路枢纽。",
+  en:"Opened in late 2002 as mainland China's first metro line with platform screen doors, central air conditioning and rigid overhead lines. After a major 2010 re-alignment (its eastern half became Line 8) it runs due north–south, all 24 stations underground, stitching together both great railway hubs — Guangzhou South and Guangzhou stations."},
  st:[
   ["广州南站","Guǎngzhōu Nánzhàn",420,1085,"b",["7","22"]],
   ["石壁","Shíbì",420,1041,"l",["7"]],
@@ -66,7 +68,8 @@ const LINES=[
  segKm:[2.6,2.2,2.2,2.0,2.6,1.3,1.0,0.9,0.9,0.9,1.0,0.9,0.9,0.8,1.0,1.2,1.5,1.2,1.1,1.1,1.0,1.0,1.3]},
 
 {id:"l3",num:"3",zh:"三号线",en:"Line 3",color:"#ECA154",cap:120,
- fact:"最高时速 120 km/h，全国客流最繁忙的地铁线之一 · Tops out at 120 km/h — one of China's busiest lines.",
+ desc:{zh:"2005 年底开通，是中国大陆首条运营时速 120 km/h、也是首条采用 Y 形走向的地铁线。列车从番禺一路北上，穿过广州塔、珠江新城 CBD 与天河商圈，客流长期位居全国最前列，高峰拥挤度一度达 150%。",
+  en:"Opened in December 2005 as mainland China's first 120 km/h metro and its first Y-shaped line. Racing north from Panyu past Canton Tower, the Zhujiang New Town CBD and the Tianhe shopping belt, it has long ranked among China's busiest lines — peak crowding once hit 150% of capacity."},
  st:[
   ["番禺广场","Pānyú Guǎngchǎng",700,1085,"r",["18","22"]],
   ["市桥","Shìqiáo",700,1025,"r"],

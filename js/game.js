@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.2";
+const APP_VERSION="0.1.3";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -16,7 +16,8 @@ for(const L of LINES){
     return{zh:t[0],py:t[1],x:g?g.x:t[2],y:g?g.y:t[3],lb:t[4],tr:t[5]||null,key:normPy(t[1])}});
   delete L.st;
   L.km=L.segKm.reduce((a,b)=>a+b,0);
-  L.avgLen=L.stations.reduce((a,s)=>a+s.key.length,0)/L.stations.length;
+  L.letters=L.stations.reduce((a,s)=>a+s.key.length,0);
+  L.avgLen=L.letters/L.stations.length;
   L.diff=L.avgLen+L.stations.length*0.09;
 }
 // Boss list: the longest unique station names across all lines
@@ -60,11 +61,13 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   fastest:(z,s)=>`⚡ 最快：<b>${z}</b>（${s}s）　`,slowest:(z,s)=>`🐢 最慢：<b>${z}</b>（${s}s）`,
   heatTitle:"每站颜色 = 输入速度",again:"再来一次",back:"选择线路",
   lineName:L=>L.zh,revTitle:"换向",revBtn:"换向",
-  stops:n=>`${n} 站`,bossCount:n=>`${n} 词`,diffStars:l=>`难度 ${l}/3`,
-  meta:L=>`≈${Math.round(L.km)} km · 平均 ${L.avgLen.toFixed(1)} 字母/站`,
+  stops:n=>`${n} 站`,bossCount:n=>`${n} 词`,
+  diffEasy:"简单",diffMedium:"中等",diffHard:"困难",diffImp:"极难",diffAria:d=>`难度：${d}`,
+  statKm:"线路全长",statLetters:"拼音总量",statAvg:"平均每站",
+  bossWords:"挑战词数",bossLongest:"最长站名",bossLives:"生命",
+  uLetters:"字母",uPerStop:"字母/站",uWords:"词",
   best:b=>`本次最佳：${b.score} 分 · ${b.time} · ${b.acc}%`,
   go:"出发",challenge:"挑战",
-  bossMeta:`${BOSS.length} 个最长站名 · 限时输入 · ♥ ×3`,
   bossFact:`全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。`,
   interchange:"换乘站",
   accLogin:"登录",accTitle:"账号",accNick:"昵称",accEmail:"邮箱",accPw:"密码",
@@ -107,11 +110,13 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   fastest:(z,s)=>`⚡ Fastest: <b>${z}</b> (${s}s)　`,slowest:(z,s)=>`🐢 Slowest: <b>${z}</b> (${s}s)`,
   heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
   lineName:L=>L.en,revTitle:"Reverse direction",revBtn:"Reverse",
-  stops:n=>`${n} stops`,bossCount:n=>`${n} words`,diffStars:l=>`Difficulty ${l}/3`,
-  meta:L=>`≈${Math.round(L.km)} km · avg ${L.avgLen.toFixed(1)} letters/stop`,
+  stops:n=>`${n} stops`,bossCount:n=>`${n} words`,
+  diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"IMPOSSIBLE",diffAria:d=>`Difficulty: ${d}`,
+  statKm:"LINE LENGTH",statLetters:"LETTERS TO TYPE",statAvg:"AVG PER STOP",
+  bossWords:"WORDS TO CLEAR",bossLongest:"LONGEST NAME",bossLives:"LIVES",
+  uLetters:"letters",uPerStop:"per stop",uWords:"words",
   best:b=>`Session best: ${b.score} pts · ${b.time} · ${b.acc}%`,
   go:"DEPART",challenge:"CHALLENGE",
-  bossMeta:`The ${BOSS.length} longest names · timed · ♥ ×3`,
   bossFact:`The network's longest station names, from ${BOSS[BOSS.length-1].zh} all the way up to ${BOSS[0].zh} (${BOSS[0].key.length} letters!). Run out of time and you lose a heart.`,
   interchange:"Interchange",
   accLogin:"SIGN IN",accTitle:"Account",accNick:"Nickname",accEmail:"Email",accPw:"Password",
@@ -135,8 +140,8 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   badge_combo20:"Combo Master",badge_acc100:"Flawless"}};
 let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en");
 const t=(k,...a)=>{const v=T[LANG][k];return typeof v==="function"?v(...a):v};
-// facts in data.js are "中文 · English" — pick the half for the current language
-const factOf=L=>{const i=L.fact.indexOf(" · ");return i<0?L.fact:LANG==="zh"?L.fact.slice(0,i):L.fact.slice(i+3)};
+// line descriptions in data.js are bilingual {zh,en}
+const descOf=L=>L.desc[LANG]||L.desc.zh;
 function setLang(l){LANG=l;store.set("lang",l);
   document.documentElement.lang=l==="zh"?"zh-Hans":"en";
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
@@ -602,28 +607,32 @@ function renderLegend(){
       ovHighlight(legendBase());ovZoom(legendBase())});
     el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
-  const chips=sts=>`<div class="stchips">${sts.map(s=>`<span class="stchip">${s.zh}<i>${s.py}</i></span>`).join("")}</div>`;
+  const DIFF=[["easy","diffEasy"],["mid","diffMedium"],["hard","diffHard"]];
+  const cap=(cls,key)=>`<span class="dcap ${cls}" aria-label="${t("diffAria",t(key))}">${t(key)}</span>`;
+  const tile=(v,u,lb)=>`<div class="lstat"><b>${v}${u?`<i>${u}</i>`:""}</b><span>${lb}</span></div>`;
   const order=[...LINES].sort((a,b)=>a.diff-b.diff);
-  order.forEach((L,i)=>{const lvl=i+1;
+  order.forEach((L,i)=>{const[dcls,dkey]=DIFF[Math.min(i,DIFF.length-1)];
     const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
     const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
-    const stList=()=>dirState[L.id]?[...L.stations].reverse():L.stations;
     const best=bests[L.id];
     const card=document.createElement("div");card.className="card";card.dataset.line=L.id;
     card.style.setProperty("--cc",L.color);card.style.setProperty("--cc-tx",txOn(L.color));
     card.innerHTML=`
       <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
-        <span class="dstars" role="img" aria-label="${t("diffStars",lvl)}">${"★".repeat(lvl)}${"☆".repeat(3-lvl)}</span>
+        ${cap(dcls,dkey)}
         <span class="lnum">${L.num}</span>
         <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>
         <span class="tt">${tt()}</span>
         <span class="stct">${t("stops",L.stations.length)}</span><span class="chev" aria-hidden="true">▾</span>
       </button>
       <div class="cbody" id="cb-${L.id}"><div class="cinner">
-        <p class="fact">${factOf(L)}</p>
-        <div class="meta">${t("meta",L)}</div>
+        <p class="fact">${descOf(L)}</p>
+        <div class="lstats">
+          ${tile("≈"+Math.round(L.km),"km",t("statKm"))}
+          ${tile(L.letters,t("uLetters"),t("statLetters"))}
+          ${tile(L.avgLen.toFixed(1),t("uPerStop"),t("statAvg"))}
+        </div>
         ${best?`<div class="best">${t("best",best)}</div>`:""}
-        ${chips(stList())}
         <div class="cacts">
           <button class="rev" title="${t("revTitle")}">⇄ ${t("revBtn")}</button>
           <button class="go">${t("go")}</button>
@@ -631,8 +640,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
       </div></div>`;
     card.querySelector(".chead").onclick=()=>toggleCard(L.id);
     card.querySelector(".rev").onclick=()=>{dirState[L.id]=!dirState[L.id];
-      card.querySelector(".tt").textContent=tt();
-      card.querySelector(".stchips").outerHTML=chips(stList())};
+      card.querySelector(".tt").textContent=tt()};
     card.querySelector(".go").onclick=()=>startLine(L,!!dirState[L.id]);
     wrap.appendChild(card)});
   // boss card
@@ -640,16 +648,19 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const bc=document.createElement("div");bc.className="card boss";bc.dataset.line="boss";
   bc.innerHTML=`
     <button class="chead" aria-expanded="false" aria-controls="cb-boss">
-      <span class="dstars" role="img" aria-label="BOSS">★★★★</span>
+      ${cap("imp","diffImp")}
       <span class="lnum">★</span>
       <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>
       <span class="stct">${t("bossCount",BOSS.length)}</span><span class="chev" aria-hidden="true">▾</span>
     </button>
     <div class="cbody" id="cb-boss"><div class="cinner">
       <p class="fact">${t("bossFact")}</p>
-      <div class="meta">${t("bossMeta")}</div>
+      <div class="lstats">
+        ${tile(BOSS.length,t("uWords"),t("bossWords"))}
+        ${tile(BOSS[0].key.length,t("uLetters"),t("bossLongest"))}
+        ${tile("♥×3","",t("bossLives"))}
+      </div>
       ${bb?`<div class="best">${t("best",bb)}</div>`:""}
-      ${chips(BOSS)}
       <div class="cacts"><button class="go">${t("challenge")}</button></div>
     </div></div>`;
   bc.querySelector(".chead").onclick=()=>toggleCard("boss");
