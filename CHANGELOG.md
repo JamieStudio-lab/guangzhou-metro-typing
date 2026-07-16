@@ -1,8 +1,22 @@
 # Changelog
 
-All notable changes to 一键到底 · Metro Typing · Guangzhou (拼音快线 · Guangzhou Metro Pinyin Express before v0.1.0) are documented here.
+All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 before v0.1.6, 拼音快线 · Guangzhou Metro Pinyin Express before v0.1.0) are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
+
+## [0.1.6] - 2026-07-16
+
+### Changed
+- **Renamed to 地铁键速.** The game drops the 一键到底 name everywhere — browser tab, opening page, README. The opening page shows the new name as a fixed bilingual logotype (big 地铁键速 with METRO TYPING · GUANGZHOU beneath) that no longer swaps with the language toggle, and its button becomes 选择关卡 / SELECT LEVEL.
+- **Fullscreen title screen.** The opening page now fills the whole viewport like a game title screen: the new Canton Tower city scene (`assets/guangzhou-tower-v2.jpg`) as the backdrop with an aligned tower-only alpha cutout (`…-tower-only.png`) layered *in front of* the logo for depth, a radial scrim for text contrast, a bottom fade into the page background, and a darker veil in the dark theme. The hero copy paragraph is gone.
+- **Orthogonal rails.** The six decorative line-colored curves are redrawn metro-map style — straight horizontal/vertical runs with rounded 90° turns (four behind the tower, two in front). Their SVGs switch from `preserveAspectRatio="none"` to `xMidYMid slice` so corners stay perfectly round at any window size; the draw-in and gliding-light animations remain.
+- **Top nav bar removed on every screen.** 登录 and ⚙ 设置 float as frosted pills in the top-right corner (⏏ 退出 joins them during a run, replacing the old header quit button); the game screen now uses the full viewport height. Language, theme, and sound live in a new settings dialog (`#setDlg`) that reuses the account-dialog styling — the buttons keep their old ids, so cloud preference sync is untouched.
+
+### Added
+- **Boot intro (~3 s, once per page load).** Platform screen doors slide apart → the rails draw themselves in → a small metro train glides across behind the logo → the four characters flicker on like the LED departure board, finished by a line-colored ribbon and a pulsing interchange dot, then the button and scroll cue fade in. Any click or keypress fast-forwards to the final state, `prefers-reduced-motion` renders it static immediately, and returning to the menu from a run never replays it (the animations are gated by a `.intro` class the JS removes once).
+
+### Fixed
+- **Opening page stuck behind the top edge after 开始游戏 → ↑ TOP.** `#menu`'s `overflow:hidden` made it a programmatically scrollable container (a decorative blob overflows it by 80px), so the start button's `scrollIntoView` scrolled `#menu` itself by 80px; scrolling back only reset the window and the hero stayed clipped. `#menu`/`#result` now use `overflow:clip`, which forbids inner scrolling entirely.
 
 ## [0.1.5] - 2026-07-16
 
@@ -159,6 +173,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.2...v0.1.3

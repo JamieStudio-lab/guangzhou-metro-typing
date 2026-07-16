@@ -17,5 +17,8 @@ node_modules/
 # Full source fonts for tools/subset-fonts.js (tens of MB; download on demand)
 tools/fonts-src/
 
+# Hero art source (2.2 MB PNG master; the page ships the derived .jpg)
+assets/guangzhou-tower-v2.png
+
 # Claude Code local settings
 .claude/settings.local.json

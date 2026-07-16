@@ -1,4 +1,4 @@
-# 一键到底 · Metro Typing · Guangzhou
+# 地铁键速 · Metro Typing · Guangzhou
 
 A typing speed run through the Guangzhou Metro: pick a line (**1, 2, or 3**), type each station's pinyin, and ride it one key at a time — all the way to the end of the line. Faster, more accurate typing means higher train speed, longer combos, and bigger scores — and you ride past the real geography of the city while you're at it.
 

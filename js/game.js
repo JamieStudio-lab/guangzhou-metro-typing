@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.5";
+const APP_VERSION="0.1.6";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -41,9 +41,8 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
-  heroTitle:"指尖出发，一键到底",
-  heroP:"每敲对一个站名，列车就前进一站；每经过一站，都路过一段广州城事。指尖越快，城市越近——一键到底！",
-  startBtn:"开始游戏",backTop:"↑ 首页",
+  setBtn:"⚙ 设置",setTitle:"设置",setTheme:"主题",setLang:"语言",
+  startBtn:"选择关卡",backTop:"↑ 首页",
   footnote:"☆ 本作为粉丝自制打字游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
@@ -90,9 +89,8 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
-  heroTitle:"Ready for metro typing!",
-  heroP:"Each station name you type moves the train one stop — and every stop passes another piece of Guangzhou. The faster you type, the closer the city. One key, all the way!",
-  startBtn:"START GAME",backTop:"↑ TOP",
+  setBtn:"⚙ SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
+  startBtn:"SELECT LEVEL",backTop:"↑ TOP",
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
@@ -309,7 +307,7 @@ const HEATC={good:"#2fbf71",mid:"#f0b429",bad:"#e5484d"};
 /* ---------- screens ---------- */
 function show(name){S.screen=name;
   $("menu").hidden=name!=="menu";$("game").hidden=name!=="game";$("result").hidden=name!=="result";
-  $("homeBtn").hidden=name!=="game";
+  $("homeBtn").hidden=name!=="game";$("accBtn").hidden=name==="game";
   document.body.classList.toggle("boss",name==="game"&&S.mode==="boss")}
 
 /* ---------- start runs ---------- */
@@ -748,6 +746,19 @@ $("startBtn").onclick=()=>$("pick").scrollIntoView({behavior:REDUCED()?"auto":"s
 $("backTop").onclick=()=>window.scrollTo({top:0,behavior:REDUCED()?"auto":"smooth"});
 new IntersectionObserver(es=>{$("backTop").classList.toggle("on",!es[es.length-1].isIntersecting)},
   {threshold:.15}).observe(document.querySelector("#menu .hero"));
+
+/* ---------- settings dialog + intro skip ---------- */
+$("setBtn").onclick=()=>$("setDlg").showModal();
+$("setClose").onclick=()=>$("setDlg").close();
+$("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+// boot intro plays once per page load (.intro set in markup); a click/keypress fast-forwards.
+// Removing the class also prevents a replay when #menu is re-shown after a run.
+(function intro(){const hero=document.querySelector("#menu .hero");
+  const end=()=>{hero.classList.remove("intro");clearTimeout(tm);
+    removeEventListener("pointerdown",end);removeEventListener("keydown",end)};
+  if(REDUCED())return end();
+  const tm=setTimeout(end,3400);
+  addEventListener("pointerdown",end);addEventListener("keydown",end)})();
 
 /* ---------- overview map + legend + boot ---------- */
 (function boot(){
