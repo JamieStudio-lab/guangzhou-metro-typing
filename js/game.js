@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.10";
+const APP_VERSION="0.1.11";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -109,7 +109,7 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
   lineName:L=>L.en,revTitle:"Reverse direction",revBtn:"Reverse",
   stops:n=>`${n} stops`,bossCount:n=>`${n} words`,
-  diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"IMPOSSIBLE",diffAria:d=>`Difficulty: ${d}`,
+  diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"INSANE",diffAria:d=>`Difficulty: ${d}`,
   statKm:"LINE LENGTH",statLetters:"LETTERS TO TYPE",statAvg:"AVG PER STOP",
   bossWords:"WORDS TO CLEAR",bossLongest:"LONGEST NAME",bossLives:"LIVES",
   uLetters:"letters",uPerStop:"per stop",uWords:"words",
