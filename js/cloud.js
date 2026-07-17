@@ -53,7 +53,7 @@ const countBetter=(mode,score)=>countRows(`leaderboard?mode=eq.${mode}&score=gt.
 async function afterLogin(){
   const rows=await rest("GET",`profiles?id=eq.${SESS.user.id}&select=nickname,lang,theme`);
   PROFILE=rows&&rows[0]||null;
-  if(PROFILE){applyPrefs();loadBadges()}
+  if(PROFILE){applyPrefs();await loadBadges()}
   updAccBtn()}
 function applyPrefs(){
   if(PROFILE.theme&&PROFILE.theme!==document.documentElement.dataset.theme){
@@ -61,7 +61,8 @@ function applyPrefs(){
   if(PROFILE.lang&&PROFILE.lang!==LANG)setLang(PROFILE.lang)}
 async function loadBadges(){try{
   const rows=await rest("GET",`badges?user_id=eq.${SESS.user.id}&select=badge`);
-  MY_BADGES=new Set(rows.map(r=>r.badge))}catch(e){}}
+  MY_BADGES=new Set(rows.map(r=>r.badge));
+  if($("accDlg").open&&DLG_MODE==="in")renderDlg()}catch(e){}}
 async function claimNick(nick,code){
   const lang=LANG,theme=document.documentElement.dataset.theme;
   await rest("POST","rpc/register_profile",

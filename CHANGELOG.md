@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.1] - 2026-07-17
+
+### Fixed
+- **Badges no longer show as unearned right after signing in.** `afterLogin()` fired the badge fetch without awaiting it, so opening the account dialog quickly after login rendered every chip dim plus a bogus "No badges yet" line until the next open. The login flow now waits for badges before reporting itself done, and `loadBadges()` repaints the dialog if it's already open when the badges arrive (covers the slow-network session-restore path at boot, too).
+
 ## [0.3.0] - 2026-07-17
 
 ### Added
@@ -343,6 +348,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.14...v0.3.0
 [0.2.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.13...v0.2.14
 [0.2.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.12...v0.2.13
