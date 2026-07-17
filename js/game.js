@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.9";
+const APP_VERSION="0.2.10";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -489,10 +489,18 @@ function award(perf){if(!S.errSt){S.combo++;if(S.combo>S.maxCombo)S.maxCombo=S.c
 
 function heatOf(perf){return perf>=1.15?"good":perf>=.7?"mid":"bad"}
 
+// one-shot burst on the stop whose name was just typed: green ring + its 汉字 above the dot
+function typedFx(st){const reg=REG.get(st.zh),inter=reg&&reg.lines.length>1;
+  const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("class","doneFx");
+  g.innerHTML=`<circle cx="${st.x}" cy="${st.y}" r="${inter?13:9}" fill="none" stroke="${HEATC.good}" stroke-width="2.5"/>`+
+    `<text x="${st.x}" y="${st.y-(inter?26:21)}" text-anchor="middle">${st.zh}</text>`;
+  gMap.appendChild(g);setTimeout(()=>g.remove(),1700)}
+
 function completeStation(){
   const i=S.idx,{t:secs,perf}=stationPerf(); // no bare `t`: the i18n t() is called below
   S.heats[i]=heatOf(perf);S.times[i]=secs;S.perfs.push(perf);
-  award(perf);sDing();
+  award(perf);sDing();typedFx(S.seq[i]);
   if(i===0){ // origin typed in place — doors close, the train departs with the next stop
     const n=nodes[S.seq[0].zh];
     if(n){n.heat.setAttribute("stroke",HEATC[S.heats[0]]);if(n.zh)n.zh.classList.add("passed")}

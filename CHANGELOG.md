@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.10] - 2026-07-16
+
+### Added
+- **Typed-name burst on the map.** The instant a station name is fully typed, its stop celebrates: a green ring (the heat palette's `--good`) blooms outward from the dot once, and the stop's 汉字 pops up in green a little above the shape — a brief reveal on the otherwise name-less typing map — holds for a beat, then fades (~1.6 s total). Interchange stations get a wider ring and extra name clearance; a thin page-background stroke keeps the green name legible over rails and rivers in both themes. Under `prefers-reduced-motion` the ring is skipped and the name simply appears and goes.
+
 ## [0.2.9] - 2026-07-16
 
 ### Changed
@@ -297,6 +302,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.6...v0.2.7
