@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.2";
+const APP_VERSION="0.3.3";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -75,6 +75,7 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   heatTitle:"每站颜色 = 输入速度",again:"再来一次",back:"选择线路",
   lineName:L=>L.zh,revTitle:"换向",revBtn:"换向",
   stops:n=>`${n} 站`,bossCount:n=>`${n} 词`,
+  sortBy:"排序",sortNum:"线路",sortStops:"站数",sortDiff:"难度",
   diffEasy:"简单",diffMedium:"中等",diffHard:"困难",diffImp:"极难",diffAria:d=>`难度：${d}`,
   statKm:"线路全长",statLetters:"拼音总量",statAvg:"平均每站",
   bossWords:"挑战词数",bossLongest:"最长站名",bossLives:"生命",
@@ -127,6 +128,7 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
   lineName:L=>L.en,revTitle:"Reverse direction",revBtn:"Reverse",
   stops:n=>`${n} stops`,bossCount:n=>`${n} words`,
+  sortBy:"SORT",sortNum:"LINE",sortStops:"STOPS",sortDiff:"DIFFICULTY",
   diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"INSANE",diffAria:d=>`Difficulty: ${d}`,
   statKm:"LINE LENGTH",statLetters:"LETTERS TO TYPE",statAvg:"AVG PER STOP",
   bossWords:"WORDS TO CLEAR",bossLongest:"LONGEST NAME",bossLives:"LIVES",
@@ -684,6 +686,20 @@ function ovZoom(id){const ov=$("ovMap");let tgt=FULL_VB;
   ovAnim=requestAnimationFrame(step)}
 // accordion state: which card is open ("l1"… or "boss"); survives re-renders
 let expandedId=null,pinnedLine=null;
+// card ordering (session-only): sort key + direction, re-tap flips asc/desc
+let cardSort="num",cardAsc=true;
+// FLIP: capture card rects keyed by line id, run the reorder/reflow, then glide
+// each card (incl. the resized one's width) from its old box to the new one
+function flipCards(mutate){const wrap=$("cards");
+  if(REDUCED()){mutate();return}
+  const old=new Map([...wrap.children].map(c=>[c.dataset.line,c.getBoundingClientRect()]));
+  mutate();
+  [...wrap.children].forEach(c=>{const a=old.get(c.dataset.line);if(!a)return;
+    const b=c.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top,dw=Math.abs(a.width-b.width)>.5;
+    if(!dx&&!dy&&!dw)return;
+    const kf=[{transform:`translate(${dx}px,${dy}px)`},{transform:"none"}];
+    if(dw){kf[0].width=a.width+"px";kf[1].width=b.width+"px"}
+    c.animate(kf,{duration:360,easing:"cubic-bezier(.2,0,0,1)"})})}
 const expandedLine=()=>expandedId&&expandedId!=="boss"?expandedId:null;
 // resting highlight: a legend pin wins over the expanded card
 const legendBase=()=>pinnedLine||expandedLine();
@@ -691,10 +707,15 @@ function setPin(id){pinnedLine=id;
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{const on=el.dataset.line===id;
     el.classList.toggle("pin",on);el.setAttribute("aria-pressed",on)})}
 function toggleCard(id){expandedId=expandedId===id?null:id;
-  document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
-    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
+  flipCards(()=>document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
+    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)}));
   setPin(null);$("legend").classList.toggle("off",!!expandedId);
-  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
+  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine());
+  if(expandedId){let c=document.querySelector(`#cards .card[data-line="${expandedId}"]`),y=0;
+    // scroll the promoted card just under the map so both stay in view;
+    // offsetTop chain = final layout position, unaffected by the in-flight FLIP transform
+    for(let el=c;el;el=el.offsetParent)y+=el.offsetTop;
+    scrollTo({top:Math.max(0,y-Math.min(innerHeight*.3,260)),behavior:REDUCED()?"auto":"smooth"})}}
 const legendLeave=()=>ovHighlight(legendBase());
 function renderLegend(){
   $("legend").innerHTML=LINES.map(L=>`<span class="lg${L.id===pinnedLine?" pin":""}" data-line="${L.id}" role="button" tabindex="0" aria-pressed="${L.id===pinnedLine}"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
@@ -707,14 +728,26 @@ function renderLegend(){
     el.addEventListener("click",()=>{setPin(pinnedLine===id?null:id);
       ovHighlight(legendBase());ovZoom(legendBase());ovLabels(legendBase())});
     el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
+const SORT_LB={num:"sortNum",stops:"sortStops",diff:"sortDiff"};
+function renderSortBar(){const bar=$("sortBar");
+  bar.innerHTML=`<span class="slb">${t("sortBy")}</span>`+Object.keys(SORT_LB).map(k=>{const on=k===cardSort;
+    return `<button class="schip${on?" on":""}" data-k="${k}" aria-pressed="${on}">${t(SORT_LB[k])}${on?`<i>${cardAsc?"↑":"↓"}</i>`:""}</button>`}).join("");
+  bar.querySelectorAll(".schip").forEach(b=>b.onclick=()=>{
+    if(b.dataset.k===cardSort)cardAsc=!cardAsc;else{cardSort=b.dataset.k;cardAsc=true}
+    flipCards(renderCards)})}
 function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const DIFF=[["easy","diffEasy"],["mid","diffMedium"],["hard","diffHard"]];
   const cap=(cls,key)=>`<span class="dcap ${cls}" aria-label="${t("diffAria",t(key))}">${t(key)}</span>`;
   const tile=(v,u,lb)=>`<div class="lstat"><b>${v}${u?`<i>${u}</i>`:""}</b><span>${lb}</span></div>`;
   const chev=`<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  // cards in line-number (data) order; difficulty caption by tercile of the diff ranking
+  renderSortBar();
+  // difficulty caption by tercile of the diff ranking (independent of display order)
   const rank=new Map([...LINES].sort((a,b)=>a.diff-b.diff).map((L,i)=>[L.id,i]));
-  LINES.forEach(L=>{const[dcls,dkey]=DIFF[Math.floor(rank.get(L.id)*DIFF.length/LINES.length)];
+  const ord=[...LINES];
+  if(cardSort==="stops")ord.sort((a,b)=>a.stations.length-b.stations.length);
+  else if(cardSort==="diff")ord.sort((a,b)=>a.diff-b.diff);
+  if(!cardAsc)ord.reverse();
+  ord.forEach(L=>{const[dcls,dkey]=DIFF[Math.floor(rank.get(L.id)*DIFF.length/LINES.length)];
     const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
     const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
     const best=bests[L.id];
@@ -722,11 +755,15 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
     card.style.setProperty("--cc",L.color);card.style.setProperty("--cc-tx",txOn(L.color));
     card.innerHTML=`
       <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
-        ${cap(dcls,dkey)}
-        <span class="lnum${L.num.length>2?" wide":""}">${L.num}</span>
-        <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>
-        <span class="tt">${tt()}</span>
-        <span class="stct">${t("stops",L.stations.length)}</span>${chev}
+        <span class="crow">
+          ${cap(dcls,dkey)}
+          <span class="lnum${L.num.length>2?" wide":""}">${L.num}</span>
+          <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>${chev}
+        </span>
+        <span class="crow">
+          <span class="tt">${tt()}</span>
+          <span class="stct">${t("stops",L.stations.length)}</span>
+        </span>
       </button>
       <div class="cbody" id="cb-${L.id}"><div class="cinner">
         <p class="fact">${descOf(L)}</p>
@@ -751,10 +788,15 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const bc=document.createElement("div");bc.className="card boss";bc.dataset.line="boss";
   bc.innerHTML=`
     <button class="chead" aria-expanded="false" aria-controls="cb-boss">
-      ${cap("imp","diffImp")}
-      <span class="lnum">★</span>
-      <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>
-      <span class="stct">${t("bossCount",BOSS.length)}</span>${chev}
+      <span class="crow">
+        ${cap("imp","diffImp")}
+        <span class="lnum">★</span>
+        <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>${chev}
+      </span>
+      <span class="crow">
+        <span class="tt">${BOSS[BOSS.length-1].zh} → ${BOSS[0].zh}</span>
+        <span class="stct">${t("bossCount",BOSS.length)}</span>
+      </span>
     </button>
     <div class="cbody" id="cb-boss"><div class="cinner">
       <p class="fact">${t("bossFact")}</p>

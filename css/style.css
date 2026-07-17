@@ -208,15 +208,25 @@ button{font-family:inherit;cursor:pointer}
 @media(max-width:700px){
   .mapcard{flex-direction:column}
   .legend{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;padding:0 12px 12px}}
-.cards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:20px;align-items:start}
+.sortbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:18px}
+.sortbar .slb{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--mut)}
+.schip{display:flex;align-items:center;gap:5px;background:var(--pill-bg);border:1px solid var(--edge);
+  color:var(--mut);border-radius:var(--r-full);padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;
+  transition:border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease),transform .2s var(--ease)}
+.schip:hover,.schip:focus-visible{border-color:var(--edge2);color:var(--paper)}
+.schip:active{transform:scale(.95)}
+.schip.on{background:color-mix(in srgb,var(--amber) 14%,var(--pill-bg));border-color:var(--edge2);color:var(--paper)}
+.schip i{font-style:normal;font-size:12px;color:var(--amber)}
+.cards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px;align-items:start}
 @media(min-width:861px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .card{background:var(--panel);border-radius:var(--r-lg);position:relative;overflow:hidden;
   --cct:var(--cc,var(--amber));container-type:inline-size;
   box-shadow:var(--sh1);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
 :root[data-theme="light"] .card{--cct:color-mix(in srgb,var(--cc,var(--amber)) 72%,#15243c)}
 .card:hover{background:color-mix(in srgb,var(--cc,var(--amber)) 6%,var(--panel));box-shadow:var(--sh2)}
-.chead{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;
+.chead{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;background:none;border:none;
   color:var(--paper);text-align:left;padding:16px 20px;font-family:inherit}
+.crow{display:flex;align-items:center;gap:14px;min-width:0}
 .dcap{width:92px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;
   font-size:13px;font-weight:800;letter-spacing:.03em;
   border-radius:var(--r-full);color:#0a0f1a;background:var(--dc,var(--mut))}
@@ -228,7 +238,7 @@ button{font-family:inherit;cursor:pointer}
 .lnum.wide{font-size:12.5px;letter-spacing:0} /* "APM" */
 .lname{font-size:20px;font-weight:700;flex:1;min-width:0}
 .lname small{display:block;font-size:12.5px;color:var(--mut);font-weight:600;letter-spacing:.06em}
-.tt{font-size:15px;flex:none}
+.tt{font-size:15px;flex:1;min-width:0}
 .tt::before,.tt::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
   background:var(--cct);margin-right:7px;vertical-align:1px}
 .tt::after{margin:0 0 0 7px}
@@ -237,6 +247,8 @@ button{font-family:inherit;cursor:pointer}
   display:flex;align-items:center;justify-content:center;transition:transform .3s var(--ease)}
 .chev svg{width:26px;height:26px;display:block}
 .card.open .chev{transform:rotate(180deg)}
+/* the open card is promoted to the top of the grid, full width, right under the map */
+.card.open{grid-column:1/-1;order:-1}
 .cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
 .card.open .cbody{grid-template-rows:1fr}
 .cinner{overflow:hidden;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 20px}
@@ -266,22 +278,14 @@ button{font-family:inherit;cursor:pointer}
 :root[data-theme="light"] .card.boss .go{color:#fff}
 .card.boss .go:hover{background:color-mix(in srgb,#fff 10%,var(--bad))}
 @media(max-width:560px){
-  .chead{flex-wrap:wrap;gap:10px 14px}
   .dcap{width:76px;font-size:12px;letter-spacing:.01em}
-  .lname{font-size:18px;min-width:110px} /* floor stops flex from crushing it before tt wraps */
-  .cacts .rev{padding:14px 16px}
-  .tt{order:5;flex:1;flex-basis:auto}
-  .stct{order:6}
-  .card.boss .stct{flex-basis:100%}}
+  .lname{font-size:18px}
+  .cacts .rev{padding:14px 16px}}
 /* same compact header when the CARD is narrow (2-col grid cell), not just the viewport */
 @container (max-width:540px){
-  .chead{flex-wrap:wrap;gap:10px 14px}
   .dcap{width:76px;font-size:12px;letter-spacing:.01em}
-  .lname{font-size:18px;min-width:110px}
-  .cacts .rev{padding:14px 16px}
-  .tt{order:5;flex:1;flex-basis:auto}
-  .stct{order:6}
-  .card.boss .stct{flex-basis:100%}}
+  .lname{font-size:18px}
+  .cacts .rev{padding:14px 16px}}
 .footnote{color:var(--dim);font-size:12.5px;margin-top:24px;line-height:1.6}
 
 /* ---------- leaderboard (menu) ---------- */

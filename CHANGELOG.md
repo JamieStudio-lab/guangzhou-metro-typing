@@ -4,6 +4,16 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.3] - 2026-07-17
+
+### Added
+- **Sort the line cards your way.** A 排序 / SORT chip row sits between the map and the cards: order by line number, stop count, or difficulty; tapping the active chip again flips ascending ↔ descending (arrow on the chip shows which). The gauntlet card always closes the list, and re-sorting glides the cards to their new slots. The choice is session-only, like everything else while signed out.
+- **The gauntlet card shows its range** — row 2 now reads first word → longest word, mirroring the line cards' terminals.
+
+### Changed
+- **Card headers breathe in two rows.** Row 1: difficulty tag, line roundel, name, chevron; row 2: terminals and stop count. The narrow-viewport and narrow-cell wrap hacks that the old single-row header needed are gone.
+- **An expanded card rises to the top, right under the map.** Opening a card promotes it to a full-width slot above the others (FLIP animation — siblings glide, the card grows), and the page scrolls so the zoomed map and the open card share the screen. Collapsing or picking another card animates everything back. Under `prefers-reduced-motion` the moves are instant.
+
 ## [0.3.2] - 2026-07-17
 
 ### Added
@@ -369,6 +379,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.14...v0.3.0
