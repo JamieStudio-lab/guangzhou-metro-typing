@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.6";
+const APP_VERSION="0.2.7";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -509,7 +509,7 @@ function updCredit(){if(S.mode!=="line")return;
 
 function angleTo(i,j){const a=S.seq[i],b=S.seq[j];return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
 function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x} ${y})`);
-  $("trainR").setAttribute("transform",`rotate(${ang})`)}
+  $("trainR").setAttribute("transform",`rotate(${ang}) scale(1.15)`)} // upscale offsets the wide camera
 function posXY(p){const c=S.cum;let j=0;
   while(j<S.segs.length-1&&p>c[j+1])j++;
   const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
@@ -784,7 +784,7 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
       // camera widens with speed for a sense of pace (express segments peg at full width);
       // wide base keeps more line in frame so short hops read calmer, not darty
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=560+240*Math.min(1,S.dispV/cap)}
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=700+260*Math.min(1,S.dispV/cap)}
       const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;

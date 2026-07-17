@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.7] - 2026-07-16
+
+### Changed
+- **The camera pulls back further — the ride reads calmer still.** The follow window widens again, 560–800 → 700–960 SVG units (~20% more line in frame at every speed), so the train's on-screen motion between stops is proportionally slower. To offset the wider view the map train sprite is scaled up 15%, keeping it readable without touching the flames' alignment.
+- **The hero train matches the gameplay train.** The boot intro's left-to-right train on the title screen is redrawn in v0.2.6's top-down roofline style: three cars with dark gangway connectors between them, twin amber livery stripes along each roof edge, paired AC units, and a windshield arc + twin glowing headlights on the lead car. Same once-only crossing animation, still hidden under `prefers-reduced-motion`.
+
 ## [0.2.6] - 2026-07-16
 
 ### Added
@@ -278,6 +284,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.3...v0.2.4
