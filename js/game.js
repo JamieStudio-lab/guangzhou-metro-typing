@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.7";
+const APP_VERSION="0.2.8";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -513,7 +513,7 @@ function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x
 function posXY(p){const c=S.cum;let j=0;
   while(j<S.segs.length-1&&p>c[j+1])j++;
   const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
-  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}}
+  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,j}}
 
 function setHot(on){S.hot=on;const gb=$("gaugeBox"),f=document.getElementById("trainFire");
   gb.classList.toggle("hot",on);if(f)f.style.opacity=on?"1":"0";
@@ -765,8 +765,9 @@ function updLive(){if(S.t0===null)return;
 /* ---------- main loop ---------- */
 let lastF=performance.now();
 function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
-  // camera
-  cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;cam.w+=(camT.w-cam.w)*.09;
+  // camera (zoom glides slower than the pan while following — less lens churn)
+  cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;
+  cam.w+=(camT.w-cam.w)*(camFollow?.045:.09);
   if(S.screen==="game"&&S.mode==="line"){
     const cap=S.line.cap;
     if(!S.done){
@@ -782,9 +783,10 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
-      // camera widens with speed for a sense of pace (express segments peg at full width);
-      // wide base keeps more line in frame so short hops read calmer, not darty
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=700+260*Math.min(1,S.dispV/cap)}
+      // lens frames the hop being ridden: close stops pull the camera way in, far
+      // stops ease it out a little — every segment crossing reads at a similar pace.
+      // No speed coupling: the zoom target only changes at stations, so the lens is calm
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=clamp(300+140*S.segs[P.j],380,880)}
       const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;

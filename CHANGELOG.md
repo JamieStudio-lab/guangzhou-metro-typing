@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.8] - 2026-07-16
+
+### Changed
+- **The lens frames the hop, not the speed.** The follow camera's zoom is now keyed to the distance of the segment being ridden — close old-town stops pull the camera way in (0.9 km → 426 SVG units wide), long express gaps ease it out (4.3 km → the 880 cap; `clamp(300 + 140·km, 380, 880)`), so every station-to-station crossing occupies a similar fraction of the screen and reads at a similar pace. The v0.2.2 speed-linked widening is gone: the zoom target only changes at stations, and the zoom itself glides at half the pan's smoothing rate, so the lens stays calm instead of breathing with every keystroke burst.
+
 ## [0.2.7] - 2026-07-16
 
 ### Changed
@@ -284,6 +289,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.4...v0.2.5
