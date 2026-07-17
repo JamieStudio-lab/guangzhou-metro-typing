@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b101c">
 <script>let _t=null;try{_t=localStorage.getItem("theme")}catch(e){}
-document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");</script>
+document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+{const n=document.documentElement.dataset.theme==="light"?"":"-night"; // preload the active theme's hero pair (night in dark since v0.3.5)
+["assets/guangzhou-tower-v2"+n+".jpg","assets/guangzhou-tower-v2"+n+"-tower-only.png"].forEach(h=>{
+const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;document.head.append(l)})}</script>
 <title>地铁键速 · Metro Typing Guangzhou</title>
 <link rel="preload" href="assets/fonts/RHR-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/RHR-Bold.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/guangzhou-tower-v2.jpg" as="image">
-<link rel="preload" href="assets/guangzhou-tower-v2-tower-only.png" as="image">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -24,7 +25,7 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
 <!-- ================= MENU ================= -->
 <section id="menu">
   <div class="hero intro">
-    <img class="hbg" src="assets/guangzhou-tower-v2.jpg" alt="" decoding="async">
+    <i class="hbg" aria-hidden="true"></i>
     <i class="hmask" aria-hidden="true"></i>
     <svg class="rails back" viewBox="0 0 1080 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <path class="r1" style="--i:0" pathLength="1" d="M -40 96 H 236 a 28 28 0 0 1 28 28 V 160 a 28 28 0 0 0 28 28 H 1120"/>
@@ -65,7 +66,7 @@ document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: l
       <small class="latin">METRO TYPING · GUANGZHOU</small>
       <button class="go" id="startBtn" data-i18n="startBtn">选择关卡</button>
     </div>
-    <img class="hfg" src="assets/guangzhou-tower-v2-tower-only.png" alt="" decoding="async">
+    <i class="hfg" aria-hidden="true"></i>
     <svg class="rails front" viewBox="0 0 1080 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <path class="r5" style="--i:4" pathLength="1" d="M -40 540 H 300 a 28 28 0 0 0 28 -28 V 470 a 28 28 0 0 1 28 -28 H 1120"/>
       <path class="r6" style="--i:5" pathLength="1" d="M -40 600 H 540 a 24 24 0 0 1 24 24 V 700"/>

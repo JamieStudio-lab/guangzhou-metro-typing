@@ -110,18 +110,24 @@ button{font-family:inherit;cursor:pointer}
 #menu{position:relative;overflow:hidden;overflow:clip;z-index:0}
 .blobs{z-index:-1}
 /* opening page since v0.1.6: fullscreen title screen — city scene + tower cutout in front of the logo,
-   6 line-colored orthogonal rails (rounded 90° turns), staged boot intro (doors→rails→train→LED) */
+   6 line-colored orthogonal rails (rounded 90° turns), staged boot intro (doors→rails→train→LED).
+   Since v0.3.5 the scene is a theme-picked CSS background (night render in dark, day in light) so only
+   the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  --hmask:rgba(0,0,0,.45)}
+  --hmask:rgba(0,0,0,.18)}
 :root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.48)}
-.hbg,.hfg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 62%;
+.hbg,.hfg{position:absolute;inset:0;background-size:cover;background-position:30% 62%;
   pointer-events:none}
-.hbg{z-index:0}
+.hbg{z-index:0;background-image:url("../assets/guangzhou-tower-v2-night.jpg")}
+:root[data-theme="light"] .hbg{background-image:url("../assets/guangzhou-tower-v2.jpg")}
 /* theme scrim under the rails/trains — the tower cutout gets the equivalent dimming via
-   filter instead of a second overlay, so the title text (z3) never sits under a mask */
+   filter instead of a second overlay, so the title text (z3) never sits under a mask;
+   keep brightness ≈ 1 − scrim alpha or the cutout tears visibly from the backdrop */
 .hmask{position:absolute;inset:0;z-index:1;background:var(--hmask);pointer-events:none}
-.hfg{z-index:4;filter:brightness(.55)}
-:root[data-theme="light"] .hfg{filter:contrast(.35) brightness(1.48)}
+.hfg{z-index:4;filter:brightness(.82);
+  background-image:url("../assets/guangzhou-tower-v2-night-tower-only.png")}
+:root[data-theme="light"] .hfg{filter:contrast(.35) brightness(1.48);
+  background-image:url("../assets/guangzhou-tower-v2-tower-only.png")}
 .hero::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;
   background:linear-gradient(180deg,transparent 76%,var(--ink) 99.5%)}
 .heroTx{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
@@ -186,7 +192,7 @@ button{font-family:inherit;cursor:pointer}
 .fab:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel))}
 .fab.on:active{transform:scale(.94)}
 @media(max-width:760px){
-  .hbg,.hfg{object-position:37% 64%}  /* tower hugs the left edge, clear of the logo */
+  .hbg,.hfg{background-position:37% 64%}  /* tower hugs the left edge, clear of the logo */
   .logo{font-size:clamp(46px,14vw,76px)}
   .latin{font-size:10.5px;letter-spacing:.3em;margin-right:-.3em}
   .train{top:40%;width:56vw}}

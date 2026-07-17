@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.5] - 2026-07-17
+
+### Added
+- **The dark theme gets a real night skyline.** The title screen now swaps its art with the theme: a new night render of the Canton Tower scene — lit tower, neon skyline, river reflections — in dark, the daytime render in light. The dusk scrim that used to fake night over the day photo eased from 45% to 18%, so the city lights actually glow. Under the hood the hero art became theme-picked CSS backgrounds: each theme downloads only its own image pair, the boot preload follows the active theme, and the other pair quietly prefetches a few seconds after boot so the settings toggle swaps scenes instantly.
+
 ## [0.3.4] - 2026-07-17
 
 ### Changed
@@ -384,6 +389,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.1...v0.3.2

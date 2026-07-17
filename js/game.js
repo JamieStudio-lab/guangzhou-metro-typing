@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.4";
+const APP_VERSION="0.3.5";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -949,4 +949,8 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
     if(c)c.scrollIntoView({behavior:REDUCED()?"auto":"smooth",block:"center"})});
   setLang(LANG); // renders all i18n text + legend + cards
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
+  setTimeout(()=>{ // idle-prefetch the other theme's hero pair so the toggle swaps without a blank
+    const n=document.documentElement.dataset.theme==="light"?"-night":"";
+    ["assets/guangzhou-tower-v2"+n+".jpg","assets/guangzhou-tower-v2"+n+"-tower-only.png"]
+      .forEach(u=>{(new Image).src=u})},3000);
 })();
