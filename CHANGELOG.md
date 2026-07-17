@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.4] - 2026-07-17
+
+### Changed
+- **Expanding a card now scrolls adaptively instead of to a fixed anchor.** If the whole map and the whole expanded card can share the screen, the page aligns the map's top to the viewport (both fully visible); on shorter windows it pins the card's bottom to the screen's bottom edge, so the full card shows with as much of the zoomed map above as fits. The card's final height is predicted (header + body content) before the expand/FLIP animations start, since neither reports the true size mid-flight.
+
 ## [0.3.3] - 2026-07-17
 
 ### Added
@@ -379,6 +384,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.0...v0.3.1

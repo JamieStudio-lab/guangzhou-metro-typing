@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.3";
+const APP_VERSION="0.3.4";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -689,11 +689,15 @@ let expandedId=null,pinnedLine=null;
 // card ordering (session-only): sort key + direction, re-tap flips asc/desc
 let cardSort="num",cardAsc=true;
 // FLIP: capture card rects keyed by line id, run the reorder/reflow, then glide
-// each card (incl. the resized one's width) from its old box to the new one
-function flipCards(mutate){const wrap=$("cards");
-  if(REDUCED()){mutate();return}
+// each card (incl. the resized one's width) from its old box to the new one;
+// onLayout fires after the mutation with final layout but before any animation
+// starts — the only moment final geometry is measurable (the width tween and the
+// cbody 0fr→1fr transition both lie about it afterwards)
+function flipCards(mutate,onLayout){const wrap=$("cards");
+  if(REDUCED()){mutate();onLayout&&onLayout();return}
   const old=new Map([...wrap.children].map(c=>[c.dataset.line,c.getBoundingClientRect()]));
   mutate();
+  onLayout&&onLayout();
   [...wrap.children].forEach(c=>{const a=old.get(c.dataset.line);if(!a)return;
     const b=c.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top,dw=Math.abs(a.width-b.width)>.5;
     if(!dx&&!dy&&!dw)return;
@@ -706,16 +710,22 @@ const legendBase=()=>pinnedLine||expandedLine();
 function setPin(id){pinnedLine=id;
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{const on=el.dataset.line===id;
     el.classList.toggle("pin",on);el.setAttribute("aria-pressed",on)})}
+const absTop=el=>{let y=0;for(;el;el=el.offsetParent)y+=el.offsetTop;return y};
 function toggleCard(id){expandedId=expandedId===id?null:id;
   flipCards(()=>document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
-    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)}));
+    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)}),
+    ()=>{if(!expandedId)return;
+      const c=document.querySelector(`#cards .card[data-line="${expandedId}"]`),PAD=14;
+      // fit whole map + whole card when they can share the screen (map top at the
+      // viewport top); otherwise pin the card's bottom to the viewport bottom.
+      // Final card height is predicted (header + body content) — the cbody
+      // track transition still reports the collapsed height at this point
+      const finalH=c.querySelector(".chead").offsetHeight+c.querySelector(".cinner").scrollHeight;
+      const top=Math.max(absTop(document.querySelector(".mapcard"))-PAD,
+        absTop(c)+finalH+PAD-innerHeight);
+      scrollTo({top:Math.max(0,top),behavior:REDUCED()?"auto":"smooth"})});
   setPin(null);$("legend").classList.toggle("off",!!expandedId);
-  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine());
-  if(expandedId){let c=document.querySelector(`#cards .card[data-line="${expandedId}"]`),y=0;
-    // scroll the promoted card just under the map so both stay in view;
-    // offsetTop chain = final layout position, unaffected by the in-flight FLIP transform
-    for(let el=c;el;el=el.offsetParent)y+=el.offsetTop;
-    scrollTo({top:Math.max(0,y-Math.min(innerHeight*.3,260)),behavior:REDUCED()?"auto":"smooth"})}}
+  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
 const legendLeave=()=>ovHighlight(legendBase());
 function renderLegend(){
   $("legend").innerHTML=LINES.map(L=>`<span class="lg${L.id===pinnedLine?" pin":""}" data-line="${L.id}" role="button" tabindex="0" aria-pressed="${L.id===pinnedLine}"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
