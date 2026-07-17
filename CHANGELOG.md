@@ -4,6 +4,13 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.7] - 2026-07-17
+
+### Added
+- **The overview map now rotates to give a focused line the biggest stage it can get.** Picking a line (legend pin, card expand, or clicking its path) no longer just zooms to its bbox: the map scans every angle and turns so the line's long axis fills the map card — a near-vertical line like Line 3 swings ~90° to lie flat across the full width, roughly doubling its on-screen size. The smallest rotation within 3% of the best fit wins, so roundish lines (the Line 11 loop) barely move, and on portrait screens — where vertical lines already fit — the map stays put. Zoom, rotation, and labels tween together in the existing 420 ms glide; unfocusing turns everything back; `prefers-reduced-motion` snaps instantly.
+- **Strip-map station labels on rotated lines.** Labels counter-rotate to stay level, and once a line turns past 20° they switch from the hand-placed layout to diagonal 45° tags — constant footprint along the track, so long names can't pile up once the line lies horizontal. Each station leans −45° or +45° depending on its local track direction, keeping every tag at least 45° off its own line (dense doglegs like Line 2's city core stay legible), and the view pads itself so terminal tags don't clip at the edges.
+- **A little compass.** A north cue fades in over the map's corner whenever it's rotated, needle tracking the turn, and disappears when the map is upright again.
+
 ## [0.3.6] - 2026-07-17
 
 ### Changed
@@ -394,6 +401,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.3...v0.3.4

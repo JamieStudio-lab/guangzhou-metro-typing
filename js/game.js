@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.6";
+const APP_VERSION="0.3.7";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -255,7 +255,7 @@ function labelMarkup(st){
     case"bl":set("end",st.x-17,st.y+35,st.y+49,st.y+61);break;
     case"br":set("start",st.x+17,st.y+35,st.y+49,st.y+61);break;
   }
-  let out=`<g text-anchor="${A.anchor}">`;
+  let out=`<g text-anchor="${A.anchor}" data-ta="${A.anchor}" data-sx="${st.x}" data-sy="${st.y}" data-lx="${A.x}" data-ly="${A.zy}">`;
   out+=zh.replace("<text ",`<text x="${A.x}" y="${A.zy}" `);
   out+=py.replace("<text ",`<text x="${A.x}" y="${A.py}" `);
   if(trt)out+=trt.replace("<text ",`<text x="${A.x}" y="${A.ty}" `);
@@ -274,7 +274,7 @@ function roundPath(pts,rMax=14){
   return d+" L"+pts[pts.length-1].x+" "+pts[pts.length-1].y}
 
 function buildMap(svg,opts){
-  let s="";
+  let s=`<g class="mrot">`; // rotatable wrapper — only #ovMap ever transforms it
   for(const r of RIVERS)s+=`<path class="riv" d="${r}"/>`;
   for(const L of LINES) // loop lines close back to their first station (decorative arc)
     s+=`<path class="lpath" data-line="${L.id}" d="${roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations)}" stroke="${L.color}"/>`;
@@ -308,7 +308,7 @@ function buildMap(svg,opts){
       <circle cx="14.6" cy="-3.4" r="1.5" fill="#fff6d8"/>
       <circle cx="14.6" cy="3.4" r="1.5" fill="#fff6d8"/>
     </g></g>`}
-  svg.innerHTML=s}
+  svg.innerHTML=s+"</g>"}
 
 /* ============================================================
    GAME STATE + ENGINE
@@ -669,20 +669,73 @@ function ovHighlight(id){const ov=$("ovMap");
 // station-name labels follow the zoom focus (card expand / legend pin), never hover
 function ovLabels(id){const mine=id&&LINE_STS.get(id);
   $("ovMap").querySelectorAll(".stg").forEach(g=>g.classList.toggle("lbl",!!mine&&mine.has(g.dataset.st)))}
-// zoom the overview map to one line's bbox (null → back to the full network)
-let FULL_VB=null,ovAnim=0;
-function ovZoom(id){const ov=$("ovMap");let tgt=FULL_VB;
-  if(id){const p=ov.querySelector(`.lpath[data-line="${id}"]`);
-    if(p){const b=p.getBBox(),pd=34;tgt=[b.x-pd,b.y-pd,b.width+pd*2,b.height+pd*2]}}
+// zoom the overview map to one line (null → back to the full network), rotating the
+// map so the line's long axis fills the viewport at maximum size: 1° scan, smallest
+// angle within 3% of the best fit wins so roundish/loop lines barely rotate
+const OV_PD=34;
+function bestFit(L,vw,vh){
+  const box=deg=>{const r=deg*Math.PI/180,c=Math.cos(r),s=Math.sin(r);
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(const p of L.stations){const x=p.x*c-p.y*s,y=p.x*s+p.y*c;
+      if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    return[x0,y0,x1-x0,y1-y0]};
+  const sc=b=>Math.min(vw/(b[2]+2*OV_PD),vh/(b[3]+2*OV_PD));
+  let bs=0;for(let d=-90;d<90;d++)bs=Math.max(bs,sc(box(d)));
+  let a=0;
+  for(let d=0;d<=90;d++){if(sc(box(d))>=.97*bs){a=d;break}if(d&&sc(box(-d))>=.97*bs){a=-d;break}}
+  const b0=box(0),cx=b0[0]+b0[2]/2,cy=b0[1]+b0[3]/2; // rotation centre = line bbox centre
+  const r=a*Math.PI/180,c=Math.cos(r),s=Math.sin(r),b=box(a),
+    ox=cx-(cx*c-cy*s),oy=cy-(cx*s+cy*c); // origin-rotated bbox → rotate(a,cx,cy) space
+  return{a,cx,cy,vb:[b[0]+ox-OV_PD,b[1]+oy-OV_PD,b[2]+2*OV_PD,b[3]+2*OV_PD]}}
+let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
+function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
+  let tgt=FULL_VB,ta=0,tc=ovC,LL=null;
+  if(id){LL=LINES.find(l=>l.id===id);
+    if(LL){const f=bestFit(LL,ov.clientWidth||760,ov.clientHeight||580);
+      tgt=f.vb;ta=f.a;tc=[f.cx,f.cy];
+      // strip-map labels overhang the track up/down/rightward — reserve room
+      if(Math.abs(ta)>20)tgt=[tgt[0]-8,tgt[1]-34,tgt[2]+82,tgt[3]+62]}}
   if(!tgt)return;
   cancelAnimationFrame(ovAnim);
-  const set=v=>ov.setAttribute("viewBox",v.map(n=>n.toFixed(1)).join(" "));
+  // the focused line's label <g>s counter-rotate every frame so text stays level;
+  // big rotations switch them to 45°-tilted strip-map labels (constant footprint
+  // along the line, so long names can't collide once the line lies horizontal);
+  // ±45° is picked per station so a label never runs parallel to its own track
+  const strip=Math.abs(ta)>20,mine=id&&LINE_STS.get(id),gs=[],tilt=new Map();
+  if(strip){const r=ta*Math.PI/180,c=Math.cos(r),s=Math.sin(r),sts=LL.stations;
+    sts.forEach((st,i)=>{const p=sts[Math.max(0,i-1)],n=sts[Math.min(sts.length-1,i+1)],
+      dx=n.x-p.x,dy=n.y-p.y;
+      let th=Math.atan2(dx*s+dy*c,dx*c-dy*s)*180/Math.PI;
+      if(th>=90)th-=180;if(th<-90)th+=180;
+      tilt.set(st.zh,th<0?45:-45)})}
+  if(mine)ov.querySelectorAll(".stg").forEach(g=>{if(mine.has(g.dataset.st)){
+    const lg=g.lastElementChild;lg.dataset.m=strip?"s":"u";lg.dataset.t=tilt.get(g.dataset.st)||-45;
+    lg.setAttribute("text-anchor",strip?"start":lg.dataset.ta);gs.push(lg)}});
+  const old=ovGs.filter(g=>!gs.includes(g));ovGs=gs;
+  const reset=g=>{g.removeAttribute("transform");g.setAttribute("text-anchor",g.dataset.ta)};
+  const setVb=v=>ov.setAttribute("viewBox",v.map(n=>n.toFixed(1)).join(" "));
+  const setRot=(a,cx,cy)=>{
+    if(Math.abs(a)<.05)mr.removeAttribute("transform");
+    else mr.setAttribute("transform",`rotate(${a.toFixed(2)} ${cx.toFixed(1)} ${cy.toFixed(1)})`);
+    if(nc){nc.style.opacity=Math.abs(a)<.05?"":"1";
+      nc.firstElementChild.style.transform=`rotate(${a}deg)`}
+    for(const g of gs.concat(old)){const d=g.dataset;
+      if(d.m==="s"){const rr=a*Math.PI/180,co=Math.cos(rr),si=Math.sin(rr),t=+d.t||-45,
+        ax=cx+(d.sx-cx)*co-(d.sy-cy)*si+10,ay=cy+(d.sx-cx)*si+(d.sy-cy)*co+(t>0?10:-10);
+        g.setAttribute("transform",`rotate(${(-a).toFixed(2)} ${cx.toFixed(1)} ${cy.toFixed(1)}) translate(${ax.toFixed(1)} ${ay.toFixed(1)}) rotate(${t}) translate(${-d.lx} ${-d.ly})`)}
+      else if(Math.abs(a)<.05)g.removeAttribute("transform");
+      else g.setAttribute("transform",`rotate(${(-a).toFixed(2)} ${d.lx} ${d.ly})`)}};
+  const land=()=>{ovA=ta;ovC=tc;old.forEach(reset)};
   const vb=ov.viewBox.baseVal,from=[vb.x,vb.y,vb.width,vb.height];
-  if(REDUCED()||!from[2]){set(tgt);return}
+  if(!tc)tc=[0,0];
+  if(REDUCED()||!from[2]){setVb(tgt);setRot(ta,tc[0],tc[1]);land();return}
+  const c0=Math.abs(ovA)<.05?tc:(ovC||tc), // start centre = current, unless untransformed
+    f7=[...from,ovA,c0[0],c0[1]],t7=[...tgt,ta,tc[0],tc[1]];
   const t0=performance.now();
-  const step=now=>{const p=Math.min(1,(now-t0)/420),e=1-Math.pow(1-p,3);
-    set(from.map((f,i)=>f+(tgt[i]-f)*e));
-    if(p<1)ovAnim=requestAnimationFrame(step)};
+  const step=now=>{const p=Math.min(1,(now-t0)/420),e=1-Math.pow(1-p,3),
+    v=f7.map((f,i)=>f+(t7[i]-f)*e);
+    setVb(v.slice(0,4));setRot(v[4],v[5],v[6]);
+    if(p<1)ovAnim=requestAnimationFrame(step);else land()};
   ovAnim=requestAnimationFrame(step)}
 // accordion state: which card is open ("l1"… or "boss"); survives re-renders
 let expandedId=null,pinnedLine=null;

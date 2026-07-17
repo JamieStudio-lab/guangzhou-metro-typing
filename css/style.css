@@ -200,6 +200,10 @@ button{font-family:inherit;cursor:pointer}
   border-radius:var(--r-xl);overflow:hidden;position:relative;box-shadow:var(--sh1);
   display:flex;align-items:stretch}
 .mapcard svg{flex:1;min-width:0;width:100%;height:clamp(400px,58vh,620px);display:block}
+.ncue{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:var(--r-full);
+  display:grid;place-items:center;background:var(--pill-bg);border:1px solid var(--edge);color:var(--mut);
+  opacity:0;transition:opacity .3s var(--ease);pointer-events:none}
+.ncue svg{width:22px;height:22px;display:block}
 .legend{display:grid;grid-template-columns:repeat(2,minmax(0,auto));align-content:center;
   gap:6px 8px;padding:14px 16px 14px 4px} /* 2-col grid: 20 line pills beside the map */
 .lg{display:flex;align-items:center;gap:7px;background:var(--pill-bg);border:1px solid var(--edge);
