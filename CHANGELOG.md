@@ -4,6 +4,14 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.9] - 2026-07-17
+
+### Added
+- **The maps now show the city underneath the network: Guangzhou and Foshan as solid outlines, Guangzhou's districts sketched in.** Behind the metro lines — on both the menu map and the in-game map — there's now a light geographic backdrop: the **Guangzhou and Foshan** city boundaries drawn as solid lines, and Guangzhou's **11 districts** (越秀 · 天河 · 海珠 · 荔湾 · 白云 · 黄埔 · 番禺 · 南沙 · 花都 · 增城 · 从化) as dashed lines, so you can see which part of the city each line threads through. The outlines are muted and fully non-interactive — they don't catch clicks, hovers, or the map's pan/zoom — and hold a constant thin weight however far you zoom in or out, so the metro lines stay the star. The menu map now opens framed on the network with the city context around it — Guangzhou and its districts fill the view while Foshan's empty far-west trails off the left edge — and it's a bit taller to give the portrait-shaped network room. The boundaries are real geography, projected from the same OpenStreetMap data as the stations (map data © OpenStreetMap contributors, ODbL).
+
+### Fixed
+- **The menu's network map is no longer squashed on phones and narrow windows.** In the single-column layout (≤700 px wide), the map had been collapsing to a thin 150 px-tall strip; it now stands a proper height so the whole network is legible for picking a line.
+
 ## [0.4.8] - 2026-07-17
 
 ### Fixed
@@ -472,6 +480,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.5...v0.4.6

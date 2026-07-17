@@ -15,7 +15,7 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 
 ## Features
 
-- SVG network map drawn from **real station geography** (projected from OpenStreetMap coordinates) with the Pearl River, interchange rings, real transfer badges, a hover-highlight legend, and a camera that follows your train
+- SVG network map drawn from **real station geography** (projected from OpenStreetMap coordinates) with the Pearl River, Guangzhou/Foshan city and district outlines, interchange rings, real transfer badges, a hover-highlight legend, and a camera that follows your train
 - Progress shown in color everywhere: per-letter lighting on the board, heat-colored stations and progress bar (green/amber/red by typing speed), and an end-of-run heat strip with fastest/slowest stop callouts
 - Combo multipliers, medals (trainee → skilled → ace driver), arrival chimes (mutable), and per-line session-best records
 - Vanilla HTML/CSS/JS with zero dependencies; responsive from phone to desktop; respects `prefers-reduced-motion`
@@ -24,6 +24,6 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 
 Fan-made typing game, not affiliated with Guangzhou Metro. Covers **all 19 lines of the 2026 network** — Lines 1–14, 18, 21, 22, the Guangfo line and the APM — as they run today (Line 12 is its opened east section; Line 21 currently starts at 天河公园; the Line 3 airport branch and the Knowledge City branch aren't modeled). Inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
 
-`js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (296 unique stations, 63 interchanges), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — every playable line is projected from it. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.
+`js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (296 unique stations, 63 interchanges), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — every playable line is projected from it. The city and district outlines drawn behind the network come from `js/boundaries.js` (Guangzhou + Foshan, plus Guangzhou's 11 districts), generated the same way by `tools/fetch-boundaries.js`. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.
 
 Typefaces (all [SIL OFL 1.1](https://openfontlicense.org/), subset for the web by `tools/subset-fonts.js`, licenses in `assets/fonts/`): [资源圆体 Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) (Chinese), [Nunito](https://github.com/googlefonts/nunito) (Latin), and [Sono](https://github.com/sursly/sono) (monospace).

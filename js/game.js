@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.8";
+const APP_VERSION="0.4.9";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -11,14 +11,22 @@ const CRUISE_CPS=5.5,CHASE=.17,ARRIVE_V=.3,EASE=.7;
 // lower speed fraction, big flames at lower combos, combo score step more generous
 const HOT_ON=e=>.84-.14*e,HOT_HYS=.1,TIER2=e=>Math.round(10-4*e),CSTEP=e=>.1+.04*e;
 
-// project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
+// project GEO lat/lon (js/geo.js, OSM data) → SVG units.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
-// Keying by 汉字 gives transfer stations identical coords on every line.
+const PROJ_K=3800,PROJ_COS=Math.cos(23.09*Math.PI/180),PROJ_LON0=113.1981,PROJ_LAT0=23.2557;
+const projLL=(lat,lon)=>({x:+((lon-PROJ_LON0)*PROJ_COS*PROJ_K).toFixed(1),y:+((PROJ_LAT0-lat)*PROJ_K).toFixed(1)});
+// GEOPOS keyed by 汉字 gives transfer stations identical coords on every line.
 const GEOPOS=(()=>{if(typeof GEO==="undefined")return null;
-  const pos=new Map(),K=3800,COS=Math.cos(23.09*Math.PI/180),LON0=113.1981,LAT0=23.2557;
+  const pos=new Map();
   for(const gl of GEO.lines)for(const s of gl.stations)
-    if(!pos.has(s.zh))pos.set(s.zh,{x:+((s.lon-LON0)*COS*K).toFixed(1),y:+((LAT0-s.lat)*K).toFixed(1)});
+    if(!pos.has(s.zh))pos.set(s.zh,projLL(s.lat,s.lon));
   return pos})();
+// geographic backdrop (js/boundaries.js, OSM/ODbL): project each city/district ring
+// once into an SVG path. Non-interactive; drawn behind the network where {bounds:true}.
+const BOUNDS=(()=>{if(typeof BOUNDARIES==="undefined")return null;
+  const path=rings=>rings.map(r=>{let d="";for(let i=0;i<r.length;i++){const p=projLL(r[i][0],r[i][1]);d+=(i?"L":"M")+p.x+" "+p.y}return d+"Z"}).join("");
+  const map=o=>({zh:o.zh,d:path(o.rings)});
+  return{cities:BOUNDARIES.cities.map(map),districts:BOUNDARIES.districts.map(map)}})();
 
 // normalize station tuples → objects, compute keys (x/y from geo, tuple values as fallback)
 for(const L of LINES){
@@ -246,6 +254,11 @@ function buildRegistry(){const reg=new Map();
     reg.get(s.zh).lines.push(L)}
   return reg}
 const REG=buildRegistry();
+// network bounding box in SVG units (stations only): fitAll frames the whole network
+// without being thrown off by the city/district backdrop that extends far beyond it
+const NETBB=(()=>{let x0=1/0,y0=1/0,x1=-1/0,y1=-1/0;
+  for(const[,st]of REG){x0=Math.min(x0,st.x);y0=Math.min(y0,st.y);x1=Math.max(x1,st.x);y1=Math.max(y1,st.y)}
+  return{x:x0,y:y0,width:x1-x0,height:y1-y0}})();
 
 function labelMarkup(st){
   const rows=[],tr=st.tr?("⇄ "+st.tr.join("·")):null;
@@ -284,6 +297,9 @@ function roundPath(pts,rMax=14){
 
 function buildMap(svg,opts){
   let s=`<g class="mrot">`; // rotatable wrapper — only #ovMap ever transforms it
+  if(opts&&opts.bounds&&BOUNDS){ // city (solid) + district (dashed) outlines, behind everything
+    for(const d of BOUNDS.districts)s+=`<path class="bdry dist" d="${d.d}"/>`;
+    for(const c of BOUNDS.cities)s+=`<path class="bdry city" d="${c.d}"/>`;}
   for(const r of RIVERS)s+=`<path class="riv" d="${r}"/>`;
   for(const L of LINES) // loop lines close back to their first station (decorative arc)
     s+=`<path class="lpath" data-line="${L.id}" d="${roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations)}" stroke="${L.color}"/>`;
@@ -344,7 +360,7 @@ function collectNodes(){nodes={};
 
 function applyCam(){const asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   const h=cam.w/asp;gMap.setAttribute("viewBox",`${cam.cx-cam.w/2} ${cam.cy-h/2} ${cam.w} ${h}`)}
-function fitAll(instant){const bb=gMap.getBBox(),pad=42,
+function fitAll(instant){const bb=NETBB,pad=64,
   asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   camT={cx:bb.x+bb.width/2,cy:bb.y+bb.height/2,w:Math.max(bb.width+pad*2,(bb.height+pad*2)*asp)};
   camFollow=false;if(instant){cam={...camT};applyCam()}}
@@ -391,7 +407,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   $("board").style.setProperty("--lcg",alpha(disp,.38));
   $("toast").style.setProperty("--lc",L.color);
   $("zhChip").textContent=L.num;$("zhChip").style.background=btnBg(L.color);$("zhChip").style.color=txOn(L.color);
-  buildMap(gMap,{train:true});collectNodes();
+  buildMap(gMap,{train:true,bounds:true});collectNodes();
   $("trainBand").setAttribute("fill",L.color);
   // dim other lines + their exclusive stations; only the ridden line keeps its
   // name labels (the whole network's names at once is unreadable) — .offln hides them
@@ -1097,10 +1113,18 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
 
 /* ---------- overview map + legend + boot ---------- */
 (function boot(){
-  const ov=$("ovMap");buildMap(ov,{});
+  const ov=$("ovMap");buildMap(ov,{bounds:true});
   let ovDrag=false; // set true by a pan/pinch so the trailing click doesn't select a line
-  requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
-    FULL_VB=[bb.x-p,bb.y-p,bb.width+p*2,bb.height+p*2]}catch(e){FULL_VB=[0,0,760,1300]}
+  requestAnimationFrame(()=>{try{const nb=NETBB,
+    // The network is portrait and spans almost the whole N–S height of both cities, so the
+    // horizontal slack is where the city context sits. Centre the resting view on the
+    // network and fit it to the card in both axes (a taller card ⇒ tighter horizontal
+    // frame): Guangzhou and its districts fill the view while Foshan's empty far-west
+    // trails off the left edge. (Not the whole-cities bbox — that would dwarf the network.)
+    asp=(ov.clientWidth||801)/(ov.clientHeight||620),
+    w=Math.max(nb.width+2*140,(nb.height+2*170)*asp),h=w/asp,
+    x=nb.x+nb.width/2-w/2,y=nb.y+nb.height/2-h/2;
+    FULL_VB=[x,y,w,h]}catch(e){FULL_VB=[0,0,760,1300]}
     ov.setAttribute("viewBox",FULL_VB.join(" "))});
   ov.addEventListener("click",e=>{if(ovDrag){ovDrag=false;return} // a pan just ended, not a tap
     if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
