@@ -114,7 +114,7 @@ button{font-family:inherit;cursor:pointer}
    Since v0.3.5 the scene is a theme-picked CSS background (night render in dark, day in light) so only
    the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  --hmask:rgba(0,0,0,.18)}
+  --hmask:rgba(0,0,0,.25)}
 :root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.48)}
 .hbg,.hfg{position:absolute;inset:0;background-size:cover;background-position:30% 62%;
   pointer-events:none}
@@ -124,7 +124,7 @@ button{font-family:inherit;cursor:pointer}
    filter instead of a second overlay, so the title text (z3) never sits under a mask;
    keep brightness ≈ 1 − scrim alpha or the cutout tears visibly from the backdrop */
 .hmask{position:absolute;inset:0;z-index:1;background:var(--hmask);pointer-events:none}
-.hfg{z-index:4;filter:brightness(.82);
+.hfg{z-index:4;filter:brightness(.75);
   background-image:url("../assets/guangzhou-tower-v2-night-tower-only.png")}
 :root[data-theme="light"] .hfg{filter:contrast(.35) brightness(1.48);
   background-image:url("../assets/guangzhou-tower-v2-tower-only.png")}

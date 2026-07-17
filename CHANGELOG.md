@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.6] - 2026-07-17
+
+### Changed
+- **The night hero's scrim settled at 25%** (from v0.3.5's 18%, tower-cutout dimming matched at `brightness(.75)`) — a touch more contrast under the title without putting out the city lights.
+
 ## [0.3.5] - 2026-07-17
 
 ### Added
@@ -389,6 +394,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.2...v0.3.3
