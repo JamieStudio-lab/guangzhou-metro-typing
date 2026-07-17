@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.10";
+const APP_VERSION="0.4.0";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -159,7 +159,7 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   badge_first:"First Ride",badge_line:L=>`${L.en} Cleared`,
   badge_star3:"Triple Star",badge_boss:"Gauntlet Slayer",badge_wpm60:"Bullet Train",badge_wpm100:"Maglev",
   badge_combo20:"Combo Master",badge_acc100:"Flawless"}};
-let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en");
+let LANG=store.get("lang")||"zh"; // Chinese is the default since v0.4.0
 const t=(k,...a)=>{const v=T[LANG][k];return typeof v==="function"?v(...a):v};
 // line descriptions in data.js are bilingual {zh,en}
 const descOf=L=>L.desc[LANG]||L.desc.zh;
@@ -205,14 +205,11 @@ $("soundBtn").onclick=()=>{muted=!muted;const b=$("soundBtn");
 
 /* ---------- theme ---------- */
 const themeMeta=document.querySelector('meta[name="theme-color"]');
-const sysLight=matchMedia("(prefers-color-scheme: light)");
-let themeManual=!!store.get("theme");
 function setTheme(th){document.documentElement.dataset.theme=th;
   $("themeBtn").textContent=th==="light"?t("light"):t("dark");
   themeMeta.setAttribute("content",th==="light"?"#f5f1e8":"#0b101c")}
-setTheme(store.get("theme")||(sysLight.matches?"light":"dark"));
-sysLight.addEventListener("change",e=>{if(!themeManual)setTheme(e.matches?"light":"dark")});
-$("themeBtn").onclick=()=>{themeManual=true;
+setTheme(store.get("theme")||"dark"); // dark default since v0.4.0; no OS auto-follow so the default holds
+$("themeBtn").onclick=()=>{
   const th=document.documentElement.dataset.theme==="light"?"dark":"light";
   setTheme(th);store.set("theme",th)};
 
@@ -1008,18 +1005,24 @@ $("backTop").onclick=()=>window.scrollTo({top:0,behavior:REDUCED()?"auto":"smoot
 new IntersectionObserver(es=>{$("backTop").classList.toggle("on",!es[es.length-1].isIntersecting)},
   {threshold:.15}).observe(document.querySelector("#menu .hero"));
 
-/* ---------- settings dialog + intro skip ---------- */
+/* ---------- settings dialog + boot splash ---------- */
 $("setBtn").onclick=()=>$("setDlg").showModal();
 $("setClose").onclick=()=>$("setDlg").close();
 $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
-// boot intro plays once per page load (.intro set in markup); a click/keypress fast-forwards.
-// Removing the class also prevents a replay when #menu is re-shown after a run.
-(function intro(){const hero=document.querySelector("#menu .hero");let tm;
-  const end=()=>{hero.classList.remove("intro");clearTimeout(tm);
-    removeEventListener("pointerdown",end);removeEventListener("keydown",end)};
-  if(REDUCED())return end();
-  tm=setTimeout(end,3400);
-  addEventListener("pointerdown",end);addEventListener("keydown",end)})();
+// Boot splash (#preload) plays once per browser session. The loading bar fills (CSS), then we fade the
+// preload out and add .play to the hero so the train drives across and the title/rails reveal. A tap or
+// key skips straight to a static home; reduced-motion / an already-seen session skips it outright.
+(function intro(){const pre=$("preload"),hero=document.querySelector("#menu .hero");
+  if(!pre||!hero)return;let seen=false,tm;
+  try{seen=sessionStorage.getItem("introSeen")==="1"}catch(e){}
+  const drop=()=>{removeEventListener("pointerdown",skip);removeEventListener("keydown",skip)};
+  const skip=()=>{clearTimeout(tm);pre.classList.add("hidden");drop()}; // straight to static home
+  const play=()=>{drop();pre.classList.add("gone");hero.classList.add("play");
+    setTimeout(()=>pre.classList.add("hidden"),600)}; // bar done → reveal, then drop the faded overlay
+  try{sessionStorage.setItem("introSeen","1")}catch(e){}
+  if(REDUCED()||seen)return pre.classList.add("hidden");
+  tm=setTimeout(play,1600); // ≈ bar fill length — keep in sync with pFill in style.css
+  addEventListener("pointerdown",skip);addEventListener("keydown",skip)})();
 
 /* ---------- overview map + legend + boot ---------- */
 (function boot(){

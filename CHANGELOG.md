@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.0] - 2026-07-17
+
+### Changed
+- **A new boot splash replaces the old rushed title intro.** The opening now starts on a black screen with a train-themed loading bar — an amber fill with a little train riding its leading edge. When it completes, the screen fades to the home page and a train drives across the hero to "deliver" the title: the logo, subtitle, and depart button fade up in its wake while the line-colored rails draw themselves in. It runs once per browser session — a tap, click, or key skips straight to the static home, and `prefers-reduced-motion` skips it outright. (Placeholder art for now; a richer opening is planned.)
+- **Dark theme and Chinese are now the defaults.** A first-time visitor (no saved preference) starts in the dark theme and Chinese UI regardless of OS/browser settings, instead of following the system color scheme and `navigator.language`. A stored choice still wins, the theme/language toggles work as before, and signed-in profile preferences still apply. The app no longer auto-switches theme when the OS light/dark setting changes, so the dark default holds.
+
 ## [0.3.10] - 2026-07-17
 
 ### Fixed
@@ -423,6 +429,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.10...v0.4.0
 [0.3.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.7...v0.3.8

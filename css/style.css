@@ -110,7 +110,8 @@ button{font-family:inherit;cursor:pointer}
 #menu{position:relative;overflow:hidden;overflow:clip;z-index:0}
 .blobs{z-index:-1}
 /* opening page since v0.1.6: fullscreen title screen — city scene + tower cutout in front of the logo,
-   6 line-colored orthogonal rails (rounded 90° turns), staged boot intro (doors→rails→train→LED).
+   6 line-colored orthogonal rails (rounded 90° turns). The hero renders static by default; on a fresh
+   session the boot splash (#preload, further down) plays first, then game.js adds .play to reveal it.
    Since v0.3.5 the scene is a theme-picked CSS background (night render in dark, day in light) so only
    the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
@@ -138,24 +139,10 @@ button{font-family:inherit;cursor:pointer}
 .latin{display:block;margin-top:12px;font-family:var(--mono);font-size:clamp(11px,1.5vw,14.5px);
   letter-spacing:.44em;margin-right:-.44em;color:var(--paper)}
 #startBtn{flex:none;margin-top:34px;padding:16px 52px;font-size:18px}
-/* boot intro — runs only while .hero carries .intro (set in markup, removed once by game.js) */
-.hero.intro .logo b{opacity:0;animation:ledon .62s linear both}
-.hero.intro .logo b:nth-child(1){animation-delay:1.7s}
-.hero.intro .logo b:nth-child(2){animation-delay:1.86s}
-.hero.intro .logo b:nth-child(3){animation-delay:2.02s}
-.hero.intro .logo b:nth-child(4){animation-delay:2.18s}
-@keyframes ledon{0%,34%{opacity:0}42%{opacity:1}52%{opacity:.2}62%{opacity:1}74%{opacity:.35}
-  100%{opacity:1}}
-.hero.intro .latin{opacity:0;animation:fadeup .55s var(--ease) 2.45s both}
-.hero.intro #startBtn{opacity:0;animation:fadeup .55s var(--ease) 2.6s both}
-@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes fadein{to{opacity:1}}
 .rails{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .rails.back{z-index:2}
 .rails.front{z-index:6}
 .rails path{fill:none;stroke-width:7;stroke-linecap:round;opacity:.8;stroke-dasharray:1 1;stroke-dashoffset:0}
-.hero.intro .rails path:not(.g){stroke-dashoffset:1;
-  animation:draw .95s var(--ease) forwards;animation-delay:calc(.5s + var(--i,0)*.12s)}
 .rails.front path{opacity:.42}
 .rails .r1{stroke:var(--l1)} .rails .r2{stroke:var(--l2)} .rails .r3{stroke:var(--l3)}
 .rails .r4{stroke:var(--l4)} .rails .r5{stroke:var(--l5)} .rails .r6{stroke:var(--l6)}
@@ -163,26 +150,50 @@ button{font-family:inherit;cursor:pointer}
   animation:glide 6.5s linear infinite;animation-delay:calc(3.4s + var(--i,0)*1.05s)}
 :root[data-theme="light"] .rails path{opacity:.75}
 :root[data-theme="light"] .rails.front path{opacity:.42}
-@keyframes draw{to{stroke-dashoffset:0}}
 @keyframes glide{0%{stroke-dashoffset:1;opacity:0}8%{opacity:.95}92%{opacity:.95}
   100%{stroke-dashoffset:0;opacity:0}}
-.train{display:none;position:absolute;z-index:2;top:43%;left:0;width:clamp(230px,30vw,380px);height:auto;
-  animation:trainrun 1.05s cubic-bezier(.35,0,.65,1) 1.35s both;will-change:transform}
-.hero.intro .train{display:block}
-@keyframes trainrun{from{transform:translateX(-120%)}to{transform:translateX(105vw)}}
-.doors{display:none;position:absolute;inset:0;z-index:9;pointer-events:none}
-.hero.intro .doors{display:block}
-.doors i{position:absolute;top:0;bottom:0;width:50.5%;
-  background:linear-gradient(180deg,var(--panel2),var(--ink))}
-.doors i:nth-child(1){left:0;border-right:3px solid var(--amber);animation:doorL .72s var(--ease) .15s both}
-.doors i:nth-child(2){right:0;border-left:3px solid var(--amber);animation:doorR .72s var(--ease) .15s both}
-@keyframes doorL{92%{opacity:1}to{transform:translateX(-103%);opacity:0;visibility:hidden}}
-@keyframes doorR{92%{opacity:1}to{transform:translateX(103%);opacity:0;visibility:hidden}}
 .scue{position:absolute;left:50%;bottom:10px;z-index:8;transform:translateX(-50%);
   color:var(--paper);text-shadow:0 1px 8px color-mix(in srgb,var(--ink) 60%,transparent);
   font-size:24px;line-height:1;pointer-events:none;animation:bnc 1.8s ease-in-out infinite}
-.hero.intro .scue{opacity:0;animation:fadein .5s var(--ease) 3s both,bnc 1.8s ease-in-out 3s infinite}
 @keyframes bnc{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+/* ===== boot splash (v0.4.0), placeholder until richer opening art lands =====
+   Phase 1: #preload — a train-themed loading bar (amber fill + a mini train riding its leading edge)
+   fills on a black screen. Phase 2: game.js adds .gone (preload fades out) and .play to the hero,
+   which drives the train across and fades the title/subtitle/button up while the colored rails draw
+   themselves in. Plays once per session; a tap/key skips straight to a static home; reduced-motion
+   hides #preload and never adds .play. */
+#preload{position:fixed;inset:0;z-index:200;background:#05070d;
+  display:grid;place-content:center;justify-items:center;gap:26px;
+  transition:opacity .55s var(--ease)}
+#preload.gone{opacity:0;pointer-events:none}
+#preload.hidden{display:none}
+.pmark{font-weight:800;letter-spacing:.16em;margin-right:-.16em;color:var(--paper);
+  font-size:clamp(28px,5vw,46px);text-align:center;line-height:1.1}
+.pmark small{display:block;margin-top:10px;font-family:var(--mono);font-weight:400;color:var(--dim);
+  font-size:clamp(9px,1.3vw,12px);letter-spacing:.4em;margin-right:-.4em}
+.ptrack{position:relative;width:min(72vw,420px);height:9px;border-radius:var(--r-full);
+  background:#141c2c;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.pfill{position:absolute;left:0;top:0;height:100%;width:0;border-radius:var(--r-full);
+  background:linear-gradient(90deg,#ffcf6a,var(--amber));animation:pFill 1.45s cubic-bezier(.55,0,.3,1) .15s forwards}
+.ptrain{position:absolute;top:50%;left:0;width:40px;height:auto;transform:translate(-50%,-58%);
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));animation:pRide 1.45s cubic-bezier(.55,0,.3,1) .15s forwards}
+@keyframes pFill{to{width:100%}}
+@keyframes pRide{to{left:100%}}
+/* hero drive-in reveal — gated by .play so the static home (skip / reduced-motion / replay) shows everything at once */
+.train{display:none;position:absolute;z-index:2;top:44%;left:0;width:clamp(240px,32vw,420px);height:auto;
+  will-change:transform}
+.hero.play .train{display:block;animation:traindrive 1.6s cubic-bezier(.3,.02,.35,1) both}
+@keyframes traindrive{from{transform:translateX(-135%)}to{transform:translateX(118vw)}}
+.hero.play .rails path:not(.g){stroke-dashoffset:1;animation:draw 1s var(--ease) both;
+  animation-delay:calc(.3s + var(--i,0)*.12s)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.hero.play .logo{opacity:0;animation:fadeup .6s var(--ease) .55s both}
+.hero.play .latin{opacity:0;animation:fadeup .6s var(--ease) .82s both}
+.hero.play #startBtn{opacity:0;animation:fadeup .6s var(--ease) 1.02s both}
+.hero.play .scue{opacity:0;animation:fadein .5s var(--ease) 1.5s both}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadein{to{opacity:1}}
 #pick{max-width:1080px;margin:0 auto;padding:24px 20px 64px;position:relative;scroll-margin-top:14px}
 .fab{position:fixed;right:18px;bottom:18px;z-index:40;background:var(--panel);border:none;color:var(--paper);
   border-radius:var(--r-full);padding:13px 20px;font-size:14.5px;font-weight:700;box-shadow:var(--sh3);
@@ -195,7 +206,7 @@ button{font-family:inherit;cursor:pointer}
   .hbg,.hfg{background-position:37% 64%}  /* tower hugs the left edge, clear of the logo */
   .logo{font-size:clamp(46px,14vw,76px)}
   .latin{font-size:10.5px;letter-spacing:.3em;margin-right:-.3em}
-  .train{top:40%;width:56vw}}
+  .train{top:42%;width:64vw}}
 .mapcard{margin:16px 0 8px;background:radial-gradient(1100px 520px at 62% 36%,var(--map1),var(--map2));
   border-radius:var(--r-xl);overflow:hidden;position:relative;box-shadow:var(--sh1);
   display:flex;align-items:stretch}
@@ -602,7 +613,8 @@ text{font-family:var(--sans);pointer-events:none}
   #fx{display:none}
   #board.fresh::after{animation:none}
   .rails .g{display:none}
-  .doors,.train{display:none}
+  #preload{display:none} /* skip the boot splash; game.js also skips it and never adds .play */
+  .hero.play .train{display:none}
   .scue{animation:none;opacity:1}
   .fab{transition:none}
   .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text{transition:none}

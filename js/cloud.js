@@ -57,7 +57,7 @@ async function afterLogin(){
   updAccBtn()}
 function applyPrefs(){
   if(PROFILE.theme&&PROFILE.theme!==document.documentElement.dataset.theme){
-    themeManual=true;setTheme(PROFILE.theme);store.set("theme",PROFILE.theme)}
+    setTheme(PROFILE.theme);store.set("theme",PROFILE.theme)}
   if(PROFILE.lang&&PROFILE.lang!==LANG)setLang(PROFILE.lang)}
 async function loadBadges(){try{
   const rows=await rest("GET",`badges?user_id=eq.${SESS.user.id}&select=badge`);

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b101c">
 <script>let _t=null;try{_t=localStorage.getItem("theme")}catch(e){}
-document.documentElement.dataset.theme=_t||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+document.documentElement.dataset.theme=_t||"dark"; // dark is the default since v0.4.0
 {const n=document.documentElement.dataset.theme==="light"?"":"-night"; // preload the active theme's hero pair (night in dark since v0.3.5)
 ["assets/guangzhou-tower-v2"+n+".jpg","assets/guangzhou-tower-v2"+n+"-tower-only.png"].forEach(h=>{
 const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;document.head.append(l)})}</script>
@@ -16,6 +16,27 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
 </head>
 <body>
 
+<!-- ============ boot splash (v0.4.0): a train-themed loading bar fills on a black screen, then fades to
+     reveal the home page; a train drives across the hero to deliver the title. Plays once per browser
+     session; a tap/click/key skips it. game.js drives the lifecycle in the intro() IIFE.
+     (Placeholder art — richer opening art is planned to replace this.) ============ -->
+<div id="preload" aria-hidden="true">
+  <div class="pmark">地铁键速<small>METRO TYPING · GUANGZHOU</small></div>
+  <div class="ptrack">
+    <i class="pfill"></i>
+    <svg class="ptrain" viewBox="0 0 48 22" aria-hidden="true">
+      <rect x="1" y="4" width="36" height="15" rx="6" fill="#dfe7f3" stroke="#0a0f1a" stroke-width="1.5"/>
+      <rect x="4" y="6.6" width="30" height="2.4" rx="1.2" fill="var(--amber)"/>
+      <rect x="4" y="13.8" width="30" height="2.4" rx="1.2" fill="var(--amber)"/>
+      <rect x="7" y="10" width="6" height="4" rx="1" fill="#9aa7bc"/>
+      <rect x="16" y="10" width="6" height="4" rx="1" fill="#9aa7bc"/>
+      <rect x="25" y="10" width="6" height="4" rx="1" fill="#9aa7bc"/>
+      <path d="M37 5 Q46 11 37 18 Z" fill="#dfe7f3" stroke="#0a0f1a" stroke-width="1.5"/>
+      <circle cx="40" cy="11" r="1.6" fill="#fff6d8"/>
+    </svg>
+  </div>
+</div>
+
 <div id="fchips">
   <button class="hbtn" id="accBtn" aria-label="Account · 账号">登录</button>
   <button class="hbtn" id="setBtn" aria-label="Settings · 设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.4 19.37L9.98 20.69C10.15 21.08 10.44 21.41 10.8 21.64C11.15 21.88 11.57 22 12 22C12.43 22 12.85 21.88 13.21 21.64C13.57 21.41 13.85 21.08 14.02 20.69L14.61 19.37C14.82 18.9 15.17 18.52 15.61 18.26C16.05 18 16.57 17.89 17.08 17.95L18.51 18.1C18.93 18.15 19.36 18.07 19.75 17.87C20.13 17.68 20.44 17.38 20.66 17.01C20.87 16.64 20.97 16.21 20.95 15.78C20.93 15.36 20.78 14.94 20.53 14.6L19.68 13.43C19.38 13.02 19.22 12.51 19.22 12C19.22 11.49 19.39 10.99 19.69 10.57L20.54 9.41C20.79 9.06 20.93 8.65 20.96 8.22C20.98 7.8 20.88 7.37 20.66 7C20.45 6.63 20.13 6.33 19.75 6.13C19.37 5.94 18.94 5.86 18.51 5.91L17.08 6.06C16.57 6.11 16.06 6 15.61 5.75C15.17 5.49 14.82 5.1 14.61 4.63L14.02 3.31C13.85 2.92 13.57 2.59 13.21 2.36C12.85 2.12 12.43 2 12 2C11.57 2 11.15 2.12 10.8 2.36C10.44 2.59 10.15 2.92 9.98 3.31L9.4 4.63C9.19 5.1 8.84 5.49 8.4 5.75C7.95 6 7.44 6.11 6.93 6.06L5.49 5.91C5.06 5.86 4.64 5.94 4.25 6.13C3.87 6.33 3.56 6.63 3.34 7C3.13 7.37 3.03 7.8 3.05 8.22C3.07 8.65 3.22 9.06 3.47 9.41L4.32 10.57C4.62 10.99 4.78 11.49 4.78 12C4.78 12.51 4.62 13.01 4.32 13.43L3.47 14.59C3.22 14.94 3.07 15.35 3.05 15.78C3.03 16.2 3.13 16.63 3.34 17C3.56 17.37 3.87 17.67 4.25 17.87C4.64 18.06 5.07 18.14 5.49 18.09L6.92 17.94C7.43 17.89 7.95 18 8.39 18.25C8.84 18.51 9.19 18.9 9.4 19.37Z"/><path d="M12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15Z"/></svg><span data-i18n="setBtn">设置</span></button>
@@ -24,7 +45,7 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
 
 <!-- ================= MENU ================= -->
 <section id="menu">
-  <div class="hero intro">
+  <div class="hero">
     <i class="hbg" aria-hidden="true"></i>
     <i class="hmask" aria-hidden="true"></i>
     <svg class="rails back" viewBox="0 0 1080 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -74,7 +95,6 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
       <path class="g" style="--i:5" pathLength="1" d="M -40 600 H 540 a 24 24 0 0 1 24 24 V 700"/>
     </svg>
     <div class="scue" aria-hidden="true">⌄</div>
-    <div class="doors" aria-hidden="true"><i></i><i></i></div>
   </div>
 
   <div id="pick">
