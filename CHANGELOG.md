@@ -4,6 +4,17 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.8] - 2026-07-17
+
+### Added
+- **The map is now a full selection surface: click to dismiss, too.** Clicking the focused line's path again — or any blank patch of map (background, rivers) — collapses its card and glides the map back out to the whole network, mirroring how clicking a line zooms in. Station dots are deliberately inert: a click aimed at a line that lands on a dot neither selects nor dismisses anything.
+
+### Changed
+- **Clicking a line on the map no longer yanks the page down.** Picking a line by its map path used to fire two competing scrolls (the adaptive expand scroll, then a card-centering one that won and dragged the freshly-zooming map off screen). Now the page simply stays where it is — the chosen card already rises to the slot right under the map — scrolling down only the minimum needed to keep the card's bottom edge, with its depart button, above the fold on shorter windows. Card-header clicks keep the v0.3.4 adaptive scroll unchanged.
+
+### Fixed
+- **The expand scroll landed off-target on phones.** On the stacked mobile layout the scroll was computed before the legend row hid and before the map's height re-hugged the focused line's shape, so it overshot or undershot by that much — a tall line like Line 3 could push the depart button below the fold (since v0.3.4, worsened by v0.3.7's rotation; card-header taps included). The legend now hides inside the same layout pass (cards glide over the gap instead of snapping) and the scroll predicts the map's final height, so the card bottom lands exactly at the screen's bottom edge.
+
 ## [0.3.7] - 2026-07-17
 
 ### Added
@@ -401,6 +412,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.4...v0.3.5

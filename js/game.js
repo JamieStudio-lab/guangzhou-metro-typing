@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.7";
+const APP_VERSION="0.3.8";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -688,13 +688,16 @@ function bestFit(L,vw,vh){
     ox=cx-(cx*c-cy*s),oy=cy-(cx*s+cy*c); // origin-rotated bbox → rotate(a,cx,cy) space
   return{a,cx,cy,vb:[b[0]+ox-OV_PD,b[1]+oy-OV_PD,b[2]+2*OV_PD,b[3]+2*OV_PD]}}
 let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
-function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
+function ovTarget(id){const ov=$("ovMap");
   let tgt=FULL_VB,ta=0,tc=ovC,LL=null;
   if(id){LL=LINES.find(l=>l.id===id);
     if(LL){const f=bestFit(LL,ov.clientWidth||760,ov.clientHeight||580);
       tgt=f.vb;ta=f.a;tc=[f.cx,f.cy];
       // strip-map labels overhang the track up/down/rightward — reserve room
       if(Math.abs(ta)>20)tgt=[tgt[0]-8,tgt[1]-34,tgt[2]+82,tgt[3]+62]}}
+  return{tgt,ta,tc,LL}}
+function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
+  let{tgt,ta,tc,LL}=ovTarget(id);
   if(!tgt)return;
   cancelAnimationFrame(ovAnim);
   // the focused line's label <g>s counter-rotate every frame so text stays level;
@@ -764,20 +767,31 @@ function setPin(id){pinnedLine=id;
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{const on=el.dataset.line===id;
     el.classList.toggle("pin",on);el.setAttribute("aria-pressed",on)})}
 const absTop=el=>{let y=0;for(;el;el=el.offsetParent)y+=el.offsetTop;return y};
-function toggleCard(id){expandedId=expandedId===id?null:id;
-  flipCards(()=>document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
-    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)}),
+function toggleCard(id,stay){expandedId=expandedId===id?null:id;
+  flipCards(()=>{document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
+    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
+    // part of the mutation: on the stacked mobile layout the legend sits between
+    // map and cards, so the scroll math below must see it already hidden
+    $("legend").classList.toggle("off",!!expandedId)},
     ()=>{if(!expandedId)return;
       const c=document.querySelector(`#cards .card[data-line="${expandedId}"]`),PAD=14;
       // fit whole map + whole card when they can share the screen (map top at the
       // viewport top); otherwise pin the card's bottom to the viewport bottom.
+      // Map clicks (stay) hold the page still instead, scrolling only if the
+      // card's bottom — the start button — would sink below the fold.
       // Final card height is predicted (header + body content) — the cbody
       // track transition still reports the collapsed height at this point
       const finalH=c.querySelector(".chead").offsetHeight+c.querySelector(".cinner").scrollHeight;
-      const top=Math.max(absTop(document.querySelector(".mapcard"))-PAD,
-        absTop(c)+finalH+PAD-innerHeight);
+      // stacked (column) mapcard: the svg's height follows its viewBox aspect,
+      // which ovZoom is about to retarget — predict the shift for all below
+      const mc=document.querySelector(".mapcard"),ov=$("ovMap"),cv=ov.viewBox.baseVal,
+        tg=ovTarget(expandedLine()).tgt,
+        dSvg=tg&&cv.width&&getComputedStyle(mc).flexDirection==="column"
+          ?ov.getBoundingClientRect().width*(tg[3]/tg[2]-cv.height/cv.width):0;
+      const bot=absTop(c)+dSvg+finalH+PAD-innerHeight;
+      const top=stay?Math.max(scrollY,bot):Math.max(absTop(mc)-PAD,bot);
       scrollTo({top:Math.max(0,top),behavior:REDUCED()?"auto":"smooth"})});
-  setPin(null);$("legend").classList.toggle("off",!!expandedId);
+  setPin(null);
   ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
 const legendLeave=()=>ovHighlight(legendBase());
 function renderLegend(){
@@ -996,10 +1010,10 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
   requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
     FULL_VB=[bb.x-p,bb.y-p,bb.width+p*2,bb.height+p*2]}catch(e){FULL_VB=[0,0,760,1300]}
     ov.setAttribute("viewBox",FULL_VB.join(" "))});
-  ov.addEventListener("click",e=>{const p=e.target.closest(".lpath");if(!p)return;
-    if(expandedId!==p.dataset.line)toggleCard(p.dataset.line);
-    const c=document.querySelector(`#cards .card[data-line="${p.dataset.line}"]`);
-    if(c)c.scrollIntoView({behavior:REDUCED()?"auto":"smooth",block:"center"})});
+  ov.addEventListener("click",e=>{if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
+    const p=e.target.closest(".lpath");
+    if(p)toggleCard(p.dataset.line,true); // re-click of the open line collapses it
+    else if(expandedLine())toggleCard(expandedLine(),true)}); // blank map dismisses
   setLang(LANG); // renders all i18n text + legend + cards
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
   setTimeout(()=>{ // idle-prefetch the other theme's hero pair so the toggle swaps without a blank
