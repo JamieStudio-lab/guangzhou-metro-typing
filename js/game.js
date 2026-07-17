@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.6";
+const APP_VERSION="0.4.7";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -83,7 +83,7 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   best:b=>`本次最佳：${b.score} 分 · ${b.time} · ${b.acc}%`,
   go:"出发",challenge:"挑战",
   bossFact:`全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。`,
-  interchange:"换乘站",
+  interchange:"换乘站",ovReset:"复位",ovHint:"滚轮缩放 · 拖拽平移",
   accLogin:"登录",accTitle:"账号",accNick:"昵称",accEmail:"邮箱",accPw:"密码",
   accDoReg:"注册",accToReg:"没有账号？注册一个 →",accToLogin:"已有账号？直接登录 →",
   accClose:"关闭",accLogout:"退出登录",
@@ -136,7 +136,7 @@ en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitB
   best:b=>`Session best: ${b.score} pts · ${b.time} · ${b.acc}%`,
   go:"DEPART",challenge:"CHALLENGE",
   bossFact:`The network's longest station names, from ${BOSS[BOSS.length-1].zh} all the way up to ${BOSS[0].zh} (${BOSS[0].key.length} letters!). Run out of time and you lose a heart.`,
-  interchange:"Interchange",
+  interchange:"Interchange",ovReset:"Reset",ovHint:"Scroll to zoom · drag to pan",
   accLogin:"SIGN IN",accTitle:"Account",accNick:"Nickname",accEmail:"Email",accPw:"Password",
   accDoReg:"SIGN UP",accToReg:"No account? Sign up →",accToLogin:"Have an account? Sign in →",
   accClose:"CLOSE",accLogout:"SIGN OUT",
@@ -732,6 +732,32 @@ function bestFit(L,vw,vh){
     ox=cx-(cx*c-cy*s),oy=cy-(cx*s+cy*c); // origin-rotated bbox → rotate(a,cx,cy) space
   return{a,cx,cy,vb:[b[0]+ox-OV_PD,b[1]+oy-OV_PD,b[2]+2*OV_PD,b[3]+2*OV_PD]}}
 let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
+// v0.4.7: free pan/zoom on the unfocused network map. freeVB = current viewBox
+// window while no line is focused (null = resting at the full-network fit).
+let freeVB=null;const OV_MAXZ=5; // deepest zoom-in = full-network width / OV_MAXZ
+const ovFocused=()=>legendBase(); // a pinned or expanded line owns the viewBox
+const ovFree=()=>!ovFocused()&&FULL_VB; // pan/zoom only in the default network view
+function ovIsZoomed(){return!!freeVB&&freeVB[2]<FULL_VB[2]-.5}
+function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n.toFixed(1)).join(" "));
+  const z=ovIsZoomed();ov.classList.toggle("zoomed",z);$("ovReset").classList.toggle("show",z)}
+function ovClearFree(){freeVB=null;const ov=$("ovMap");if(ov){ov.classList.remove("zoomed");
+  const r=$("ovReset");r&&r.classList.remove("show")}}
+function ovClampVB(vb){ // keep the window inside the full-network bounds; centre axes that fully fit
+  const[FX,FY,FW,FH]=FULL_VB;let[x,y,w]=vb;
+  w=clamp(w,FW/OV_MAXZ,FW);const h=w*FH/FW; // uniform scale → height tracks width at the fit aspect
+  x=w>=FW?FX+(FW-w)/2:clamp(x,FX,FX+FW-w);
+  const y0=FY,y1=FY+FH;y=h>=FH?FY+(FH-h)/2:clamp(y,y0,y1-h);
+  return[x,y,w,h]}
+// client point → SVG user coords (root CTM handles the letterboxed aspect fit)
+function ovUser(cx,cy){const ov=$("ovMap"),m=ov.getScreenCTM();if(!m)return null;
+  const p=ov.createSVGPoint();p.x=cx;p.y=cy;return p.matrixTransform(m.inverse())}
+function ovZoomAt(cx,cy,s){if(!ovFree())return;const u=ovUser(cx,cy);if(!u)return;
+  const cur=freeVB||[...FULL_VB],[x,y,w]=cur,nw=clamp(w/s,FULL_VB[2]/OV_MAXZ,FULL_VB[2]),k=nw/w;
+  freeVB=ovClampVB([u.x-(u.x-x)*k,u.y-(u.y-y)*k,nw,cur[3]*k]);ovApplyVB(freeVB)}
+function ovPanBy(dxPx,dyPx){if(!ovFree())return;const m=$("ovMap").getScreenCTM();if(!m)return;
+  const cur=freeVB||[...FULL_VB];freeVB=ovClampVB([cur[0]-dxPx/m.a,cur[1]-dyPx/m.d,cur[2],cur[3]]);
+  ovApplyVB(freeVB)}
+function ovResetView(){if(ovFocused())return;ovZoom(null)} // animates back to the full-network fit
 function ovTarget(id){const ov=$("ovMap");
   let tgt=FULL_VB,ta=0,tc=ovC,LL=null;
   if(id){LL=LINES.find(l=>l.id===id);
@@ -743,6 +769,7 @@ function ovTarget(id){const ov=$("ovMap");
 function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
   let{tgt,ta,tc,LL}=ovTarget(id);
   if(!tgt)return;
+  ovClearFree(); // any focus change (or reset) supersedes a free pan/zoom
   cancelAnimationFrame(ovAnim);
   // the focused line's label <g>s counter-rotate every frame so text stays level;
   // big rotations switch them to 45°-tilted strip-map labels (constant footprint
@@ -1071,13 +1098,42 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
 /* ---------- overview map + legend + boot ---------- */
 (function boot(){
   const ov=$("ovMap");buildMap(ov,{});
+  let ovDrag=false; // set true by a pan/pinch so the trailing click doesn't select a line
   requestAnimationFrame(()=>{try{const bb=ov.getBBox(),p=46;
     FULL_VB=[bb.x-p,bb.y-p,bb.width+p*2,bb.height+p*2]}catch(e){FULL_VB=[0,0,760,1300]}
     ov.setAttribute("viewBox",FULL_VB.join(" "))});
-  ov.addEventListener("click",e=>{if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
+  ov.addEventListener("click",e=>{if(ovDrag){ovDrag=false;return} // a pan just ended, not a tap
+    if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
     const p=e.target.closest(".lpath");
     if(p)toggleCard(p.dataset.line,true); // re-click of the open line collapses it
     else if(expandedLine())toggleCard(expandedLine(),true)}); // blank map dismisses
+  // free pan/zoom (v0.4.7) — scroll / pinch to zoom, drag to pan; only when no line is focused
+  const pts=new Map();let panLast=null,pinch=null,moved=0,downT=0,lastTap=0;
+  ov.addEventListener("wheel",e=>{if(!ovFree())return;e.preventDefault();
+    ovZoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12)},{passive:false});
+  ov.addEventListener("pointerdown",e=>{if(!ovFree())return;ovDrag=false;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===1){panLast={x:e.clientX,y:e.clientY};moved=0;downT=performance.now()}
+    else if(pts.size===2){const a=[...pts.values()];panLast=null;
+      pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}}
+    ov.setPointerCapture(e.pointerId)});
+  ov.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pinch&&pts.size>=2){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),
+        cx=(a[0].x+a[1].x)/2,cy=(a[0].y+a[1].y)/2;
+      if(pinch.d>0)ovZoomAt(cx,cy,d/pinch.d);ovPanBy(cx-pinch.cx,cy-pinch.cy);
+      pinch={d,cx,cy};ovDrag=true;return}
+    if(panLast&&ovIsZoomed()){const dx=e.clientX-panLast.x,dy=e.clientY-panLast.y; // one finger pans only when zoomed
+      moved+=Math.abs(dx)+Math.abs(dy);if(moved>6)ovDrag=true;
+      ovPanBy(dx,dy);panLast={x:e.clientX,y:e.clientY}}});
+  const ovUp=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);
+    if(pts.size<2)pinch=null;
+    if(pts.size===0){if(!ovDrag&&moved<6&&performance.now()-downT<300){ // tap; two quick taps reset
+        const now=performance.now();if(now-lastTap<300){ovResetView();lastTap=0}else lastTap=now}
+      panLast=null}
+    else if(pts.size===1){const v=[...pts.values()][0];panLast={x:v.x,y:v.y}}};
+  ov.addEventListener("pointerup",ovUp);ov.addEventListener("pointercancel",ovUp);
+  $("ovReset").addEventListener("click",e=>{e.stopPropagation();ovResetView()});
   setLang(LANG); // renders all i18n text + legend + cards
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
   setTimeout(()=>{ // idle-prefetch the other theme's hero pair so the toggle swaps without a blank
