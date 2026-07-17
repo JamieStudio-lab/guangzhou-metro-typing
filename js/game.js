@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.5";
+const APP_VERSION="0.4.6";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -53,7 +53,7 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
-zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系统",quitBtn:"⏏ 退出",
+zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系统",quitBtn:"退出",
   setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言 (Language)",
   startBtn:"选择关卡",backTop:"↑ 首页",
   footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
@@ -65,7 +65,7 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   kbWarn:"请切换到英文键盘",
   origin:"始发站",depart:z=>`始发站 ${z} · 输入本站拼音开始`,
   doors:"车门已关闭 · 输入下一站拼音发车",arriveAt:(z,p)=>`到达 ${z} · ${p}`,
-  terminusReached:"到达终点站！",quitConfirm:"退出本次行程？",
+  terminusReached:"到达终点站！",quitTitle:"退出本次行程？",quitMsg:"当前进度不会被保存。",quitStay:"继续游戏",quitGo:"退出",
   titles:["见习司机","熟练司机","王牌司机"],
   bossSub:(d,n,h)=>`长站名挑战 · 完成 ${d}/${n} · 剩余 ${h}`,
   lineSub:(L,a,b)=>`${L.zh} · ${a} → ${b}`,
@@ -106,7 +106,7 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   badge_first:"初次通勤",badge_line:L=>`${L.zh}通关`,
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
-en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitBtn:"⏏ Quit",
+en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitBtn:"Quit",
   setBtn:"SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
   startBtn:"SELECT LEVEL",backTop:"↑ TOP",
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
@@ -118,7 +118,7 @@ en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitB
   kbWarn:"Please switch to an English keyboard",
   origin:"ORIGIN",depart:z=>`Origin ${z} · type this station to begin`,
   doors:"Doors closed · type the next stop to depart",arriveAt:(z,p)=>`Now at ${z} · ${p}`,
-  terminusReached:"Terminus reached!",quitConfirm:"Quit this run?",
+  terminusReached:"Terminus reached!",quitTitle:"Quit this run?",quitMsg:"Your current progress won't be saved.",quitStay:"Keep playing",quitGo:"Quit",
   titles:["TRAINEE DRIVER","SKILLED DRIVER","ACE DRIVER"],
   bossSub:(d,n,h)=>`Long-Name Gauntlet · cleared ${d}/${n} · ${h} left`,
   lineSub:(L,a,b)=>`${L.en} · ${a} → ${b}`,
@@ -328,7 +328,7 @@ const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   heats:[],times:[],perfs:[],taps:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,cum:[],kms:90,
   hotOn:.84,t2:10,t3:20,cstep:.1,
-  bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
+  bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false,paused:false,pauseAt:0};
 const dirState={},bests={};
 let lastRun=null;
 
@@ -490,7 +490,8 @@ inp.addEventListener("compositionend",()=>handleTyping(inp.value));
 inp.addEventListener("paste",e=>{e.preventDefault();shake()});
 document.addEventListener("keydown",e=>{
   if(S.screen!=="game")return;
-  if(e.key==="Escape"){quit();return}
+  if(S.paused)return; // quit dialog open — let the dialog own the keys (native Esc closes it)
+  if(e.key==="Escape"){e.preventDefault();quit();return} // preventDefault so this same Esc doesn't also close the dialog we just opened
   // correct keystrokes lock in — no deleting/retyping (since v0.4.3)
   if(e.key==="Backspace"||e.key==="Delete"){e.preventDefault();return}
   if(document.activeElement!==inp&&e.key.length===1&&!e.metaKey&&!e.ctrlKey)inp.focus()});
@@ -965,11 +966,11 @@ function updLive(now){if(S.t0===null)return;
 /* ---------- main loop ---------- */
 let lastF=performance.now(),lastLive=0;
 function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
-  if(S.screen==="game"&&S.t0&&!S.done&&now-lastLive>250){lastLive=now;updLive(now)}
+  if(S.screen==="game"&&S.t0&&!S.done&&!S.paused&&now-lastLive>250){lastLive=now;updLive(now)}
   // camera (zoom glides slower than the pan while following — less lens churn)
   cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;
   cam.w+=(camT.w-cam.w)*(camFollow?.045:.09);
-  if(S.screen==="game"&&S.mode==="line"){
+  if(S.screen==="game"&&S.mode==="line"&&!S.paused){
     const cap=S.line.cap;
     if(!S.done){
       // direct drive: each letter owns its slice of the segment, the train pursues
@@ -1010,7 +1011,7 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
     $("cDist").firstChild.nodeValue=S.dist.toFixed(1);
     if(S.t0&&!S.done)$("cTime").textContent=fmtT(now-S.t0);
     applyCam()}
-  if(S.screen==="game"&&S.mode==="boss"&&!S.done){
+  if(S.screen==="game"&&S.mode==="boss"&&!S.done&&!S.paused){
     if(S.t0&&!S.done)$("cTime").textContent=fmtT(now-S.t0);
     if(!S.revealing&&S.key){const rem=Math.max(0,S.deadline-now),frac=rem/(S.bossSec*1000);
       const arc=document.getElementById("ringArc");
@@ -1024,9 +1025,23 @@ requestAnimationFrame(tick);
 /* ---------- quit / nav ---------- */
 // back from a run → land on the line-selection area, not the opening page
 function toPick(){$("pick").scrollIntoView({behavior:"auto"})}
+function leaveRun(){show("menu");renderCards();toPick()}
+// mid-run quit confirms via an in-game dialog (settings-style). The run pauses while it's
+// open — train, timer, and boss countdown all freeze (tick() skips on S.paused) — and any
+// dismiss that isn't Quit resumes and shifts the clock forward so the pause costs nothing.
+// A finished run leaves straight away, no prompt.
 function quit(){if(S.screen!=="game")return;
-  if(S.done||confirm(t("quitConfirm"))){show("menu");renderCards();toPick()}}
+  if(S.done){leaveRun();return}
+  if($("quitDlg").open)return;
+  S.paused=true;S.pauseAt=performance.now();$("quitDlg").showModal();$("quitStayBtn").focus()}
 $("homeBtn").onclick=quit;
+$("quitGoBtn").onclick=()=>{S.paused=false;$("quitDlg").close();leaveRun()};
+$("quitStayBtn").onclick=()=>$("quitDlg").close();
+$("quitDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+$("quitDlg").addEventListener("close",()=>{if(!S.paused)return; // cancel / backdrop / Esc → resume
+  const d=performance.now()-S.pauseAt;
+  if(S.t0!==null)S.t0+=d;if(S.firstT!==null)S.firstT+=d;if(S.deadline)S.deadline+=d;
+  S.paused=false;if(!S.done&&!inp.disabled)inp.focus()});
 $("rAgain").onclick=()=>{if(!lastRun)return;lastRun.mode==="boss"?startBoss():startLine(lastRun.L,lastRun.rev)};
 $("rBack").onclick=()=>{show("menu");renderCards();toPick()};
 $("startBtn").onclick=()=>$("pick").scrollIntoView({behavior:REDUCED()?"auto":"smooth"});

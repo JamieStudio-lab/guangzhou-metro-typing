@@ -92,8 +92,11 @@ button{font-family:inherit;cursor:pointer}
 #fchips .hbtn{background:color-mix(in srgb,var(--panel) 70%,transparent);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--sh2)}
 #fchips .hbtn:hover{background:color-mix(in srgb,var(--amber) 14%,color-mix(in srgb,var(--panel) 76%,transparent))}
-#setBtn{display:inline-flex;align-items:center;gap:6px}
-#setBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#setBtn,#homeBtn{display:inline-flex;align-items:center;gap:6px}
+/* exit chip: red-tinted glass that goes solid red on hover/focus (destructive action) */
+#fchips #homeBtn{background:color-mix(in srgb,var(--bad) 18%,color-mix(in srgb,var(--panel) 70%,transparent));color:var(--bad)}
+#fchips #homeBtn:hover,#fchips #homeBtn:focus-visible{background:var(--bad);color:#fff;box-shadow:var(--sh2)}
+#setBtn svg,#homeBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* settings dialog rows */
 #setDlg h3{font-size:22px}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
@@ -375,6 +378,7 @@ button{font-family:inherit;cursor:pointer}
   border:none;border-radius:var(--r-xl);box-shadow:var(--sh3);padding:24px}
 .accdlg::backdrop{background:rgba(4,7,13,.55)}
 .accdlg h3{font-size:20px;font-weight:700;margin-bottom:4px}
+.qmsg{color:var(--mut);font-size:14px;line-height:1.5;margin-top:6px}
 .accdlg h4{font-size:11px;letter-spacing:.18em;font-family:var(--mono);color:var(--mut);
   font-weight:600;margin-top:16px}
 .dmut{color:var(--mut);font-size:12.5px;line-height:1.6;margin-top:4px}
@@ -394,6 +398,9 @@ button{font-family:inherit;cursor:pointer}
 .dbtn:active{transform:scale(.97)}
 .dbtn.alt{background:var(--panel2);color:var(--paper);font-weight:600}
 .dbtn.alt:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel2))}
+/* destructive secondary (quit dialog): tonal red, subordinate to the amber "keep playing" */
+.dbtn.danger{background:var(--panel2);color:var(--bad);font-weight:700}
+.dbtn.danger:hover{background:color-mix(in srgb,var(--bad) 14%,var(--panel2))}
 .dbtn:disabled{opacity:.55;cursor:default;transform:none}
 .dlink{display:block;margin:14px auto 0;background:none;border:none;color:var(--mut);
   font-size:12.5px;text-decoration:underline;text-underline-offset:3px}

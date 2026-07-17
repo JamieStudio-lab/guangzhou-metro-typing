@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.6] - 2026-07-17
+
+### Changed
+- **Quitting mid-run is now an in-game dialog, not a browser popup.** The exit chip's icon becomes a clean ✕ (dropping the old ⏏), and the chip turns metro-warning red — a translucent red tint that goes solid on hover — so it reads clearly as "leave this run" and stands apart from the amber settings/account chips. Tapping it (or pressing Esc) now opens a settings-style in-game confirmation — *退出本次行程？ / Quit this run?* — with **继续游戏 / Keep playing** as the emphasized default and **退出 / Quit** as the secondary, destructive action, instead of the OS confirm box. The run **pauses while the dialog is open**: the train, the timer, and the Long-Name Gauntlet's countdown all freeze, then resume without penalty if you keep playing (the old popup only froze things as a side effect of blocking the tab). A finished run still exits straight to the menu with no prompt.
+
 ## [0.4.5] - 2026-07-17
 
 ### Changed
@@ -456,6 +461,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.2...v0.4.3

@@ -40,7 +40,7 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
 <div id="fchips">
   <button class="hbtn" id="accBtn" aria-label="Account · 账号">登录</button>
   <button class="hbtn" id="setBtn" aria-label="Settings · 设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.4 19.37L9.98 20.69C10.15 21.08 10.44 21.41 10.8 21.64C11.15 21.88 11.57 22 12 22C12.43 22 12.85 21.88 13.21 21.64C13.57 21.41 13.85 21.08 14.02 20.69L14.61 19.37C14.82 18.9 15.17 18.52 15.61 18.26C16.05 18 16.57 17.89 17.08 17.95L18.51 18.1C18.93 18.15 19.36 18.07 19.75 17.87C20.13 17.68 20.44 17.38 20.66 17.01C20.87 16.64 20.97 16.21 20.95 15.78C20.93 15.36 20.78 14.94 20.53 14.6L19.68 13.43C19.38 13.02 19.22 12.51 19.22 12C19.22 11.49 19.39 10.99 19.69 10.57L20.54 9.41C20.79 9.06 20.93 8.65 20.96 8.22C20.98 7.8 20.88 7.37 20.66 7C20.45 6.63 20.13 6.33 19.75 6.13C19.37 5.94 18.94 5.86 18.51 5.91L17.08 6.06C16.57 6.11 16.06 6 15.61 5.75C15.17 5.49 14.82 5.1 14.61 4.63L14.02 3.31C13.85 2.92 13.57 2.59 13.21 2.36C12.85 2.12 12.43 2 12 2C11.57 2 11.15 2.12 10.8 2.36C10.44 2.59 10.15 2.92 9.98 3.31L9.4 4.63C9.19 5.1 8.84 5.49 8.4 5.75C7.95 6 7.44 6.11 6.93 6.06L5.49 5.91C5.06 5.86 4.64 5.94 4.25 6.13C3.87 6.33 3.56 6.63 3.34 7C3.13 7.37 3.03 7.8 3.05 8.22C3.07 8.65 3.22 9.06 3.47 9.41L4.32 10.57C4.62 10.99 4.78 11.49 4.78 12C4.78 12.51 4.62 13.01 4.32 13.43L3.47 14.59C3.22 14.94 3.07 15.35 3.05 15.78C3.03 16.2 3.13 16.63 3.34 17C3.56 17.37 3.87 17.67 4.25 17.87C4.64 18.06 5.07 18.14 5.49 18.09L6.92 17.94C7.43 17.89 7.95 18 8.39 18.25C8.84 18.51 9.19 18.9 9.4 19.37Z"/><path d="M12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15Z"/></svg><span data-i18n="setBtn">设置</span></button>
-  <button class="hbtn" id="homeBtn" hidden data-i18n="quitBtn">⏏ 退出</button>
+  <button class="hbtn" id="homeBtn" hidden aria-label="Quit · 退出"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7L7 17M7 7L17 17"/></svg><span data-i18n="quitBtn">退出</span></button>
 </div>
 
 <!-- ================= MENU ================= -->
@@ -215,6 +215,14 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
       <button class="arrow" id="langNext" aria-label="Next language · 下一种语言">›</button>
     </div></div>
   <div class="dbtns"><button class="dbtn alt" id="setClose" data-i18n="accClose">关闭</button></div>
+</dialog>
+<dialog id="quitDlg" class="accdlg qdlg">
+  <h3 data-i18n="quitTitle">退出本次行程？</h3>
+  <p class="qmsg" data-i18n="quitMsg">当前进度不会被保存。</p>
+  <div class="dbtns">
+    <button class="dbtn danger" id="quitGoBtn" data-i18n="quitGo">退出</button>
+    <button class="dbtn" id="quitStayBtn" data-i18n="quitStay">继续游戏</button>
+  </div>
 </dialog>
 
 <script src="js/geo.js"></script>
