@@ -4,6 +4,13 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.11] - 2026-07-16
+
+### Changed
+- **The speedometer behaves like one.** The gauge needle used to track each keystroke's speed burst through a fast 0.22 s filter — flicking up and down like a tachometer. It now has instrument inertia: a quicker 0.55 s spin-up and a slow 1.3 s coast-down, so sustained typing reads as a steady needle that eases down when you pause instead of bouncing per letter. Train motion, flames, and scoring are untouched — only the displayed speed is smoothed.
+- **The WPM chip is live.** It was a whole-run average updated only on keystrokes; now it's a rolling ~10 s window (ramping up from the run's start), refreshed 4×/s from the frame loop — it tracks your current pace and visibly decays while you idle. The result screen still reports whole-run WPM.
+- **Roomier result card.** Bigger type and more air throughout the level-complete box: title 24 → 28 px, medal 48 → 56 px, stars 19 → 22 px, stat values 21 → 26 px with clearer labels, cell padding 10×12 → 14×16, wider grid gaps and margins, taller heat strip, and the card itself grows to 720 px with more padding. The SCORE cell is now the hero stat: line-color tonal tint and a 30 px value.
+
 ## [0.2.10] - 2026-07-16
 
 ### Added
@@ -302,6 +309,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.7...v0.2.8

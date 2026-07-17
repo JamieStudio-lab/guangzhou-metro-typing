@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.10";
+const APP_VERSION="0.2.11";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -308,7 +308,7 @@ function buildMap(svg,opts){
 const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
+  heats:[],times:[],perfs:[],taps:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,cum:[],kms:90,
   hotOn:.84,t2:10,t3:20,cstep:.1,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
@@ -343,7 +343,7 @@ function show(name){S.screen=name;
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
+  heats:[],times:[],perfs:[],taps:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,mapClean:false,
   hotOn:.84,t2:10,t3:20,cstep:.1});
   camPunch=0;gMap.classList.remove("noNames");
@@ -466,6 +466,7 @@ function handleTyping(raw){
     shake();sErr()}
   if(ok>S.typed){const now=performance.now();
     if(S.firstT===null){S.firstT=now;if(S.t0===null)S.t0=S.firstT}
+    for(let k=S.typed;k<ok;k++)S.taps.push(now);
     S.correct+=ok-S.typed}
   S.typed=ok;inp.value=S.key.slice(0,ok);
   updCredit();paintPy(ok>prev?prev:-1,err);updLive();
@@ -603,8 +604,8 @@ function showResult(rerender){show("result");
     boss?[t("rCleared"),S.bossDone+"/"+S.bossList.length,""]:[t("rDist"),S.dist.toFixed(1),"km"],
     boss?[t("rLives"),S.lives,"♥"]:[t("rTop"),Math.round(S.topV),"km/h"],
     [t("rSpeed"),wpm,"wpm"],[t("rAcc"),acc,"%"],[t("rCombo"),"×"+S.maxCombo,""],
-    [t("rErr"),S.errors,""],[t("rScore"),S.score,""]];
-  $("rGrid").innerHTML=cells.map(c=>`<div class="rcell"><label>${c[0]}</label><b>${c[1]}<small> ${c[2]}</small></b></div>`).join("");
+    [t("rErr"),S.errors,""],[t("rScore"),S.score,"","emph"]];
+  $("rGrid").innerHTML=cells.map(c=>`<div class="rcell${c[3]?" "+c[3]:""}"><label>${c[0]}</label><b>${c[1]}<small> ${c[2]}</small></b></div>`).join("");
   // heat strip + fastest/slowest
   const hs=$("heatstrip");hs.innerHTML="";
   const list=boss?S.bossList:S.seq;
@@ -765,15 +766,20 @@ function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const t=document.getElementById("gaugeV");if(t)t.textContent=Math.round(v)}
 
 /* ---------- live chips ---------- */
-function updLive(){if(S.t0===null)return;
-  const now=S.endT||performance.now(),min=Math.max((now-S.t0)/60000,.001);
-  $("cWpm").textContent=Math.round(S.correct/5/min);
+// WPM chip = rolling ~10 s window (ramps up from the run start), refreshed from
+// tick() so it decays while idle; the result screen keeps whole-run WPM
+function updLive(now){if(S.t0===null)return;
+  now=S.endT||now||performance.now();
+  const win=Math.min(10,Math.max((now-S.t0)/1000,1.5)),cut=now-win*1000;
+  while(S.taps.length&&S.taps[0]<cut)S.taps.shift();
+  $("cWpm").textContent=Math.round(S.taps.length/5*60/win);
   const tot=S.correct+S.errors;
   $("cAcc").firstChild.nodeValue=tot?Math.round(100*S.correct/tot):100}
 
 /* ---------- main loop ---------- */
-let lastF=performance.now();
+let lastF=performance.now(),lastLive=0;
 function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
+  if(S.screen==="game"&&S.t0&&!S.done&&now-lastLive>250){lastLive=now;updLive(now)}
   // camera (zoom glides slower than the pan while following — less lens churn)
   cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;
   cam.w+=(camT.w-cam.w)*(camFollow?.045:.09);
@@ -787,7 +793,9 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       const step=Math.min(lead,lead*Math.min(1,dt/CHASE)+(lead>0?ARRIVE_V*cap*dt/S.kms:0));
       S.pos+=step;S.dist=S.pos;
       const vRaw=dt>0?step/dt*S.kms:0;
-      S.dispV+=(vRaw-S.dispV)*Math.min(1,dt/.22); // gauge smoothing only — motion stays sync
+      // speedometer inertia (gauge only — motion stays sync): quick-ish spin-up,
+      // slow coast-down, so per-keystroke bursts read as a steady needle
+      S.dispV+=(vRaw-S.dispV)*Math.min(1,dt/(vRaw>S.dispV?.55:1.3));
       S.avgV+=(vRaw-S.avgV)*Math.min(1,dt/1.2);   // slow average: station-ease dips don't kill flames
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
