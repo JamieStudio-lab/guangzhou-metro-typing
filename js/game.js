@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.11";
+const APP_VERSION="0.4.12";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -763,6 +763,11 @@ function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n
 // instead of ballooning): strokes/dots via --zs in CSS, hover labels via a matching
 // scale about their own station so text and offset shrink together
 function ovShrink(ov,k){if(Math.abs(k-ovK)<.004)return;ovK=k;
+  // bend radius counter-scales with the strokes: the rounded corners cut across the
+  // vertex the dot sits on, so a fixed 14-unit radius leaves dots visibly off the
+  // slimmed line at depth — tightening it keeps the path through the dots
+  ov.querySelectorAll(".lpath").forEach(p=>{const L=LINES.find(l=>l.id===p.dataset.line);
+    if(L)p.setAttribute("d",roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations,14*k))});
   if(k>.999){ov.style.removeProperty("--zs");
     ov.querySelectorAll(".stg>g:last-child").forEach(g=>g.removeAttribute("transform"))}
   else{ov.style.setProperty("--zs",k.toFixed(3));

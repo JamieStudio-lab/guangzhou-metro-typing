@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.12] - 2026-07-17
+
+### Fixed
+- **Station dots sit on their line again at deep zoom.** The map rounds every bend with a fixed-size corner curve that cuts across the exact point the station dot sits on — invisible at normal zoom where the thick stroke swallows it, but after v0.4.11's counter-scaling the slimmed line could pass visibly beside a dot at bendy stations (up to ~150 m of map distance at sharp corners like 天河智慧城). The corner radius now counter-scales along with the strokes and dots, so bends keep the same on-screen roundness and the line tightens back through every station as you dive; resetting or picking a line restores the original geometry.
+
 ## [0.4.11] - 2026-07-17
 
 ### Changed
@@ -491,6 +496,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.8...v0.4.9
