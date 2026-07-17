@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.7";
+const APP_VERSION="0.4.8";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -1111,12 +1111,14 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
   const pts=new Map();let panLast=null,pinch=null,moved=0,downT=0,lastTap=0;
   ov.addEventListener("wheel",e=>{if(!ovFree())return;e.preventDefault();
     ovZoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12)},{passive:false});
+  // NB: capture the pointer only once a drag/pinch actually starts — capturing on
+  // pointerdown retargets the trailing `click`, which would kill line selection
+  const cap=id=>{try{if(!ov.hasPointerCapture(id))ov.setPointerCapture(id)}catch(e){}};
   ov.addEventListener("pointerdown",e=>{if(!ovFree())return;ovDrag=false;
     pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pts.size===1){panLast={x:e.clientX,y:e.clientY};moved=0;downT=performance.now()}
-    else if(pts.size===2){const a=[...pts.values()];panLast=null;
-      pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}}
-    ov.setPointerCapture(e.pointerId)});
+    else if(pts.size===2){const a=[...pts.values()];panLast=null;cap(e.pointerId);
+      pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}}});
   ov.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;
     pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&pts.size>=2){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),
@@ -1124,7 +1126,7 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
       if(pinch.d>0)ovZoomAt(cx,cy,d/pinch.d);ovPanBy(cx-pinch.cx,cy-pinch.cy);
       pinch={d,cx,cy};ovDrag=true;return}
     if(panLast&&ovIsZoomed()){const dx=e.clientX-panLast.x,dy=e.clientY-panLast.y; // one finger pans only when zoomed
-      moved+=Math.abs(dx)+Math.abs(dy);if(moved>6)ovDrag=true;
+      moved+=Math.abs(dx)+Math.abs(dy);if(moved>6){ovDrag=true;cap(e.pointerId)} // capture once it's a real drag
       ovPanBy(dx,dy);panLast={x:e.clientX,y:e.clientY}}});
   const ovUp=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);
     if(pts.size<2)pinch=null;

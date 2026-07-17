@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.8] - 2026-07-17
+
+### Fixed
+- **Lines on the menu map are clickable again.** v0.4.7's pan/zoom captured the pointer the instant you pressed down, which retargeted the follow-up click away from the line you were pressing — so tapping a line on the map did nothing. The map now captures the pointer only once a drag or pinch actually begins, so a plain click still selects (or a drag still pans, without misfiring a selection).
+
 ## [0.4.7] - 2026-07-17
 
 ### Added
@@ -467,6 +472,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.4...v0.4.5
