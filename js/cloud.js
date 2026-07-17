@@ -83,12 +83,14 @@ function queuePrefs(){if(!SESS||!PROFILE)return;clearTimeout(prefT);
 /* ---------- badges ---------- */
 const BADGE_DEFS=[
   ["first","🎫",r=>r.mode==="line"],
-  ["l1","🟡",r=>r.key==="l1"],["l2","🔵",r=>r.key==="l2"],["l3","🟠",r=>r.key==="l3"],
+  // one completion badge per line, dot in the line's color (ids l1/l2/l3 predate v0.3.2)
+  ...LINES.map(L=>[L.id,`<i class="bdot" style="background:${L.color}"></i>`,r=>r.key===L.id]),
   ["star3","🌟",r=>r.stars===3],
   ["boss","👑",r=>r.mode==="boss"&&r.cleared>=r.total&&r.lives>0],
   ["wpm60","🚄",r=>r.wpm>=60],["wpm100","🚀",r=>r.wpm>=100],
   ["combo20","🔥",r=>r.maxCombo>=20],
   ["acc100","🎯",r=>r.mode==="line"&&r.acc>=100]];
+const badgeName=id=>{const L=LINES.find(l=>l.id===id);return L?t("badge_line",L):t("badge_"+id)};
 
 /* ---------- score upload (called by showResult) ---------- */
 async function cloudOnResult(run){
@@ -123,12 +125,12 @@ function paintCloudNote(){
   el.textContent=NOTE.ok?msg:t("cloudErr");
   nb.hidden=!NEW_BADGES.length;
   nb.innerHTML=NEW_BADGES.map(b=>
-    `<span class="bdgchip new">${b[1]} ${t("badge_"+b[0])} · ${t("badgeNew")}</span>`).join("")}
+    `<span class="bdgchip new">${b[1]} ${badgeName(b[0])} · ${t("badgeNew")}</span>`).join("")}
 
 /* ---------- leaderboard ---------- */
-function renderLbTabs(){
+function renderLbTabs(){ // 20 modes: number roundels, full name in the tooltip
   $("lbTabs").innerHTML=LINES.map(L=>
-    `<button class="lbtab${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}">${t("lineName",L)}</button>`).join("")+
+    `<button class="lbtab num${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
     `<button class="lbtab${LB_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
   $("lbTabs").querySelectorAll(".lbtab").forEach(b=>
     b.onclick=()=>{LB_MODE=b.dataset.m;renderLbTabs();loadLb(LB_MODE)})}
@@ -159,7 +161,7 @@ function renderDlg(){const d=$("accDlg");let h;
     h=`<h3>${esc(PROFILE.nickname)}</h3><p class="dmut">${esc(SESS.user.email)}</p>
       <p class="dmut">${t("accSync")}</p><h4>${t("accBadges")}</h4>
       <div class="bdgs">${BADGE_DEFS.map(b=>
-        `<span class="bdgchip${MY_BADGES.has(b[0])?"":" off"}">${b[1]} ${t("badge_"+b[0])}</span>`).join("")}</div>
+        `<span class="bdgchip${MY_BADGES.has(b[0])?"":" off"}">${b[1]} ${badgeName(b[0])}</span>`).join("")}</div>
       ${MY_BADGES.size?"":`<p class="dmut">${t("accNoBadges")}</p>`}
       <h4>${t("accRecords")}</h4>
       <div class="lbtabs rectabs" id="recTabs"></div>
@@ -198,7 +200,7 @@ function renderDlg(){const d=$("accDlg");let h;
 const recDate=iso=>new Date(iso).toLocaleDateString(LANG==="zh"?"zh-CN":"en-GB",{month:"short",day:"numeric"});
 function renderRecTabs(){const el=$("recTabs");if(!el)return;
   el.innerHTML=LINES.map(L=>
-    `<button class="lbtab${REC_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}">${t("lineName",L)}</button>`).join("")+
+    `<button class="lbtab num${REC_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
     `<button class="lbtab${REC_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
   el.querySelectorAll(".lbtab").forEach(b=>
     b.onclick=()=>{REC_MODE=b.dataset.m;renderRecTabs();loadRecs(REC_MODE)})}

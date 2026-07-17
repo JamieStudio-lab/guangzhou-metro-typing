@@ -23,13 +23,15 @@ const SRC=process.argv[2]||path.join(__dirname,"fonts-src");
 const OUT=path.join(ROOT,"assets","fonts");
 const PY="python3";
 
-const SCAN=["index.html","js/data.js","js/game.js","js/cloud.js"];
+const SCAN=["index.html","js/data.js","js/game.js","js/cloud.js","js/geo.js"];
 const LATIN="U+0000-00FF,U+0100-017F,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+FEFF,U+FFFD";
 
 function cjkCharset(){
   const set=new Set();
   const grab=s=>{for(const c of s){const cp=c.codePointAt(0);
-    if((cp>=0x3400&&cp<=0x9FFF)||(cp>=0x3000&&cp<=0x303F)||(cp>=0xFF01&&cp<=0xFF5E)||cp===0x2014||(cp>=0x2018&&cp<=0x201D)||cp===0x2026)set.add(c);}};
+    // 0x20000-0x2FA1F: CJK Ext-B+ (𧒽岗 on the Guangfo line) — kept in the charset even
+    // though current RHR builds lack those glyphs, so a future font update picks them up
+    if((cp>=0x3400&&cp<=0x9FFF)||(cp>=0x20000&&cp<=0x2FA1F)||(cp>=0x3000&&cp<=0x303F)||(cp>=0xFF01&&cp<=0xFF5E)||cp===0x2014||(cp>=0x2018&&cp<=0x201D)||cp===0x2026)set.add(c);}};
   for(const f of SCAN)grab(fs.readFileSync(path.join(ROOT,f),"utf8"));
   grab(fs.readFileSync(path.join(__dirname,"hanzi-3500.txt"),"utf8"));
   grab("、。，·：；！？（）《》〈〉「」『』【】〇々～");

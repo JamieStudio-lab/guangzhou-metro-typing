@@ -4,6 +4,27 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.2] - 2026-07-17
+
+### Added
+- **All 19 lines of the 2026 network are playable.** Lines 4–14, 18, 21, 22, the Guangfo line, and the APM join the original three — 296 unique stations, 63 real interchanges, every one with hand-authored toned pinyin (cross-checked programmatically against OSM's official romanizations), per-segment distances scaled to each line's official length, and bilingual line descriptions fact-checked against Wikipedia (per-line top speeds too: 160 km/h on the D-type expresses 18/22 down to 55 on the APM). Line 12 ships as its opened east section; Line 21 starts at 天河公园 while its 员村 stub is closed for rebuilding; the Line 3 airport branch and Knowledge City line aren't modeled.
+- **Line 3 grows its 2024 eastern extension.** 海傍 / 海涌路 / 石碁南 / 傍江 extend the classic segment to 20 stations — new l3 runs earn more than the old records, which stay on the board.
+- **Line 11 draws as the loop it is.** The playable run is linear (赤沙 → 龙潭), and the map closes the ring with a decorative arc.
+- **A completion badge for every line,** each wearing a dot in its line color; the l1/l2/l3 badges players already earned keep their ids and names.
+
+### Changed
+- **The menu scales to twenty cards.** Cards flow into a two-column grid on desktop (single column on phones) in line-number order — 1…14, 18, 21, 22, GF, APM — with the boss card closing the set; a container query wraps each card's header when its cell gets narrow. Difficulty tags are now terciles of the ranking (7 EASY / 6 MEDIUM / 6 HARD) instead of "everything after the second card is HARD"; honest consequence: Line 1 now reads MEDIUM and Line 2 HARD.
+- **Legend and leaderboard grew up.** The map legend packs its 20 pills into a two-column grid beside the overview map (wrap-row on mobile), and the leaderboard + my-records tabs became number roundels in official line colors (full name in the tooltip), with the gauntlet tab keeping its label.
+- **The camera frames your line, not the whole map.** With 19 lines drawn, the run's opening shot and the terminus recap now fit the ridden line's bounding box (`fitSeq`) instead of the entire network; the LED board's line chip stretches to a pill for "APM".
+- **The boss pool nearly tripled.** Every station name ≥14 letters across the network now qualifies: 13 → 36 words, still 3 lives — a full clear is a real marathon now, and old gauntlet records will be overtaken.
+- **Confetti celebrates in all 19 line colors,** and the footnote/aria text now describe the full network. Fonts were re-subset for the 16 new rare station characters (㘵冼埔姬暹柯梓棣浔湴漖琶碁邨陂鹭); the Guangfo station 𧒽岗's Ext-B character isn't in Resource Han Rounded, so that one glyph renders in the system font.
+
+### Ops
+- **Run `supabase/migrations/0.3.2-mode-whitelist.sql` on the live database** (SQL editor, once) — it widens the `scores.mode` CHECK to the new line ids. Until then, signed-in uploads on new lines politely fail with "☁ upload failed"; the other caps hold (a 32-station line still peaks ≈22k points vs the 200000 cap). `setup.sql` carries the same list for fresh provisions and now warns against re-running it on live data.
+
+### Fixed
+- **Stale transfer badges.** The hand-authored ⇄ hints (e.g. Line 1 芳村 claiming a Guangfo transfer it doesn't have) are gone — drawn interchanges get their white dot automatically from the map registry, and only the un-modeled Line 3 airport branch keeps ⇄3 badges (林和西, 广州东站, 燕塘, 嘉禾望岗, 高增).
+
 ## [0.3.1] - 2026-07-17
 
 ### Fixed
@@ -348,6 +369,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.14...v0.3.0
 [0.2.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.13...v0.2.14

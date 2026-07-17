@@ -1,6 +1,6 @@
 # 地铁键速 · Metro Typing · Guangzhou
 
-A typing speed run through the Guangzhou Metro: pick a line (**1, 2, or 3**), type each station's pinyin, and ride it one key at a time — all the way to the end of the line. Faster, more accurate typing means higher train speed, longer combos, and bigger scores — and you ride past the real geography of the city while you're at it.
+A typing speed run through the Guangzhou Metro: pick any of the **19 lines of the 2026 network**, type each station's pinyin, and ride it one key at a time — all the way to the end of the line. Faster, more accurate typing means higher train speed, longer combos, and bigger scores — and you ride past the real geography of the city while you're at it.
 
 **Play it:** https://jamiestudio-lab.github.io/guangzhou-metro-typing/ — or open `index.html` locally in any browser. No build step, no dependencies, works offline.
 
@@ -8,10 +8,10 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 
 ## How to play
 
-1. Pick a line and direction. Lines are ranked **Level 1–3 by average station-name length** (Line 3 → Line 1 → Line 2), and each stop carries a 短/中/长 difficulty tag — longer names score more.
+1. Pick a line (1–14, 18, 21, 22, Guangfo, or the APM) and a direction. Cards run in line-number order, each tagged **EASY/MEDIUM/HARD from its average station-name length**, and each stop carries a 短/中/长 difficulty tag — longer names score more.
 2. The LED destination board shows the next stop in 汉字 with toned pinyin underneath. Type the **toneless** pinyin on an English keyboard; spaces are optional (`tiyuxilu` ✓). Correct letters light up green; finish the name and the train departs.
-3. Watch the HUD: speedometer driven by your typing pace (Line 3 authentically tops out at 120 km/h vs. 80 on Lines 1–2), plus distance, time, WPM, accuracy, combo, and score.
-4. **Level 4 — Long-Name Gauntlet:** the network's 13 longest station names against a countdown ring, three lives, from 汉溪长隆 up to the 22-letter 白云文化广场.
+3. Watch the HUD: speedometer driven by your typing pace, with authentic per-line top speeds — 160 km/h on the express Lines 18/22, 120 on Lines 3/9/14/21, down to 55 on the little APM — plus distance, time, WPM, accuracy, combo, and score.
+4. **Long-Name Gauntlet:** the network's 36 longest station names against a countdown ring, three lives, all the way up to the 22-letter 白云文化广场.
 
 ## Features
 
@@ -22,8 +22,8 @@ Plain HTML/CSS/JS split across `index.html` (markup), `css/style.css`, `js/geo.j
 
 ## Data notes
 
-Fan-made typing game, not affiliated with Guangzhou Metro. Covers the classic **main-line segments** of Lines 1, 2, and 3 (no extensions or the airport branch); inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
+Fan-made typing game, not affiliated with Guangzhou Metro. Covers **all 19 lines of the 2026 network** — Lines 1–14, 18, 21, 22, the Guangfo line and the APM — as they run today (Line 12 is its opened east section; Line 21 currently starts at 天河公园; the Line 3 airport branch and the Knowledge City branch aren't modeled). Inter-station distances are approximate. Station pinyin is toned for display and matched tonelessly for input (e.g. 市二宫 → `shiergong`).
 
-`js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (all 19 numbered lines + Guangfo + APM, 367 stations), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — the groundwork for adding more playable lines. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.
+`js/geo.js` holds real coordinates, names, and official colors for the **entire 2026 network** (296 unique stations, 63 interchanges), generated from the OpenStreetMap Overpass API by `tools/fetch-geo.js` — every playable line is projected from it. Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under ODbL 1.0.
 
 Typefaces (all [SIL OFL 1.1](https://openfontlicense.org/), subset for the web by `tools/subset-fonts.js`, licenses in `assets/fonts/`): [资源圆体 Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) (Chinese), [Nunito](https://github.com/googlefonts/nunito) (Latin), and [Sono](https://github.com/sursly/sono) (monospace).

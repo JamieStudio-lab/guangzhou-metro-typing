@@ -2,6 +2,8 @@
 -- Creates invites / profiles / scores / badges + row-level security + the leaderboard view.
 -- ⚠ Change the seed invite code at the bottom before running, if you want your own.
 -- Re-running DROPS AND RECREATES everything (fine before launch, destructive after).
+-- ⚠ A LIVE database with real scores must NOT re-run this file — apply the
+--   incremental snippets in supabase/migrations/ instead.
 
 drop function if exists public.register_profile(text,text,text,text);
 drop function if exists public.check_invite(text);
@@ -34,7 +36,9 @@ create unique index profiles_nickname_key on public.profiles (lower(nickname));
 create table public.scores (
   id         bigint generated always as identity primary key,
   user_id    uuid not null references auth.users(id) on delete cascade,
-  mode       text not null check (mode in ('l1','l2','l3','boss')),
+  mode       text not null check (mode in
+    ('l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11','l12','l13','l14',
+     'l18','l21','l22','lgf','lapm','boss')),
   score      int  not null check (score between 0 and 200000),
   wpm        int  not null check (wpm between 0 and 200),
   acc        numeric(5,2) not null check (acc between 0 and 100),

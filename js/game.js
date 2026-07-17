@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.1";
+const APP_VERSION="0.3.2";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -56,7 +56,7 @@ const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
   setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言",
   startBtn:"选择关卡",backTop:"↑ 首页",
-  footnote:"☆ 本作为粉丝自制打字游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
+  footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
   nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
@@ -102,13 +102,13 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   cloudSaved:r=>`☁ 成绩已上传 · 当前全球第 ${r} 名`,cloudSavedNoRank:"☁ 成绩已上传",
   cloudMyBest:r=>`个人第 ${r} 佳`,cloudPB:"个人新纪录！",
   cloudErr:"☁ 成绩上传失败（本局成绩仍在本页显示）",badgeNew:"新徽章",
-  badge_first:"初次通勤",badge_l1:"一号线通关",badge_l2:"二号线通关",badge_l3:"三号线通关",
+  badge_first:"初次通勤",badge_line:L=>`${L.zh}通关`,
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
   setBtn:"SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
   startBtn:"SELECT LEVEL",backTop:"↑ TOP",
-  footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
+  footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
   nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
@@ -154,7 +154,7 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   cloudSaved:r=>`☁ Score uploaded · #${r} worldwide`,cloudSavedNoRank:"☁ Score uploaded",
   cloudMyBest:r=>`your #${r} best`,cloudPB:"new personal best!",
   cloudErr:"☁ Upload failed (score still shown here)",badgeNew:"NEW",
-  badge_first:"First Ride",badge_l1:"Line 1 Cleared",badge_l2:"Line 2 Cleared",badge_l3:"Line 3 Cleared",
+  badge_first:"First Ride",badge_line:L=>`${L.en} Cleared`,
   badge_star3:"Triple Star",badge_boss:"Gauntlet Slayer",badge_wpm60:"Bullet Train",badge_wpm100:"Maglev",
   badge_combo20:"Combo Master",badge_acc100:"Flawless"}};
 let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en");
@@ -214,7 +214,7 @@ $("themeBtn").onclick=()=>{themeManual=true;
   const th=document.documentElement.dataset.theme==="light"?"dark":"light";
   setTheme(th);store.set("theme",th)};
 
-function confetti(){const fx=$("fx"),cols=["#F3D03E","#00629B","#ECA154","#2fbf71","#ffb020"];
+function confetti(){const fx=$("fx"),cols=LINES.map(L=>L.color);
   for(let i=0;i<30;i++){const e=document.createElement("i");
     e.style.left=Math.random()*100+"vw";e.style.background=cols[i%cols.length];
     e.style.animationDuration=1.5+Math.random()*1.2+"s";e.style.animationDelay=Math.random()*.3+"s";
@@ -274,8 +274,8 @@ function roundPath(pts,rMax=14){
 function buildMap(svg,opts){
   let s="";
   for(const r of RIVERS)s+=`<path class="riv" d="${r}"/>`;
-  for(const L of LINES)
-    s+=`<path class="lpath" data-line="${L.id}" d="${roundPath(L.stations)}" stroke="${L.color}"/>`;
+  for(const L of LINES) // loop lines close back to their first station (decorative arc)
+    s+=`<path class="lpath" data-line="${L.id}" d="${roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations)}" stroke="${L.color}"/>`;
   for(const [zh,st] of REG){
     const inter=st.lines.length>1;
     s+=`<g class="stg" data-st="${zh}">`;
@@ -337,6 +337,13 @@ function fitAll(instant){const bb=gMap.getBBox(),pad=42,
   asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   camT={cx:bb.x+bb.width/2,cy:bb.y+bb.height/2,w:Math.max(bb.width+pad*2,(bb.height+pad*2)*asp)};
   camFollow=false;if(instant){cam={...camT};applyCam()}}
+// frame just the ridden line (the whole 19-line network dwarfs any single run)
+function fitSeq(instant){if(!S.seq.length)return fitAll(instant);
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const s of S.seq){x0=Math.min(x0,s.x);y0=Math.min(y0,s.y);x1=Math.max(x1,s.x);y1=Math.max(y1,s.y)}
+  const pad=90,asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)); // pad covers side labels
+  camT={cx:(x0+x1)/2,cy:(y0+y1)/2,w:Math.max(x1-x0+pad*2,(y1-y0+pad*2)*asp)};
+  camFollow=false;if(instant){cam={...camT};applyCam()}}
 
 const HEATC={good:"#2fbf71",mid:"#f0b429",bad:"#e5484d"};
 
@@ -382,7 +389,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   if(REG.get(o.zh).lines.length<=1)nodes[o.zh].dot.style.fill=L.color;
   buildPbar();setGauge(0,L.cap);
   placeTrain(o.x,o.y,angleTo(0,1));$("trainG").setAttribute("opacity","1");
-  requestAnimationFrame(()=>{fitAll(true);setTimeout(()=>{camFollow=true},700)});
+  requestAnimationFrame(()=>{fitSeq(true);setTimeout(()=>{camFollow=true},700)});
   setPrompt();movePulse();
   announce(t("depart",o.zh));
   setTimeout(()=>inp.focus(),80)}
@@ -558,7 +565,7 @@ function announce(msg){const t=$("toast");t.textContent=msg;t.classList.add("on"
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),2100)}
 
 function finishRun(){S.done=true;S.endT=performance.now();
-  inp.disabled=true;camFollow=false;fitAll(false);
+  inp.disabled=true;camFollow=false;fitSeq(false);
   gMap.classList.remove("noNames"); // terminus: names return for the zoomed-out recap
   sWin();confetti();announce(t("terminusReached"));
   setTimeout(showResult,1200)}
@@ -705,8 +712,9 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
   const cap=(cls,key)=>`<span class="dcap ${cls}" aria-label="${t("diffAria",t(key))}">${t(key)}</span>`;
   const tile=(v,u,lb)=>`<div class="lstat"><b>${v}${u?`<i>${u}</i>`:""}</b><span>${lb}</span></div>`;
   const chev=`<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  const order=[...LINES].sort((a,b)=>a.diff-b.diff);
-  order.forEach((L,i)=>{const[dcls,dkey]=DIFF[Math.min(i,DIFF.length-1)];
+  // cards in line-number (data) order; difficulty caption by tercile of the diff ranking
+  const rank=new Map([...LINES].sort((a,b)=>a.diff-b.diff).map((L,i)=>[L.id,i]));
+  LINES.forEach(L=>{const[dcls,dkey]=DIFF[Math.floor(rank.get(L.id)*DIFF.length/LINES.length)];
     const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
     const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
     const best=bests[L.id];
@@ -715,7 +723,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
     card.innerHTML=`
       <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
         ${cap(dcls,dkey)}
-        <span class="lnum">${L.num}</span>
+        <span class="lnum${L.num.length>2?" wide":""}">${L.num}</span>
         <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>
         <span class="tt">${tt()}</span>
         <span class="stct">${t("stops",L.stations.length)}</span>${chev}
