@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.10";
+const APP_VERSION="0.4.11";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -307,8 +307,8 @@ function buildMap(svg,opts){
     const inter=st.lines.length>1;
     s+=`<g class="stg" data-st="${zh}">`;
     s+=`<circle class="pulseHolder" data-p="${zh}" cx="${st.x}" cy="${st.y}" r="9" fill="none" stroke="#ffb020" stroke-width="2" opacity="0"/>`;
-    s+=`<circle class="heat" data-h="${zh}" cx="${st.x}" cy="${st.y}" r="${inter?14:10}" fill="none" stroke="none" stroke-width="2.5"/>`;
-    if(inter)s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="10" style="fill:var(--map-inter);stroke:var(--map-inter-ring)" stroke-width="3"/>`;
+    s+=`<circle class="heat${inter?" inter":""}" data-h="${zh}" cx="${st.x}" cy="${st.y}" r="${inter?14:10}" fill="none" stroke="none" stroke-width="2.5"/>`;
+    if(inter)s+=`<circle class="dot inter" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="10" style="fill:var(--map-inter);stroke:var(--map-inter-ring)" stroke-width="3"/>`;
     else s+=`<circle class="dot" data-d="${zh}" cx="${st.x}" cy="${st.y}" r="5.5" style="fill:var(--map-dot-bg)" stroke="${st.lines[0].color}" stroke-width="3"/>`;
     s+=labelMarkup(st)+"</g>"}
   if(opts&&opts.train){
@@ -750,14 +750,26 @@ function bestFit(L,vw,vh){
 let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
 // v0.4.7: free pan/zoom on the unfocused network map. freeVB = current viewBox
 // window while no line is focused (null = resting at the full-network fit).
-let freeVB=null;const OV_MAXZ=5; // deepest zoom-in = full-network width / OV_MAXZ
+// OV_BASEZ = depth where map furniture is drawn 1:1; boot raises OV_MAXZ so the
+// shortest line can fill the window, and past OV_BASEZ everything counter-scales
+const OV_BASEZ=5;let freeVB=null,OV_MAXZ=OV_BASEZ,ovK=1;
 const ovFocused=()=>legendBase(); // a pinned or expanded line owns the viewBox
 const ovFree=()=>!ovFocused()&&FULL_VB; // pan/zoom only in the default network view
 function ovIsZoomed(){return!!freeVB&&freeVB[2]<FULL_VB[2]-.5}
 function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n.toFixed(1)).join(" "));
-  const z=ovIsZoomed();ov.classList.toggle("zoomed",z);$("ovReset").classList.toggle("show",z)}
+  const z=ovIsZoomed();ov.classList.toggle("zoomed",z);$("ovReset").classList.toggle("show",z);
+  ovShrink(ov,Math.min(1,OV_BASEZ*vb[2]/FULL_VB[2]))}
+// v0.4.11: past OV_BASEZ the map furniture counter-scales (constant on-screen size
+// instead of ballooning): strokes/dots via --zs in CSS, hover labels via a matching
+// scale about their own station so text and offset shrink together
+function ovShrink(ov,k){if(Math.abs(k-ovK)<.004)return;ovK=k;
+  if(k>.999){ov.style.removeProperty("--zs");
+    ov.querySelectorAll(".stg>g:last-child").forEach(g=>g.removeAttribute("transform"))}
+  else{ov.style.setProperty("--zs",k.toFixed(3));
+    ov.querySelectorAll(".stg>g:last-child").forEach(g=>{const d=g.dataset;
+      g.setAttribute("transform",`translate(${(d.sx*(1-k)).toFixed(1)} ${(d.sy*(1-k)).toFixed(1)}) scale(${k.toFixed(3)})`)})}}
 function ovClearFree(){freeVB=null;const ov=$("ovMap");if(ov){ov.classList.remove("zoomed");
-  const r=$("ovReset");r&&r.classList.remove("show")}}
+  ovShrink(ov,1);const r=$("ovReset");r&&r.classList.remove("show")}}
 function ovClampVB(vb){ // keep the window inside the full-network bounds; centre axes that fully fit
   const[FX,FY,FW,FH]=FULL_VB;let[x,y,w]=vb;
   w=clamp(w,FW/OV_MAXZ,FW);const h=w*FH/FW; // uniform scale → height tracks width at the fit aspect
@@ -1125,7 +1137,15 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
     w=Math.max(nb.width+2*140,(nb.height+2*170)*asp),h=w/asp,
     x=nb.x+nb.width/2-w/2,y=nb.y+nb.height/2-h/2;
     FULL_VB=[x,y,w,h]}catch(e){FULL_VB=[0,0,760,1300]}
-    ov.setAttribute("viewBox",FULL_VB.join(" "))});
+    ov.setAttribute("viewBox",FULL_VB.join(" "));
+    // v0.4.11: deepest free zoom derives from the data — window narrow enough that
+    // the shortest line (APM) fills it at the fit aspect, plus a little headroom
+    const FW=FULL_VB[2],FH=FULL_VB[3];let need=1e9;
+    for(const L of LINES){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+      for(const st of L.stations){if(st.x<x0)x0=st.x;if(st.x>x1)x1=st.x;
+        if(st.y<y0)y0=st.y;if(st.y>y1)y1=st.y}
+      need=Math.min(need,Math.max(x1-x0+2*OV_PD,(y1-y0+2*OV_PD)*FW/FH))}
+    OV_MAXZ=Math.max(OV_MAXZ,1.15*FW/need)});
   ov.addEventListener("click",e=>{if(ovDrag){ovDrag=false;return} // a pan just ended, not a tap
     if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
     const p=e.target.closest(".lpath");

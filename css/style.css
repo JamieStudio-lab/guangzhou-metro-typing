@@ -663,6 +663,15 @@ text{font-family:var(--sans);pointer-events:none}
    non-clickable — the enlarged .heat ring only widens the hover hit target);
    a stroke halo keeps a hovered name legible where it crosses lines */
 #ovMap .heat{pointer-events:all}
+/* v0.4.11: past the classic 5× depth game.js sets --zs<1 on #ovMap and the map
+   furniture counter-scales — constant on-screen weight while the free zoom dives
+   to line scale (labels get a matching JS transform; px = SVG user units here) */
+#ovMap .lpath{stroke-width:calc(7px*var(--zs,1))}
+#ovMap .dot{stroke-width:calc(3px*var(--zs,1))}
+#ovMap .dot:not(.inter){r:calc(5.5px*var(--zs,1))}
+#ovMap .dot.inter{r:calc(10px*var(--zs,1))}
+#ovMap .heat:not(.inter){r:calc(10px*var(--zs,1))}
+#ovMap .heat.inter{r:calc(14px*var(--zs,1))}
 #ovMap .stg:hover text{opacity:1}
 #ovMap .stg:hover .st-zh,#ovMap .stg:hover .st-py,#ovMap .stg:hover .st-tr{
   paint-order:stroke;stroke:var(--ink);stroke-width:3px;stroke-linejoin:round}

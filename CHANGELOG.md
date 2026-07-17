@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.11] - 2026-07-17
+
+### Changed
+- **The menu map now zooms in much deeper — far enough for even the shortest line to fill the view.** v0.4.7's free zoom stopped at 5× of the full network, which left short lines like the APM line a small squiggle even at maximum depth. The cap is no longer a fixed number: it's computed from the network itself, deep enough that the shortest line fills the window with a little headroom — so it stays right if the network ever changes.
+- **The map keeps its slim look however deep you dive.** Past the old 5× depth, line strokes, station dots, and hovered station names now counter-scale — holding a constant on-screen size instead of swelling into fat ribbons and giant labels as the zoom deepens. Everything snaps back to normal when you reset the view or select a line, and the focused-line view is unchanged.
+
 ## [0.4.10] - 2026-07-17
 
 ### Changed
@@ -485,6 +491,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.7...v0.4.8
