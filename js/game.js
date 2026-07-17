@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.0";
+const APP_VERSION="0.4.1";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -1021,7 +1021,7 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
     setTimeout(()=>pre.classList.add("hidden"),600)}; // bar done → reveal, then drop the faded overlay
   try{sessionStorage.setItem("introSeen","1")}catch(e){}
   if(REDUCED()||seen)return pre.classList.add("hidden");
-  tm=setTimeout(play,1600); // ≈ bar fill length — keep in sync with pFill in style.css
+  tm=setTimeout(play,1900); // ≈ bar fill length — keep in sync with pFill in style.css
   addEventListener("pointerdown",skip);addEventListener("keydown",skip)})();
 
 /* ---------- overview map + legend + boot ---------- */

@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.1] - 2026-07-17
+
+### Changed
+- **Eased the opening animation's pace.** The boot splash was a touch brisk, so the loading bar, the train's drive-across, and the title/rails reveal are all slowed by roughly a fifth. Same sequence, just a little more room to breathe. Skip, once-per-session, and reduced-motion behavior are unchanged.
+
 ## [0.4.0] - 2026-07-17
 
 ### Changed
@@ -429,6 +434,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.10...v0.4.0
 [0.3.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.8...v0.3.9
