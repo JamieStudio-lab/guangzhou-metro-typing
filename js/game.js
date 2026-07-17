@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.8";
+const APP_VERSION="0.2.9";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -316,7 +316,7 @@ const dirState={},bests={};
 let lastRun=null;
 
 const gMap=$("gMap"),mapWrap=$("mapWrap"),inp=$("pyin");
-let cam={cx:370,cy:633,w:1150},camT={cx:370,cy:633,w:1150},camFollow=false;
+let cam={cx:370,cy:633,w:1150},camT={cx:370,cy:633,w:1150},camFollow=false,camPunch=0;
 let nodes=null; // {dot,heat,pulse,zh} per 汉字 for game map
 
 function collectNodes(){nodes={};
@@ -346,7 +346,7 @@ function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,don
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,mapClean:false,
   hotOn:.84,t2:10,t3:20,cstep:.1});
-  gMap.classList.remove("noNames");
+  camPunch=0;gMap.classList.remove("noNames");
   $("gaugeBox").classList.remove("hot","t2","t3");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
@@ -513,7 +513,7 @@ function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x
 function posXY(p){const c=S.cum;let j=0;
   while(j<S.segs.length-1&&p>c[j+1])j++;
   const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
-  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,j}}
+  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI,j,f}}
 
 function setHot(on){S.hot=on;const gb=$("gaugeBox"),f=document.getElementById("trainFire");
   gb.classList.toggle("hot",on);if(f)f.style.opacity=on?"1":"0";
@@ -524,6 +524,7 @@ function setFireTier(tier){S.fireT=tier;
     if(el){el.classList.toggle("t2",tier>=2);el.classList.toggle("t3",tier>=3)}}
 
 function arriveAt(j){S.arrivedI=j;
+  if(!REDUCED())camPunch=1; // brief lens punch-in as the platform lands
   const st=S.seq[j],n=nodes[st.zh],reg=REG.get(st.zh);
   if(n){if(reg&&reg.lines.length<=1)n.dot.style.fill=S.line.color;
     n.heat.setAttribute("stroke",HEATC[S.heats[j]||"good"]);
@@ -785,8 +786,19 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
       // lens frames the hop being ridden: close stops pull the camera way in, far
       // stops ease it out a little — every segment crossing reads at a similar pace.
-      // No speed coupling: the zoom target only changes at stations, so the lens is calm
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=clamp(300+140*S.segs[P.j],380,880)}
+      // Center leans toward the next platform, the hop's zoom crossfades into the
+      // next hop's over the last 20%, arrivals punch in briefly, and a hard floor
+      // keeps both the stop behind and the stop ahead inside the frame
+      if(camFollow){const j=P.j,a=S.seq[j],b=S.seq[j+1],
+          cx=P.x+.25*(b.x-P.x),cy=P.y+.25*(b.y-P.y);
+        const Wof=s=>clamp(230+110*s,310,780);
+        let w=Wof(S.segs[j]);
+        if(P.f>.8&&j<S.segs.length-1){const m=(P.f-.8)/.2;w+=(Wof(S.segs[j+1])-w)*(m*m*(3-2*m))}
+        if(camPunch>0){w*=1-.04*camPunch;camPunch=Math.max(0,camPunch-dt*2)}
+        const asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)),PAD=52;
+        const nx=Math.max(Math.abs(a.x-cx),Math.abs(b.x-cx))+PAD,
+              ny=Math.max(Math.abs(a.y-cy),Math.abs(b.y-cy))+PAD;
+        camT.cx=cx;camT.cy=cy;camT.w=Math.max(w,2*nx,2*ny*asp)}
       const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;
