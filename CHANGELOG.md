@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.5] - 2026-07-16
+
+### Changed
+- **Station easing: the ride swells between stops.** The per-name distance mapping is no longer linear: each name's typed fraction passes through a 70% smoothstep blend (`EASE` knob, 0 = linear, 1 = full stop at platforms), so the first letters pull the train gently away from the platform (~0.3× pace), the middle letters cruise it at up to ~1.35×, and the last letters brake it smoothly into the next stop. Because the curve still maps 1 → 1, v0.2.4's guarantee is untouched — the final letter still lands the train on the platform. The speedometer now sweeps up and down across every segment, and the speed-linked camera breathes with it.
+- **Hot-streak flames read sustained pace.** The flames now key off a slower ~1.2 s-averaged speed instead of the instantaneous needle, so the deliberate per-station dips introduced by the easing don't extinguish a genuine streak — flames persist through stops while you keep typing fast, and still die out when you actually slow down or fumble.
+
 ## [0.2.4] - 2026-07-16
 
 ### Changed
@@ -262,6 +268,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.1...v0.2.2

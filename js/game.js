@@ -1,9 +1,12 @@
-const APP_VERSION="0.2.4";
+const APP_VERSION="0.2.5";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
 // ARRIVE_V of the cap, so a name's last letter lands it on that platform in ~0.3 s.
-const CRUISE_CPS=5.5,CHASE=.17,ARRIVE_V=.3;
+// EASE blends the per-name distance mapping toward a smoothstep S-curve (0 = linear,
+// 1 = full stop at platforms): the train pulls away gently and brakes into each stop
+// while the curve's 1→1 endpoint keeps arrival synchronized with the last letter.
+const CRUISE_CPS=5.5,CHASE=.17,ARRIVE_V=.3,EASE=.7;
 // per-line ease scaling (L.ease 1 = easiest line, 0 = hardest): flames light at a
 // lower speed fraction, big flames at lower combos, combo score step more generous
 const HOT_ON=e=>.84-.14*e,HOT_HYS=.1,TIER2=e=>Math.round(10-4*e),CSTEP=e=>.1+.04*e;
@@ -297,7 +300,7 @@ function buildMap(svg,opts){
 const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,cum:[],kms:90,
   hotOn:.84,t2:10,t3:20,cstep:.1,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
@@ -332,7 +335,7 @@ function show(name){S.screen=name;
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
   pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,
   hotOn:.84,t2:10,t3:20,cstep:.1});
   $("gaugeBox").classList.remove("hot","t2","t3");
@@ -489,8 +492,9 @@ function completeStation(){
 // km unlocked so far: each correct letter buys its share of the segment being typed
 function updCredit(){if(S.mode!=="line")return;
   if(S.idx===0){S.credit=0;return}
-  const st=S.seq[S.idx];
-  S.credit=st?S.cum[S.idx-1]+S.segs[S.idx-1]*(S.typed/S.key.length):S.cum[S.seq.length-1]}
+  const st=S.seq[S.idx];if(!st){S.credit=S.cum[S.seq.length-1];return}
+  const p=S.typed/S.key.length,e=p*p*(3-2*p); // smoothstep: slow out of / into stations
+  S.credit=S.cum[S.idx-1]+S.segs[S.idx-1]*(p+(e-p)*EASE)}
 
 function angleTo(i,j){const a=S.seq[i],b=S.seq[j];return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
 function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x} ${y})`);
@@ -762,12 +766,13 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       S.pos+=step;S.dist=S.pos;
       const vRaw=dt>0?step/dt*S.kms:0;
       S.dispV+=(vRaw-S.dispV)*Math.min(1,dt/.22); // gauge smoothing only — motion stays sync
+      S.avgV+=(vRaw-S.avgV)*Math.min(1,dt/1.2);   // slow average: station-ease dips don't kill flames
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
       // camera widens with speed for a sense of pace (express segments peg at full width)
       if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*Math.min(1,S.dispV/cap)}
-      const hot=S.dispV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
+      const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;
         if(tier!==S.fireT)setFireTier(tier)}}
