@@ -4,6 +4,15 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.2] - 2026-07-16
+
+### Added
+- **Combo-tiered fire.** The hot-streak blaze now grows with the station combo: at ×10 the exhaust flame scales up ~40%, the speed lines brighten, and the gauge's ember glow rises higher; at ×20 the flame is ~85% larger, the speed lines thicken, and the gauge shake quickens. Dropping the combo (a typo) or falling out of the redline clears the tiers with the fire.
+
+### Changed
+- **The camera pulls back with speed.** The follow window widens up to ~50% (470 → 700 SVG units) proportionally to current speed, so a full-throttle run visibly opens up the map and braking into a station tightens back in — a cheap but real sense of pace.
+- **Feel knobs extracted.** The two physics tuning constants now sit at the top of `js/game.js`: `CRUISE_CPS` (typing rate that sustains the line cap, 5.5) and `ERR_KEEP` (fraction of the rate window kept after a typo, 0.5) — one obvious place for playtest tweaks.
+
 ## [0.2.1] - 2026-07-16
 
 ### Added
@@ -240,6 +249,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.13...v0.2.0
 [0.1.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.12...v0.1.13

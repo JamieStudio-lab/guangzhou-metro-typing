@@ -356,6 +356,11 @@ button{font-family:inherit;cursor:pointer}
 :root[data-theme="light"] #gaugeBox.hot .gv{fill:#c94f00;filter:none}
 @keyframes hudsh{25%{transform:translate(.6px,-.6px)}75%{transform:translate(-.6px,.6px)}}
 @keyframes fglow{from{opacity:.55}to{opacity:1}}
+/* combo tiers (×10 / ×20): the blaze grows */
+#gaugeBox.hot.t2{box-shadow:0 0 30px rgba(255,105,32,.55),var(--sh2)}
+#gaugeBox.hot.t2::after{height:62%}
+#gaugeBox.hot.t3{box-shadow:0 0 42px rgba(255,90,32,.7),var(--sh2);animation-duration:.07s}
+#gaugeBox.hot.t3::after{height:74%;background:radial-gradient(120% 100% at 50% 100%,rgba(255,90,32,.42),transparent 74%)}
 .chips{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;min-width:200px}
 .chip{background:linear-gradient(180deg,var(--brd1),var(--brd2));border:1px solid var(--brd-edge);
   border-radius:var(--r-lg);padding:10px 14px 11px;min-width:0;position:relative;overflow:hidden}
@@ -506,14 +511,20 @@ text{font-family:var(--sans);pointer-events:none}
 .st-tr{font-size:8px;fill:var(--st-tr);letter-spacing:.05em}
 .pulse{transform-box:fill-box;transform-origin:center;animation:pl 1.15s ease-out infinite}
 @keyframes pl{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.1);opacity:0}}
-/* hot-streak exhaust flames + speed lines behind the train (opacity driven by game.js) */
-#trainFire{transition:opacity .25s var(--ease)}
+/* hot-streak exhaust flames + speed lines behind the train (opacity driven by game.js;
+   --fs scales the blaze with the combo tier) */
+#trainFire{--fs:1;transition:opacity .25s var(--ease)}
+#trainFire.t2{--fs:1.4}
+#trainFire.t3{--fs:1.85}
 #trainFire .fl{transform-box:fill-box;transform-origin:100% 50%;
   animation:flick .26s ease-in-out infinite alternate}
 #trainFire .f2{animation-duration:.19s;animation-delay:-.1s}
-@keyframes flick{from{transform:scaleX(.72) scaleY(.85)}to{transform:scaleX(1.18) scaleY(1.08)}}
+@keyframes flick{from{transform:scaleX(calc(.72*var(--fs,1))) scaleY(calc(.85*var(--fs,1)))}
+  to{transform:scaleX(calc(1.18*var(--fs,1))) scaleY(calc(1.08*var(--fs,1)))}}
 #trainFire .sp{opacity:.55;stroke-dasharray:9 15;animation:spd .45s linear infinite}
 #trainFire .s2{animation-delay:-.22s}
+#trainFire.t2 .sp{opacity:.75}
+#trainFire.t3 .sp{opacity:.9;stroke-width:2.6}
 @keyframes spd{to{stroke-dashoffset:-24}}
 .riv{fill:none;stroke:var(--riv);stroke-width:26;stroke-linecap:round;opacity:.55}
 .lpath{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;cursor:pointer;

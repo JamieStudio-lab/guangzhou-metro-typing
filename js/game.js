@@ -1,4 +1,7 @@
-const APP_VERSION="0.2.1";
+const APP_VERSION="0.2.2";
+// feel knobs: typing rate (chars/s) that sustains the line's speed cap, and the
+// fraction of the rate window kept after a typo (lower = harsher brake)
+const CRUISE_CPS=5.5,ERR_KEEP=.5;
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -288,7 +291,7 @@ const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
-  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,cum:[],kms:90,
+  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,cum:[],kms:90,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
 const dirState={},bests={};
 let lastRun=null;
@@ -322,8 +325,8 @@ function show(name){S.screen=name;
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
-  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,revealing:false});
-  $("gaugeBox").classList.remove("hot");
+  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,revealing:false});
+  $("gaugeBox").classList.remove("hot","t2","t3");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
 
@@ -331,8 +334,8 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   S.seq=rev?[...L.stations].reverse():L.stations.slice();
   S.segs=rev?[...L.segKm].reverse():L.segKm.slice();
   S.cum=[0];for(const k of S.segs)S.cum.push(S.cum[S.cum.length-1]+k);
-  // movement scale: sustained typing at ~5.5 chars/s cruises at the line cap
-  S.kms=clamp(L.cap*(L.letters/L.km)/5.5,40,220);
+  // movement scale: sustained typing at CRUISE_CPS chars/s cruises at the line cap
+  S.kms=clamp(L.cap*(L.letters/L.km)/CRUISE_CPS,40,220);
   resetStats();show("game");
   document.body.style.setProperty("--lc",L.color);
   document.body.style.setProperty("--lcg",alpha(L.color,.32));
@@ -436,7 +439,7 @@ function handleTyping(raw){
   const prev=S.typed,err=v.length>ok;
   if(err){S.errors+=v.length-ok;S.errSt=true;
     if(S.combo>0){S.combo=0;$("cCombo").textContent="0"}
-    S.keyT.splice(0,Math.ceil(S.keyT.length/2)); // fumble = brakes
+    S.keyT.splice(0,Math.ceil(S.keyT.length*(1-ERR_KEEP))); // fumble = brakes
     shake();sErr()}
   if(ok>S.typed){const now=performance.now();
     if(S.firstT===null){S.firstT=now;if(S.t0===null)S.t0=S.firstT}
@@ -489,8 +492,13 @@ function posXY(p){const c=S.cum;let j=0;
   const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
   return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}}
 
-function setHot(on){S.hot=on;$("gaugeBox").classList.toggle("hot",on);
-  const f=document.getElementById("trainFire");if(f)f.style.opacity=on?"1":"0"}
+function setHot(on){S.hot=on;const gb=$("gaugeBox"),f=document.getElementById("trainFire");
+  gb.classList.toggle("hot",on);if(f)f.style.opacity=on?"1":"0";
+  if(!on){S.fireT=1;gb.classList.remove("t2","t3");if(f)f.classList.remove("t2","t3")}}
+// fire grows with the station combo: base < ×10 < ×20
+function setFireTier(tier){S.fireT=tier;
+  for(const el of[$("gaugeBox"),document.getElementById("trainFire")])
+    if(el){el.classList.toggle("t2",tier>=2);el.classList.toggle("t3",tier>=3)}}
 
 function arriveAt(j){S.arrivedI=j;
   const st=S.seq[j],n=nodes[st.zh],reg=REG.get(st.zh);
@@ -752,9 +760,12 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       S.dist=S.pos;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470}
+      // camera widens with speed for a sense of pace
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*(S.dispV/cap)}
       const hot=S.dispV>=cap*(S.hot?.74:.84); // hysteresis so the flames don't flicker
-      if(hot!==S.hot&&!REDUCED())setHot(hot)}
+      if(hot!==S.hot&&!REDUCED())setHot(hot);
+      if(S.hot){const tier=S.combo>=20?3:S.combo>=10?2:1;
+        if(tier!==S.fireT)setFireTier(tier)}}
     else{S.dispV=Math.max(0,S.dispV-cap*dt*2);if(S.hot)setHot(false)}
     gaugeTo(S.dispV);
     $("cDist").firstChild.nodeValue=S.dist.toFixed(1);
