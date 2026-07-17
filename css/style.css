@@ -96,6 +96,9 @@ button{font-family:inherit;cursor:pointer}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
 .srow>span{font-size:11px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
 .srow .hbtn{min-width:118px;text-align:center;background:var(--panel2)}
+/* keep the amber .on state visible where later/stronger rules reset the background */
+#fchips .hbtn.on,.srow .hbtn.on{background:var(--amber)}
+#fchips .hbtn.on:hover,.srow .hbtn.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
 @media(max-width:560px){
   .hbtn{padding:7px 13px;font-size:13px}}
 

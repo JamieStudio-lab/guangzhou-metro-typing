@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.12] - 2026-07-16
+
+### Fixed
+- **Amber "on" buttons readable again in the dark theme.** The signed-in account chip and the settings dialog's SOUND toggle set their text to near-black for the amber `.on` state, but later background rules (`#fchips .hbtn`, `.srow .hbtn`) overrode the amber fill back to a dark surface — leaving dark-on-dark, invisible text (only hover restored the amber). The `.on` background now wins in both contexts, in both themes.
+
 ## [0.1.11] - 2026-07-16
 
 ### Changed
@@ -204,6 +209,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.8...v0.1.9
