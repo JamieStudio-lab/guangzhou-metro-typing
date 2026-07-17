@@ -518,19 +518,15 @@ body.boss #ringBox{display:flex}
 @keyframes cmiss{15%,55%{transform:translateX(-3px)}35%,75%{transform:translateX(3px)}
   0%,100%{color:var(--bad)}50%{color:var(--bad);text-shadow:0 0 10px rgba(229,72,77,.6)}}
 #py.reveal .c{color:var(--bad)!important;text-shadow:0 0 10px rgba(229,72,77,.5)}
-#inRow{display:flex;gap:10px;margin-top:12px;position:relative;align-items:center}
-/* MD3 filled text field: rounded top, 2px bottom border */
-#pyin{flex:1;background:var(--input-bg);border:none;border-bottom:2px solid var(--edge2);
-  border-radius:var(--r-sm) var(--r-sm) 0 0;color:var(--paper);
-  font-family:var(--mono);font-size:18px;letter-spacing:.08em;padding:12px 14px;min-width:0;
-  transition:border-color .2s var(--ease),background .2s var(--ease)}
-#pyin::placeholder{color:var(--dim)}
-#pyin:focus,#pyin:focus-visible{outline:none;border-color:var(--lc);
-  background:color-mix(in srgb,var(--lc) 6%,var(--input-bg))}
-#pyin.shake{animation:shk .22s}
+/* invisible keystroke sink: no visible field since v0.4.3 — feedback lives in #py.
+   kept in the DOM to summon the mobile soft keyboard and handle IME composition.
+   font-size 16px avoids iOS focus-zoom; opacity 0 hides the caret. */
+#pyin{position:absolute;left:16px;bottom:16px;width:1px;height:1px;
+  opacity:0;padding:0;border:0;font-size:16px;pointer-events:none;
+  color:transparent;background:transparent}
+#board.shake{animation:shk .22s}
 @keyframes shk{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-#inHint{color:var(--dim);font-size:11.5px;letter-spacing:.05em;line-height:1.5;max-width:130px}
-#pop{position:absolute;right:8px;top:-14px;font-family:var(--mono);font-weight:700;color:var(--good);
+#pop{position:absolute;right:16px;bottom:34px;font-family:var(--mono);font-weight:700;color:var(--good);
   font-size:15px;opacity:0;pointer-events:none}
 #pop.on{animation:rise .8s ease}
 @keyframes rise{0%{opacity:0;transform:translateY(6px)}25%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}

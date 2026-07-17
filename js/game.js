@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.2";
+const APP_VERSION="0.4.3";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -477,7 +477,11 @@ inp.addEventListener("paste",e=>{e.preventDefault();shake()});
 document.addEventListener("keydown",e=>{
   if(S.screen!=="game")return;
   if(e.key==="Escape"){quit();return}
+  // correct keystrokes lock in — no deleting/retyping (since v0.4.3)
+  if(e.key==="Backspace"||e.key==="Delete"){e.preventDefault();return}
   if(document.activeElement!==inp&&e.key.length===1&&!e.metaKey&&!e.ctrlKey)inp.focus()});
+// tap the board to (re)summon the keyboard on touch devices
+$("board").addEventListener("pointerdown",()=>{if(S.screen==="game")inp.focus()});
 
 function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
@@ -498,7 +502,7 @@ function handleTyping(raw){
   updCredit();paintPy(ok>prev?prev:-1,err);updLive();
   if(ok===S.key.length)S.mode==="boss"?bossComplete():completeStation()}
 
-function shake(){inp.classList.remove("shake");void inp.offsetWidth;inp.classList.add("shake")}
+function shake(){const b=$("board");b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake")}
 
 function stationPerf(){const t=(performance.now()-(S.firstT??performance.now()-300))/1000;
   const expected=Math.max(1,S.key.length/3.2);

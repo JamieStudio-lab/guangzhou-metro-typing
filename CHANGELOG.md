@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.3] - 2026-07-17
+
+### Changed
+- **The input box is gone — you now type "into" the station name itself.** The board no longer shows a text field; the toned pinyin line *is* the input, lighting up letter by letter as you type (green = locked in, amber underline = next, dim = to come), with a shake on a wrong key. This was always the real feedback — the box just mirrored the correct prefix redundantly — so removing it makes for a cleaner, more game-like board. On touch devices, tap the board to bring the keyboard back up.
+- **Correct keystrokes lock in — no deleting and retyping.** Backspace and Delete are disabled during a run. Once you've typed a letter correctly it stays; a mistake still counts against accuracy and breaks your combo, the same as before, but you can't rewind to erase it. Keeps the pressure honest and the speed real.
+
 ## [0.4.2] - 2026-07-17
 
 ### Changed
@@ -440,6 +446,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.10...v0.4.0
