@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.14] - 2026-07-17
+
+### Changed
+- **The hero rails breathe again.** In the title screen's lower band the orange, green, and red decorative rails had drifted within 4–8 units of each other (7-unit strokes — they visually touched). The orange rail's right run rises from y≈528 to y≈496, and the green rail is redrawn as a bottom-right elbow that enters from the right edge at y≈585 and dives off the bottom, instead of co-running the full width squeezed between orange and red. The red rail is untouched; every neighboring pair in the band now sits ≥ ~50 units apart, and all six lines keep their boot draw-in and glide animations.
+
 ## [0.2.13] - 2026-07-16
 
 ### Changed
@@ -329,6 +334,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.13...v0.2.14
 [0.2.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.10...v0.2.11
