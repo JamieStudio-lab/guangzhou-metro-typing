@@ -1,7 +1,14 @@
-const APP_VERSION="0.2.2";
+const APP_VERSION="0.2.3";
 // feel knobs: typing rate (chars/s) that sustains the line's speed cap, and the
 // fraction of the rate window kept after a typo (lower = harsher brake)
 const CRUISE_CPS=5.5,ERR_KEEP=.5;
+// earned track is always consumed: with credit ahead the train coasts at ≥COAST
+// of the line cap even when typing pauses, so a completed name always carries it
+// through its stop (the arrival brake curve still eases it in)
+const COAST=.32;
+// per-line ease scaling (L.ease 1 = easiest line, 0 = hardest): flames light at a
+// lower speed fraction, big flames at lower combos, combo score step more generous
+const HOT_ON=e=>.84-.14*e,HOT_HYS=.1,TIER2=e=>Math.round(10-4*e),CSTEP=e=>.1+.04*e;
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -23,6 +30,8 @@ for(const L of LINES){
   L.avgLen=L.letters/L.stations.length;
   L.diff=L.avgLen+L.stations.length*0.09;
 }
+{const ds=LINES.map(L=>L.diff),lo=Math.min(...ds),hi=Math.max(...ds);
+  for(const L of LINES)L.ease=hi>lo?1-(L.diff-lo)/(hi-lo):.5}
 // Boss list: the longest unique station names across all lines
 const BOSS=(()=>{const seen=new Set(),all=[];
   for(const L of LINES)for(const s of L.stations){if(!seen.has(s.key)){seen.add(s.key);all.push(s)}}
@@ -292,6 +301,7 @@ const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
   pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,cum:[],kms:90,
+  hotOn:.84,t2:10,t3:20,cstep:.1,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
 const dirState={},bests={};
 let lastRun=null;
@@ -325,7 +335,8 @@ function show(name){S.screen=name;
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
-  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,revealing:false});
+  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,revealing:false,
+  hotOn:.84,t2:10,t3:20,cstep:.1});
   $("gaugeBox").classList.remove("hot","t2","t3");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
@@ -337,6 +348,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   // movement scale: sustained typing at CRUISE_CPS chars/s cruises at the line cap
   S.kms=clamp(L.cap*(L.letters/L.km)/CRUISE_CPS,40,220);
   resetStats();show("game");
+  S.hotOn=HOT_ON(L.ease);S.t2=TIER2(L.ease);S.t3=S.t2*2;S.cstep=CSTEP(L.ease);
   document.body.style.setProperty("--lc",L.color);
   document.body.style.setProperty("--lcg",alpha(L.color,.32));
   $("board").style.setProperty("--lc",L.color);
@@ -460,7 +472,7 @@ function bump(el){el.classList.remove("bump");void el.offsetWidth;el.classList.a
 function award(perf){if(!S.errSt){S.combo++;if(S.combo>S.maxCombo)S.maxCombo=S.combo;
     if(S.combo%5===0)sCombo()}
   $("cCombo").textContent=S.combo;bump($("cCombo"));
-  const pts=Math.round(S.key.length*10*clamp(perf,.5,2)*(1+Math.min(S.combo,20)*.1));
+  const pts=Math.round(S.key.length*10*clamp(perf,.5,2)*(1+Math.min(S.combo,20)*S.cstep));
   S.score+=pts;$("cScore").textContent=S.score;bump($("cScore"));
   const pop=$("pop");pop.textContent="+"+pts;pop.classList.remove("on");void pop.offsetWidth;pop.classList.add("on");
   return pts}
@@ -495,7 +507,7 @@ function posXY(p){const c=S.cum;let j=0;
 function setHot(on){S.hot=on;const gb=$("gaugeBox"),f=document.getElementById("trainFire");
   gb.classList.toggle("hot",on);if(f)f.style.opacity=on?"1":"0";
   if(!on){S.fireT=1;gb.classList.remove("t2","t3");if(f)f.classList.remove("t2","t3")}}
-// fire grows with the station combo: base < ×10 < ×20
+// fire grows with the station combo: base < ×S.t2 < ×S.t3 (per-line, easier lines sooner)
 function setFireTier(tier){S.fireT=tier;
   for(const el of[$("gaugeBox"),document.getElementById("trainFire")])
     if(el){el.classList.toggle("t2",tier>=2);el.classList.toggle("t3",tier>=3)}}
@@ -751,8 +763,9 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       while(S.keyT.length&&now-S.keyT[0]>2000)S.keyT.shift();
       const rate=S.keyT.length/2;
       // all names typed (terminus pending) → full throttle to coast home on earned credit
-      const vTyp=S.key?cap*Math.min(1,Math.pow(rate/5.5,.85)):cap;
+      let vTyp=S.key?cap*Math.min(1,Math.pow(rate/CRUISE_CPS,.85)):cap;
       const lead=Math.max(0,S.credit-S.pos);
+      if(lead>0)vTyp=Math.max(vTyp,cap*COAST); // never stall short of an earned stop
       S.tgtV=Math.min(vTyp,Math.sqrt(3.6*cap*S.kms*lead));
       S.dispV=clamp(S.tgtV,S.dispV-cap*dt/.55,S.dispV+cap*dt/1.1);
       if(S.dispV>S.topV)S.topV=S.dispV;
@@ -762,9 +775,9 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
       // camera widens with speed for a sense of pace
       if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*(S.dispV/cap)}
-      const hot=S.dispV>=cap*(S.hot?.74:.84); // hysteresis so the flames don't flicker
+      const hot=S.dispV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
-      if(S.hot){const tier=S.combo>=20?3:S.combo>=10?2:1;
+      if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;
         if(tier!==S.fireT)setFireTier(tier)}}
     else{S.dispV=Math.max(0,S.dispV-cap*dt*2);if(S.hot)setHot(false)}
     gaugeTo(S.dispV);
