@@ -627,9 +627,11 @@ text{font-family:var(--sans);pointer-events:none}
 .stg{transition:opacity .25s var(--ease)}
 #ovMap .stg text{opacity:0;transition:opacity .25s var(--ease)}
 #ovMap .stg.lbl text{opacity:1}
-/* game map: names fade once the run's first keystroke lands, return at the terminus */
+/* game map: only the ridden line shows names — off-line stations stay label-free
+   (dots dimmed but visible for context); the ridden line's names fade once the
+   run's first keystroke lands and return at the terminus recap */
 #gMap .stg text{transition:opacity .45s var(--ease)}
-#gMap.noNames .stg text{opacity:0}
+#gMap.noNames .stg text,#gMap .stg.offln text{opacity:0}
 
 /* confetti + misc */
 #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}

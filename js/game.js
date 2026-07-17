@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.4";
+const APP_VERSION="0.4.5";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -393,10 +393,12 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   $("zhChip").textContent=L.num;$("zhChip").style.background=btnBg(L.color);$("zhChip").style.color=txOn(L.color);
   buildMap(gMap,{train:true});collectNodes();
   $("trainBand").setAttribute("fill",L.color);
-  // dim other lines + their exclusive stations
+  // dim other lines + their exclusive stations; only the ridden line keeps its
+  // name labels (the whole network's names at once is unreadable) — .offln hides them
   const mine=new Set(S.seq.map(s=>s.zh));
   gMap.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",p.dataset.line!==L.id));
-  gMap.querySelectorAll(".stg").forEach(g=>{g.style.opacity=mine.has(g.dataset.st)?"1":".22"});
+  gMap.querySelectorAll(".stg").forEach(g=>{const on=mine.has(g.dataset.st);
+    g.style.opacity=on?"1":".22";g.classList.toggle("offln",!on)});
   // origin visuals
   const o=S.seq[0];
   if(REG.get(o.zh).lines.length<=1)nodes[o.zh].dot.style.fill=L.color;
