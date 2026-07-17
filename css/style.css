@@ -59,7 +59,7 @@
 :root[data-theme="light"] #zhTxt{text-shadow:none}
 :root[data-theme="light"] #py .c.done{text-shadow:none}
 /* line color used as text: darkened in light theme for contrast */
-body{--lct:var(--lc,var(--amber));--tint:color-mix(in srgb,var(--lc,var(--amber)) 8%,var(--panel2))}
+body{--lct:var(--lcd,var(--lc,var(--amber)));--tint:color-mix(in srgb,var(--lc,var(--amber)) 8%,var(--panel2))}
 :root[data-theme="light"] body{--lct:color-mix(in srgb,var(--lc,var(--amber)) 72%,#15243c);
   --tint:color-mix(in srgb,var(--lc,var(--amber)) 6%,var(--panel))}
 :root[data-theme="light"] #bossStage h3{text-shadow:none}
@@ -525,6 +525,7 @@ body.boss #ringBox{display:flex}
 .stars{color:var(--amber-tx);font-size:22px;letter-spacing:4px;margin-top:4px}
 #newbest{display:inline-block;margin-left:8px;background:var(--good);color:#06130c;font-size:11px;
   font-weight:800;letter-spacing:.14em;padding:3px 8px;border-radius:var(--r-full);vertical-align:middle}
+:root[data-theme="light"] #newbest{color:#fff}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:24px 0 8px}
 .rcell{background:var(--panel2);border-radius:var(--r-md);padding:14px 16px}
 .rcell label{display:block;font-size:11.5px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono);margin-bottom:3px}

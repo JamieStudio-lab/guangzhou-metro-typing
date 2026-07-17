@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.8";
+const APP_VERSION="0.3.9";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -374,10 +374,12 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   S.kms=clamp(L.cap*(L.letters/L.km)/CRUISE_CPS,40,220);
   resetStats();show("game");
   S.hotOn=HOT_ON(L.ease);S.t2=TIER2(L.ease);S.t3=S.t2*2;S.cstep=CSTEP(L.ease);
+  const disp=dispOf(L.color);
   document.body.style.setProperty("--lc",L.color);
-  document.body.style.setProperty("--lcg",alpha(L.color,.32));
+  document.body.style.setProperty("--lcd",disp);
+  document.body.style.setProperty("--lcg",alpha(disp,.32));
   $("board").style.setProperty("--lc",L.color);
-  $("board").style.setProperty("--lcg",alpha(L.color,.38));
+  $("board").style.setProperty("--lcg",alpha(disp,.38));
   $("toast").style.setProperty("--lc",L.color);
   $("zhChip").textContent=L.num;$("zhChip").style.background=L.color;$("zhChip").style.color=txOn(L.color);
   buildMap(gMap,{train:true});collectNodes();
@@ -399,10 +401,11 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
 function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   S.bossList=shuffle(BOSS);S.bossI=0;S.lives=3;S.bossDone=0;
   resetStats();show("game");
-  const c="#e5484d";
+  const c="#e5484d",cd=dispOf(c);
   document.body.style.setProperty("--lc",c);
-  document.body.style.setProperty("--lcg",alpha(c,.32));
-  $("board").style.setProperty("--lc",c);$("board").style.setProperty("--lcg",alpha(c,.35));
+  document.body.style.setProperty("--lcd",cd);
+  document.body.style.setProperty("--lcg",alpha(cd,.32));
+  $("board").style.setProperty("--lc",c);$("board").style.setProperty("--lcg",alpha(cd,.35));
   $("zhChip").textContent="★";$("zhChip").style.background=c;$("zhChip").style.color=txOn(c);
   $("lives").textContent="♥♥♥";buildPbar();
   setBossPrompt();setTimeout(()=>inp.focus(),80)}
@@ -612,6 +615,7 @@ function showResult(rerender){show("result");
   const col=boss?"#e5484d":S.line.color;
   $("rcard").style.setProperty("--lc",col);
   $("rAgain").style.setProperty("--cc",col);
+  $("rAgain").style.setProperty("--cc-tx",txOn(col));
   $("rSub").textContent=boss
     ?t("bossSub",S.bossDone,S.bossList.length,"♥".repeat(S.lives)||"—")
     :t("lineSub",S.line,S.seq[0].zh,S.seq[S.seq.length-1].zh);
@@ -661,6 +665,9 @@ const LINE_STS=new Map(LINES.map(L=>[L.id,new Set(L.stations.map(s=>s.zh))]));
 // readable text color for a hex background: dark ink on light colors, white on dark ones
 const lumOf=hex=>{const n=hex.replace("#","");const[r,g,b]=[0,2,4].map(i=>parseInt(n.slice(i,i+2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return .2126*r+.7152*g+.0722*b};
 const txOn=hex=>lumOf(hex)>.19?"#0a0f1a":"#fff";
+// dark-theme display variant: lighten dark line colors until they read as text on the near-black board
+const mixW=(hex,t)=>{const n=hex.replace("#","");return"#"+[0,2,4].map(i=>Math.round(parseInt(n.slice(i,i+2),16)*(1-t)+255*t).toString(16).padStart(2,"0")).join("")};
+const dispOf=hex=>{if(lumOf(hex)>=.19)return hex;let lo=0,hi=1;for(let i=0;i<8;i++){const m=(lo+hi)/2;if(lumOf(mixW(hex,m))<.19)lo=m;else hi=m}return mixW(hex,hi)};
 const REDUCED=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 function ovHighlight(id){const ov=$("ovMap");
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
