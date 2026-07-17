@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.1";
+const APP_VERSION="0.4.2";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -53,8 +53,8 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
-zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
-  setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言",
+zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系统",quitBtn:"⏏ 退出",
+  setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言 (Language)",
   startBtn:"选择关卡",backTop:"↑ 首页",
   footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
@@ -106,7 +106,7 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   badge_first:"初次通勤",badge_line:L=>`${L.zh}通关`,
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
-en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
+en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitBtn:"⏏ Quit",
   setBtn:"SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
   startBtn:"SELECT LEVEL",backTop:"↑ TOP",
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
@@ -167,8 +167,7 @@ function setLang(l){LANG=l;store.set("lang",l);
   document.documentElement.lang=l==="zh"?"zh-Hans":"en";
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
   $("langBtn").textContent=t("lang");
-  $("soundBtn").textContent=muted?t("muted"):t("sound");
-  $("themeBtn").textContent=document.documentElement.dataset.theme==="light"?t("light"):t("dark");
+  paintTheme(); // theme button label follows the active language
   document.querySelector("#menu .footnote").textContent=t("footnote")+" · v"+APP_VERSION;
   inp.placeholder=t("placeholder");inp.setAttribute("aria-label",t("inputAria"));
   $("heatstrip").title=t("heatTitle");
@@ -182,7 +181,11 @@ function refreshBoardLang(){const st=curStation();
   else if(st){$("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
     $("dTag").textContent=t(diffOf(st.key.length).t)}
   else{$("brdLabel").textContent=t("arriving");$("zhTxt").textContent=t("terminus")}}
-$("langBtn").onclick=()=>setLang(LANG==="zh"?"en":"zh");
+const LANGS=["zh","en"]; // ordered; arrows step through and wrap (room for more languages later)
+function cycleLang(dir){const i=(LANGS.indexOf(LANG)+dir+LANGS.length)%LANGS.length;setLang(LANGS[i])}
+$("langBtn").onclick=()=>cycleLang(1);
+$("langPrev").onclick=()=>cycleLang(-1);
+$("langNext").onclick=()=>cycleLang(1);
 
 /* ---------- sound ---------- */
 let AC=null,muted=false;
@@ -200,18 +203,26 @@ const sCombo=()=>{tone(659,.07);tone(784,.07,.06);tone(988,.12,.12)};
 const sWin =()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.16,i*.11))};
 const sLose=()=>{tone(330,.18);tone(262,.26,.16)};
 $("soundBtn").onclick=()=>{muted=!muted;const b=$("soundBtn");
-  b.textContent=muted?t("muted"):t("sound");
-  b.classList.toggle("on",!muted);b.setAttribute("aria-pressed",String(!muted))};
+  b.classList.toggle("on",!muted);b.setAttribute("aria-checked",String(!muted))};
 
 /* ---------- theme ---------- */
+// THEME holds the preference (light|dark|system); dataset.theme holds the resolved look.
+// dark stays the default (v0.4.0); "system" follows the OS via mqDark, live.
 const themeMeta=document.querySelector('meta[name="theme-color"]');
-function setTheme(th){document.documentElement.dataset.theme=th;
-  $("themeBtn").textContent=th==="light"?t("light"):t("dark");
-  themeMeta.setAttribute("content",th==="light"?"#f5f1e8":"#0b101c")}
-setTheme(store.get("theme")||"dark"); // dark default since v0.4.0; no OS auto-follow so the default holds
-$("themeBtn").onclick=()=>{
-  const th=document.documentElement.dataset.theme==="light"?"dark":"light";
-  setTheme(th);store.set("theme",th)};
+const THEME_ORDER=["light","dark","system"]; // click cycles in this order
+const mqDark=matchMedia("(prefers-color-scheme:dark)");
+let THEME=store.get("theme")||"dark";
+const resolveTheme=p=>p==="system"?(mqDark.matches?"dark":"light"):p;
+function paintTheme(){const r=resolveTheme(THEME);
+  document.documentElement.dataset.theme=r;
+  themeMeta.setAttribute("content",r==="light"?"#f5f1e8":"#0b101c");
+  const b=$("themeBtn");b.textContent=t(THEME);b.setAttribute("aria-label",t("setTheme")+" · "+t(THEME))}
+function setTheme(p){THEME=p;paintTheme()}
+const onMq=()=>{if(THEME==="system")paintTheme()}; // re-resolve when the OS flips, while in system mode
+mqDark.addEventListener?mqDark.addEventListener("change",onMq):mqDark.addListener(onMq);
+setTheme(THEME);
+$("themeBtn").onclick=()=>{const p=THEME_ORDER[(THEME_ORDER.indexOf(THEME)+1)%THEME_ORDER.length];
+  setTheme(p);store.set("theme",p)};
 
 function confetti(){const fx=$("fx"),cols=LINES.map(L=>L.color);
   for(let i=0;i<30;i++){const e=document.createElement("i");

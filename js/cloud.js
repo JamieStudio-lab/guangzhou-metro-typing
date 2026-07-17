@@ -56,7 +56,7 @@ async function afterLogin(){
   if(PROFILE){applyPrefs();await loadBadges()}
   updAccBtn()}
 function applyPrefs(){
-  if(PROFILE.theme&&PROFILE.theme!==document.documentElement.dataset.theme){
+  if(PROFILE.theme&&PROFILE.theme!==THEME){
     setTheme(PROFILE.theme);store.set("theme",PROFILE.theme)}
   if(PROFILE.lang&&PROFILE.lang!==LANG)setLang(PROFILE.lang)}
 async function loadBadges(){try{
@@ -64,7 +64,7 @@ async function loadBadges(){try{
   MY_BADGES=new Set(rows.map(r=>r.badge));
   if($("accDlg").open&&DLG_MODE==="in")renderDlg()}catch(e){}}
 async function claimNick(nick,code){
-  const lang=LANG,theme=document.documentElement.dataset.theme;
+  const lang=LANG,theme=THEME;
   await rest("POST","rpc/register_profile",
     {p_nickname:nick,p_code:code,p_lang:lang,p_theme:theme});
   PROFILE={nickname:nick,lang,theme};updAccBtn()}
@@ -78,7 +78,7 @@ function doLogout(){const tok=SESS&&SESS.access_token;
 let prefT=null;
 function queuePrefs(){if(!SESS||!PROFILE)return;clearTimeout(prefT);
   prefT=setTimeout(()=>{rest("PATCH",`profiles?id=eq.${SESS.user.id}`,
-    {lang:LANG,theme:document.documentElement.dataset.theme}).catch(()=>{})},600)}
+    {lang:LANG,theme:THEME}).catch(()=>{})},600)}
 
 /* ---------- badges ---------- */
 const BADGE_DEFS=[
@@ -282,8 +282,7 @@ function cloudLangRefresh(){updAccBtn();renderLbTabs();
 /* ---------- boot ---------- */
 (function cloudBoot(){
   $("accBtn").onclick=openDlg;
-  $("langBtn").addEventListener("click",queuePrefs);
-  $("themeBtn").addEventListener("click",queuePrefs);
+  ["langBtn","langPrev","langNext","themeBtn"].forEach(id=>$(id).addEventListener("click",queuePrefs));
   const back=()=>{if(!LB_CACHE[LB_MODE])loadLb(LB_MODE)};
   $("rBack").addEventListener("click",back);$("homeBtn").addEventListener("click",back);
   renderLbTabs();loadLb(LB_MODE);

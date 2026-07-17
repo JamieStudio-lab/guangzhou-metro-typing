@@ -97,13 +97,38 @@ button{font-family:inherit;cursor:pointer}
 /* settings dialog rows */
 #setDlg h3{font-size:22px}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
-.srow>span{font-size:13px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
+.srow>span{font-size:13px;letter-spacing:.12em;color:var(--mut);font-family:var(--mono);white-space:nowrap}
 .srow .hbtn{min-width:118px;text-align:center;background:var(--panel2)}
 /* keep the amber .on state visible where later/stronger rules reset the background */
 #fchips .hbtn.on,.srow .hbtn.on{background:var(--amber)}
 #fchips .hbtn.on:hover,.srow .hbtn.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
+/* sound switch — MD3-style toggle (track + sliding thumb) */
+.swi{position:relative;flex:none;width:48px;height:28px;padding:0;border:none;cursor:pointer;
+  border-radius:var(--r-full);background:var(--panel2);box-shadow:var(--sh1);
+  transition:background .2s var(--ease)}
+.swi::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;
+  background:var(--paper);box-shadow:var(--sh1);
+  transition:transform .2s var(--ease),background .2s var(--ease)}
+.swi:hover{background:color-mix(in srgb,var(--amber) 14%,var(--panel2))}
+.swi.on{background:var(--amber)}
+.swi.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
+.swi.on::after{transform:translateX(20px);background:#221302}
+.swi:active::after{transform:scale(.9)}
+.swi.on:active::after{transform:translateX(20px) scale(.9)}
+/* language stepper — arrows flank the current language (ready for more languages) */
+.langsel{display:flex;align-items:center;gap:8px}
+.langsel .hbtn{min-width:92px}
+.arrow{flex:none;display:grid;place-items:center;width:34px;height:34px;padding:0;
+  font-size:20px;line-height:1;border:none;cursor:pointer;color:var(--paper);
+  background:var(--panel2);border-radius:var(--r-full);box-shadow:var(--sh1);
+  transition:background .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
+.arrow:hover{background:color-mix(in srgb,var(--amber) 14%,var(--panel2));box-shadow:var(--sh2)}
+.arrow:active{transform:scale(.9)}
 @media(max-width:560px){
-  .hbtn{padding:7px 13px;font-size:13px}}
+  .hbtn{padding:7px 13px;font-size:13px}
+  .langsel{gap:6px}
+  .langsel .hbtn{min-width:76px}
+  .arrow{width:30px;height:30px;font-size:18px}}
 
 /* ---------- menu ---------- */
 /* overflow:clip (not hidden) so scrollIntoView can never scroll #menu itself and strand the hero */
@@ -617,6 +642,7 @@ text{font-family:var(--sans);pointer-events:none}
   .hero.play .train{display:none}
   .scue{animation:none;opacity:1}
   .fab{transition:none}
-  .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text{transition:none}
-  .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active{transform:none}
+  .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text,.swi,.swi::after,.arrow{transition:none}
+  .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active,.arrow:active,.swi:active::after{transform:none}
+  .swi.on:active::after{transform:translateX(20px)}
 }

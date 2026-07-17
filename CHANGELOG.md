@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.2] - 2026-07-17
+
+### Changed
+- **The settings panel's three controls are more intuitive.** *Sound* is now an on/off toggle switch instead of a 音效/静音 text button — the amber "on" state reads at a glance. *Theme* gains a third state: it now cycles 浅色 → 深色 → 跟随系统 (Light → Dark → System), and "System" follows the device's OS light/dark setting live (flipping the OS theme re-themes the page on the spot). Dark stays the default for new visitors. *Language* becomes a ‹ 中文 › stepper with left/right arrows — room to add more languages later — and the row's Chinese label now reads 语言 (Language) so it's findable even by someone who can't read the current UI language.
+- **Signed-in profiles remember "System".** The theme preference (including the new System option) syncs to your account and applies across devices, rather than only the resolved light/dark value. Existing live databases need a one-line migration to allow the new value (see `supabase/setup.sql`).
+
 ## [0.4.1] - 2026-07-17
 
 ### Changed
@@ -434,6 +440,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.10...v0.4.0
 [0.3.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.9...v0.3.10

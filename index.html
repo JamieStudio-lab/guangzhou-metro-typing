@@ -203,11 +203,15 @@ const l=document.createElement("link");l.rel="preload";l.as="image";l.href=h;doc
 <dialog id="setDlg" class="accdlg">
   <h3 data-i18n="setTitle">设置</h3>
   <div class="srow"><span data-i18n="sound">音效</span>
-    <button class="hbtn on" id="soundBtn" aria-label="Sound on or off" aria-pressed="true">音效</button></div>
+    <button class="swi on" id="soundBtn" role="switch" aria-checked="true" aria-label="Sound on/off · 音效开关"></button></div>
   <div class="srow"><span data-i18n="setTheme">主题</span>
     <button class="hbtn" id="themeBtn" aria-label="Switch theme">深色</button></div>
-  <div class="srow"><span data-i18n="setLang">语言</span>
-    <button class="hbtn" id="langBtn" aria-label="Switch language · 切换语言">中文</button></div>
+  <div class="srow"><span data-i18n="setLang">语言 (Language)</span>
+    <div class="langsel">
+      <button class="arrow" id="langPrev" aria-label="Previous language · 上一种语言">‹</button>
+      <button class="hbtn" id="langBtn" aria-label="Switch language · 切换语言">中文</button>
+      <button class="arrow" id="langNext" aria-label="Next language · 下一种语言">›</button>
+    </div></div>
   <div class="dbtns"><button class="dbtn alt" id="setClose" data-i18n="accClose">关闭</button></div>
 </dialog>
 

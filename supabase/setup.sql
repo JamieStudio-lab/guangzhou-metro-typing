@@ -27,7 +27,7 @@ create table public.profiles (
   id         uuid primary key references auth.users(id) on delete cascade,
   nickname   text not null check (char_length(nickname) between 2 and 20),
   lang       text check (lang in ('zh','en')),
-  theme      text check (theme in ('dark','light')),
+  theme      text check (theme in ('dark','light','system')),  -- 'system' added v0.4.2
   created_at timestamptz not null default now()
 );
 create unique index profiles_nickname_key on public.profiles (lower(nickname));
@@ -112,6 +112,11 @@ create policy "insert own scores" on public.scores for insert
 create policy "badges readable by all" on public.badges for select using (true);
 create policy "insert own badges" on public.badges for insert
   with check (auth.uid() = user_id and exists (select 1 from public.profiles where id = auth.uid()));
+
+-- ▶ migration for an already-live DB (this file drops & recreates, so it's only for existing data):
+--   v0.4.2 — allow the "system" theme preference:
+--   alter table public.profiles drop constraint profiles_theme_check,
+--     add constraint profiles_theme_check check (theme in ('dark','light','system'));
 
 -- ▶ your invite code — change it here, or manage codes later, e.g.:
 --   update public.invites set active = false where code = 'GZMETRO2026';   (disable)
