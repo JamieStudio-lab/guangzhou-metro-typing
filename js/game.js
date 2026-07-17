@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.13";
+const APP_VERSION="0.2.0";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -50,7 +50,8 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   diffShort:"短",diffMid:"中",diffLong:"长",
   placeholder:"在此输入拼音…",inHint:"无声调 · 空格可省",inputAria:"输入站名拼音（无声调）",
   kbWarn:"请切换到英文键盘",
-  depart:z=>`始发站 ${z} · 输入下一站拼音即发车`,arriveAt:(z,p)=>`到达 ${z} · ${p}`,
+  origin:"始发站",depart:z=>`始发站 ${z} · 输入本站拼音开始`,
+  doors:"车门已关闭 · 输入下一站拼音发车",arriveAt:(z,p)=>`到达 ${z} · ${p}`,
   terminusReached:"到达终点站！",quitConfirm:"退出本次行程？",
   titles:["见习司机","熟练司机","王牌司机"],
   bossSub:(d,n,h)=>`长站名挑战 · 完成 ${d}/${n} · 剩余 ${h}`,
@@ -98,7 +99,8 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   diffShort:"SHORT",diffMid:"MEDIUM",diffLong:"LONG",
   placeholder:"type pinyin here…",inHint:"toneless · no spaces needed",inputAria:"Type the station name in pinyin",
   kbWarn:"Please switch to an English keyboard",
-  depart:z=>`Origin ${z} · type the next stop to depart`,arriveAt:(z,p)=>`Now at ${z} · ${p}`,
+  origin:"ORIGIN",depart:z=>`Origin ${z} · type this station to begin`,
+  doors:"Doors closed · type the next stop to depart",arriveAt:(z,p)=>`Now at ${z} · ${p}`,
   terminusReached:"Terminus reached!",quitConfirm:"Quit this run?",
   titles:["TRAINEE DRIVER","SKILLED DRIVER","ACE DRIVER"],
   bossSub:(d,n,h)=>`Long-Name Gauntlet · cleared ${d}/${n} · ${h} left`,
@@ -156,7 +158,7 @@ function setLang(l){LANG=l;store.set("lang",l);
 function refreshBoardLang(){const st=curStation();
   if(S.mode==="boss"){$("brdLabel").textContent=t("beatClock");
     if(st&&!S.done)$("dTag").textContent=t(diffOf(st.key.length).t)+" · "+st.key.length}
-  else if(st){$("brdLabel").textContent=t("nextStop");
+  else if(st){$("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
     $("dTag").textContent=t(diffOf(st.key.length).t)}
   else{$("brdLabel").textContent=t("arriving");$("zhTxt").textContent=t("terminus")}}
 $("langBtn").onclick=()=>setLang(LANG==="zh"?"en":"zh");
@@ -277,7 +279,7 @@ function buildMap(svg,opts){
    GAME STATE + ENGINE
 ============================================================ */
 const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
-  idx:1,key:"",typed:0,firstT:null,errSt:false,done:false,
+  idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,distDone:0,topV:0,dispV:0,tgtV:0,
   travels:[],trav:null,
@@ -311,7 +313,7 @@ function show(name){S.screen=name;
   document.body.classList.toggle("boss",name==="game"&&S.mode==="boss")}
 
 /* ---------- start runs ---------- */
-function resetStats(){Object.assign(S,{idx:1,typed:0,firstT:null,errSt:false,done:false,
+function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,distDone:0,topV:0,dispV:0,tgtV:0,travels:[],trav:null,revealing:false});
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
@@ -322,6 +324,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   S.segs=rev?[...L.segKm].reverse():L.segKm.slice();
   resetStats();show("game");
   document.body.style.setProperty("--lc",L.color);
+  document.body.style.setProperty("--lcg",alpha(L.color,.32));
   $("board").style.setProperty("--lc",L.color);
   $("board").style.setProperty("--lcg",alpha(L.color,.38));
   $("toast").style.setProperty("--lc",L.color);
@@ -338,7 +341,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   buildPbar();setGauge(0,L.cap);
   placeTrain(o.x,o.y,angleTo(0,1));$("trainG").setAttribute("opacity","1");
   requestAnimationFrame(()=>{fitAll(true);setTimeout(()=>{camFollow=true},700)});
-  S.idx=1;setPrompt();movePulse();
+  setPrompt();movePulse();
   announce(t("depart",o.zh));
   setTimeout(()=>inp.focus(),80)}
 
@@ -347,6 +350,7 @@ function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   resetStats();show("game");
   const c="#e5484d";
   document.body.style.setProperty("--lc",c);
+  document.body.style.setProperty("--lcg",alpha(c,.32));
   $("board").style.setProperty("--lc",c);$("board").style.setProperty("--lcg",alpha(c,.35));
   $("zhChip").textContent="★";$("zhChip").style.background=c;$("zhChip").style.color=txOn(c);
   $("lives").textContent="♥♥♥";buildPbar();
@@ -372,10 +376,10 @@ function setPrompt(){const st=S.seq[S.idx];
     $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updPbar();return}
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;
   inp.disabled=false;inp.value="";
-  $("brdLabel").textContent=t("nextStop");
+  $("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
   $("zhTxt").textContent=st.zh;
   const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t);
-  $("cnt").textContent=S.idx+"/"+(S.seq.length-1);
+  $("cnt").textContent=(S.idx+1)+"/"+S.seq.length+(S.idx>0?" · "+S.segs[S.idx-1].toFixed(1)+" km":"");
   paintPy();updPbar();flashBoard()}
 
 function setBossPrompt(){const st=S.bossList[S.bossI];
@@ -400,7 +404,7 @@ function updPbar(){const cells=$("pbar").children;
   if(S.mode==="boss"){for(let i=0;i<cells.length;i++){cells[i].className=
     i<S.bossI?(S.heats[i]||"bad"):i===S.bossI?"cur":""}return}
   for(let i=0;i<cells.length;i++){cells[i].className=
-    i===0?"origin":i<S.idx?(S.heats[i]||"good"):i===S.idx?"cur":""}}
+    i<S.idx?(S.heats[i]||"good"):i===S.idx?"cur":""}}
 
 /* ---------- typing ---------- */
 inp.addEventListener("input",e=>{if(!e.isComposing)handleTyping(inp.value)});
@@ -432,23 +436,30 @@ function stationPerf(){const t=(performance.now()-(S.firstT??performance.now()-3
   const expected=Math.max(1,S.key.length/3.2);
   return{t,perf:clamp(expected/Math.max(t,.15),.2,2.5)}}
 
+function bump(el){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}
+
 function award(perf){if(!S.errSt){S.combo++;if(S.combo>S.maxCombo)S.maxCombo=S.combo;
     if(S.combo%5===0)sCombo()}
-  $("cCombo").textContent=S.combo;
+  $("cCombo").textContent=S.combo;bump($("cCombo"));
   const pts=Math.round(S.key.length*10*clamp(perf,.5,2)*(1+Math.min(S.combo,20)*.1));
-  S.score+=pts;$("cScore").textContent=S.score;
+  S.score+=pts;$("cScore").textContent=S.score;bump($("cScore"));
   const pop=$("pop");pop.textContent="+"+pts;pop.classList.remove("on");void pop.offsetWidth;pop.classList.add("on");
   return pts}
 
 function heatOf(perf){return perf>=1.15?"good":perf>=.7?"mid":"bad"}
 
 function completeStation(){
-  const i=S.idx,{t,perf}=stationPerf();
-  S.heats[i]=heatOf(perf);S.times[i]=t;S.perfs.push(perf);
+  const i=S.idx,{t:secs,perf}=stationPerf(); // no bare `t`: the i18n t() is called below
+  S.heats[i]=heatOf(perf);S.times[i]=secs;S.perfs.push(perf);
   award(perf);sDing();
+  if(i===0){ // origin typed in place — doors close, the train departs with the next stop
+    const n=nodes[S.seq[0].zh];
+    if(n){n.heat.setAttribute("stroke",HEATC[S.heats[0]]);if(n.zh)n.zh.classList.add("passed")}
+    announce(t("doors"));S.idx++;setPrompt();movePulse();return}
   const a=S.seq[i-1],b=S.seq[i],km=S.segs[i-1],cap=S.line.cap;
   const vmax=cap*clamp(.3+perf*.35,.35,1);
-  const dur=clamp((500+km*520)/clamp(perf,.55,2.4),380,2800);
+  // travel time = √km ÷ speed: distance shows but the long/short spread stays ≈2×
+  const dur=clamp(Math.sqrt(km)/vmax*68000,500,3600);
   S.travels.push({a,b,km,vmax,dur,idx:i});
   S.idx++;setPrompt()}
 
@@ -534,11 +545,11 @@ function showResult(rerender){show("result");
   const list=boss?S.bossList:S.seq;
   let fi=-1,si=-1;
   list.forEach((st,i)=>{const cell=document.createElement("i");
-    const h=boss?S.heats[i]:(i===0?"good":S.heats[i]);
+    const h=S.heats[i];
     if(h)cell.classList.add(h);
     const t=S.times[i];
     cell.title=st.zh+(t!=null?` · ${t.toFixed(1)}s`:"");
-    if(t!=null&&(boss?true:i>0)){if(fi<0||t<S.times[fi])fi=i;if(si<0||t>S.times[si])si=i}
+    if(t!=null){if(fi<0||t<S.times[fi])fi=i;if(si<0||t>S.times[si])si=i}
     hs.appendChild(cell)});
   $("fastslow").innerHTML=(fi>=0?t("fastest",list[fi].zh,S.times[fi].toFixed(1)):"")+
     (si>=0?t("slowest",list[si].zh,S.times[si].toFixed(1)):"");
@@ -549,7 +560,7 @@ function showResult(rerender){show("result");
     if(typeof cloudOnResult==="function")cloudOnResult({
       key,mode:boss?"boss":"line",score:S.score,wpm,acc,maxCombo:S.maxCombo,
       durS:+(total/1000).toFixed(1),stars,
-      cleared:boss?S.bossDone:S.seq.length-1,total:boss?S.bossList.length:S.seq.length-1,
+      cleared:boss?S.bossDone:S.seq.length,total:boss?S.bossList.length:S.seq.length,
       lives:boss?S.lives:3})}
   nb.hidden=!S.isBest;
   renderCards()}
@@ -674,19 +685,19 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
 /* ---------- gauge ---------- */
 let gaugeCap=80;
 function setGauge(v,cap){gaugeCap=cap;const g=$("gauge");
-  let s=`<path d="M 26 104 A 74 74 0 0 1 174 104" fill="none" style="stroke:var(--rail)" stroke-width="9" stroke-linecap="round"/>`;
+  let s=`<path d="M 26 104 A 74 74 0 0 1 174 104" fill="none" style="stroke:var(--rail)" stroke-width="11" stroke-linecap="round"/>`;
   // redline (last ~18% of the sweep)
   const rx=(100+74*Math.cos(Math.PI*.18)).toFixed(1),ry=(104-74*Math.sin(Math.PI*.18)).toFixed(1);
-  s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="9" stroke-linecap="round"/>`;
+  s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="11" stroke-linecap="round"/>`;
   for(let i=0;i<=8;i++){const ang=Math.PI*i/8,c=Math.cos(ang),si=Math.sin(ang);
     s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" style="stroke:var(--tick)" stroke-width="2"/>`}
-  s+=`<text x="24" y="120" style="fill:var(--dim)" font-size="11" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="168" y="120" style="fill:var(--dim)" font-size="11" font-family="Sono,ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
-  s+=`<text x="100" y="34" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
-  s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--amber)" stroke-width="3.5" stroke-linecap="round"/></g>`;
-  s+=`<circle cx="100" cy="104" r="6" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
-  s+=`<text id="gaugeV" x="100" y="86" style="fill:var(--paper)" font-size="26" font-weight="700" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="100" y="99" style="fill:var(--dim)" font-size="9.5" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
+  s+=`<text x="24" y="121" style="fill:var(--dim)" font-size="12" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="168" y="121" style="fill:var(--dim)" font-size="12" font-family="Sono,ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
+  s+=`<text x="100" y="33" style="fill:var(--dim)" font-size="10.5" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
+  s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--lct)" stroke-width="4" stroke-linecap="round"/></g>`;
+  s+=`<circle cx="100" cy="104" r="6.5" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
+  s+=`<text id="gaugeV" class="gv" x="100" y="88" font-size="33" font-weight="800" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
+  s+=`<text x="100" y="100" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
   g.innerHTML=s}
 function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const n=document.getElementById("needleG");if(n)n.setAttribute("transform",`rotate(${deg},100,104)`);
@@ -705,8 +716,9 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
   // camera
   cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;cam.w+=(camT.w-cam.w)*.09;
   if(S.screen==="game"&&S.mode==="line"){
-    if(!S.trav&&S.travels.length)
-      {S.trav=S.travels.shift();S.trav.t0=now}
+    if(!S.trav&&S.travels.length){S.trav=S.travels.shift();S.trav.t0=now;
+      const q=Math.min(S.travels.length,3); // typed-ahead backlog → express run to catch up
+      if(q){S.trav.dur/=1+q*.35;S.trav.vmax=Math.min(S.line.cap,S.trav.vmax*(1+q*.12))}}
     if(S.trav){const tr=S.trav,p=clamp((now-tr.t0)/tr.dur,0,1),e=easeIO(p);
       const x=tr.a.x+(tr.b.x-tr.a.x)*e,y=tr.a.y+(tr.b.y-tr.a.y)*e;
       const ang=Math.atan2(tr.b.y-tr.a.y,tr.b.x-tr.a.x)*180/Math.PI;

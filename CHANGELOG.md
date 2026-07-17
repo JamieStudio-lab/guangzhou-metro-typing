@@ -4,6 +4,19 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.0] - 2026-07-16
+
+### Added
+- **The first stop is played, not skipped.** A run now opens on the origin station (board label 始发站 / ORIGIN): its pinyin is typed like any other stop and earns score, counts toward accuracy/WPM, and gets a real speed color in the progress bar, heat strip, and fastest/slowest stats (the origin cell used to be hard-coded green). The train departs in place — completing the origin closes the doors (车门已关闭 / Doors closed toast) and movement begins with the next stop. The station counter reads over the full count (1/16 … 16/16), the menu's "letters to type" stat is finally truthful, and signed-in uploads report cleared/total over all stations.
+- **Segment distance on the board.** The counter row shows how far the next hop is (e.g. `3/16 · 1.7 km`), making the distance-based travel times legible.
+
+### Changed
+- **Travel time follows real inter-station distance and typing speed.** Train speed derives from typing pace (up to the line's real top speed — 80 km/h on Lines 1/2, 120 on Line 3) and travel time = √distance ÷ speed, so the 4.3 km 市桥 → 汉溪长隆 gap genuinely rides longer than a 0.9 km old-town hop, while the √ compression keeps the long/short spread around 2× (clamped 0.5–3.6 s). Typing ahead still works: with a backlog queued, segments run express (duration cut up to ~2×, speed boosted toward the cap) so the train catches up and the result screen is never delayed. The speedometer needle and the TOP SPEED result stat now reflect these per-segment speeds.
+- **Driver's-cab HUD.** The speedometer and stat chips trade their flat tonal cards for the LED board's hardware look: dark glass gradient, dot-matrix texture, 1px edge, values grown 19px → 27px in the line color with a soft glow (combo stays amber), plus a scale-pop when score or combo change. The gauge grows ~30% (196×125 px) with thicker arcs, a line-colored needle, and a 26px → 33px readout. The light theme falls back to tonal cards exactly like the board does, and `prefers-reduced-motion` disables the pop.
+
+### Fixed
+- **HUD no longer hides under the floating pills.** The top chip row used to tuck beneath the fixed ⚙/⏏ pills in the viewport corner (barely noticeable with the old dim 19px values, plainly broken with the new large digits); the HUD now starts below them at every width.
+
 ## [0.1.13] - 2026-07-16
 
 ### Changed
@@ -215,6 +228,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.13...v0.2.0
 [0.1.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.10...v0.1.11

@@ -49,8 +49,8 @@
   --sh3:0 4px 10px rgba(24,32,48,.14),0 12px 32px rgba(24,32,48,.11);
   --blob-op:.32;
 }
-/* LED board: dark hardware panel in dark theme, light tonal card in light theme */
-:root[data-theme="light"] #board{
+/* LED board + HUD cab cluster: dark hardware panels in dark theme, light tonal cards in light */
+:root[data-theme="light"] #board,:root[data-theme="light"] #hud{
   --brd1:#fdfdfe; --brd2:#eef1f6; --brd-edge:#dde1e8;
   --brd-dot:rgba(23,32,48,.06); --brd-sheen:rgba(255,255,255,.6);
   --input-bg:#e9edf3;
@@ -338,15 +338,32 @@ button{font-family:inherit;cursor:pointer}
 /* ---------- game ---------- */
 #game{height:100dvh;display:grid;gap:10px;padding:10px 12px;
   grid-template-rows:auto minmax(180px,1fr) auto}
-#hud{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
-#gaugeBox{background:var(--tint);border-radius:var(--r-md);padding:6px 10px 2px;flex:none}
-#gaugeBox svg{display:block;width:148px;height:96px}
-.chips{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:8px;min-width:200px}
-.chip{background:var(--tint);border-radius:var(--r-md);padding:8px 12px;min-width:0}
-.chip label{display:block;font-size:10.5px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
-.chip b{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
-.chip b small{font-size:11px;color:var(--mut)}
-#chipCombo b{color:var(--amber-tx)}
+/* margin-top clears the fixed #fchips pills (settings/quit), which float over the HUD corner */
+#hud{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:44px}
+/* driver's-cab cluster: gauge + chips wear the LED board's hardware look
+   (dark glass, dot matrix, glowing digits; light theme → tonal cards via the shared --brd-* override) */
+#gaugeBox{background:linear-gradient(180deg,var(--brd1),var(--brd2));border:1px solid var(--brd-edge);
+  border-radius:var(--r-lg);padding:8px 12px 3px;flex:none;position:relative;overflow:hidden}
+#gaugeBox svg{display:block;width:196px;height:125px;position:relative}
+#gauge .gv{fill:var(--lct);filter:drop-shadow(0 0 7px var(--lcg,rgba(255,176,32,.4)))}
+.chips{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;min-width:200px}
+.chip{background:linear-gradient(180deg,var(--brd1),var(--brd2));border:1px solid var(--brd-edge);
+  border-radius:var(--r-lg);padding:10px 14px 11px;min-width:0;position:relative;overflow:hidden}
+#gaugeBox::before,.chip::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(var(--brd-dot) 1px,transparent 1.4px);background-size:7px 7px}
+.chip label{display:block;font-size:11px;letter-spacing:.22em;color:var(--mut);font-family:var(--mono);position:relative}
+.chip b{display:block;margin-top:2px;font-family:var(--mono);font-size:27px;font-weight:700;letter-spacing:.02em;
+  white-space:nowrap;color:var(--lct);text-shadow:0 0 12px var(--lcg,rgba(255,176,32,.35));position:relative}
+.chip b small{font-size:12.5px;font-weight:600;color:var(--mut);text-shadow:none}
+.chip b.bump{animation:vbump .25s var(--ease)}
+@keyframes vbump{30%{transform:scale(1.14)}}
+#chipCombo b{color:var(--amber-tx);text-shadow:0 0 12px rgba(255,176,32,.4)}
+:root[data-theme="light"] .chip b,:root[data-theme="light"] #chipCombo b{text-shadow:none}
+:root[data-theme="light"] #gauge .gv{filter:none}
+@media(max-width:560px){
+  #gaugeBox svg{width:160px;height:102px}
+  .chips{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+  .chip b{font-size:22px}}
 #mapWrap{position:relative;background:radial-gradient(1100px 560px at 60% 40%,var(--map1),var(--map2));
   border-radius:var(--r-xl);overflow:hidden;min-height:170px;box-shadow:var(--sh1)}
 #mapWrap svg{width:100%;height:100%;display:block}
@@ -425,7 +442,6 @@ body.boss #ringBox{display:flex}
 #pbar i{flex:1;height:8px;border-radius:3px;background:var(--rail);transition:background .25s}
 #pbar i.cur{background:var(--lc);animation:pulse2 1s infinite alternate}
 #pbar i.good{background:var(--good)} #pbar i.mid{background:var(--mid)} #pbar i.bad{background:var(--bad)}
-#pbar i.origin{background:var(--lc)}
 @keyframes pulse2{from{opacity:.35}to{opacity:1}}
 
 /* desktop layout */
@@ -487,7 +503,7 @@ text{font-family:var(--sans);pointer-events:none}
 #fx i{position:absolute;width:8px;height:12px;top:-16px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(560deg)}}
 @media(prefers-reduced-motion:reduce){
-  .pulse,#pbar i.cur{animation:none}
+  .pulse,#pbar i.cur,.chip b.bump{animation:none}
   #fx{display:none}
   #board.fresh::after{animation:none}
   .rails .g{display:none}
