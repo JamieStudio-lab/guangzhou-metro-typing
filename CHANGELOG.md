@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.10] - 2026-07-17
+
+### Fixed
+- **Line-colored buttons on the mid-tone palettes were weak-contrast.** For lines whose color sits in the awkward middle brightness — Line 22's orange, Line 8's teal, Line 13's olive, Line 10's slate-blue, plus Line 4's green — neither black nor white label text lands with comfortable contrast, so the depart button, the result "再来一次 / Play again" button, the line-number circle, and the leaderboard tabs read soft (Line 22 actually fell below the AA bar at 4.4:1). Those fills now nudge just far enough (lighter under dark text, deeper under white text) to clear a 6:1 floor against their chosen label, so every line's buttons read cleanly. Lines already above the floor keep their exact official color, and map strokes, rivers, and the run accent stay the real line colors throughout — only the button/chip fills adjust.
+
 ## [0.3.9] - 2026-07-17
 
 ### Fixed
@@ -418,6 +423,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.3.6...v0.3.7

@@ -130,7 +130,7 @@ function paintCloudNote(){
 /* ---------- leaderboard ---------- */
 function renderLbTabs(){ // 20 modes: number roundels, full name in the tooltip
   $("lbTabs").innerHTML=LINES.map(L=>
-    `<button class="lbtab num${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
+    `<button class="lbtab num${LB_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${typeof btnBg==="function"?btnBg(L.color):L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
     `<button class="lbtab${LB_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
   $("lbTabs").querySelectorAll(".lbtab").forEach(b=>
     b.onclick=()=>{LB_MODE=b.dataset.m;renderLbTabs();loadLb(LB_MODE)})}
@@ -200,7 +200,7 @@ function renderDlg(){const d=$("accDlg");let h;
 const recDate=iso=>new Date(iso).toLocaleDateString(LANG==="zh"?"zh-CN":"en-GB",{month:"short",day:"numeric"});
 function renderRecTabs(){const el=$("recTabs");if(!el)return;
   el.innerHTML=LINES.map(L=>
-    `<button class="lbtab num${REC_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
+    `<button class="lbtab num${REC_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${typeof btnBg==="function"?btnBg(L.color):L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}" title="${t("lineName",L)}" aria-label="${t("lineName",L)}">${L.num}</button>`).join("")+
     `<button class="lbtab${REC_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
   el.querySelectorAll(".lbtab").forEach(b=>
     b.onclick=()=>{REC_MODE=b.dataset.m;renderRecTabs();loadRecs(REC_MODE)})}

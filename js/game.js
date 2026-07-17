@@ -1,4 +1,4 @@
-const APP_VERSION="0.3.9";
+const APP_VERSION="0.3.10";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -381,7 +381,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   $("board").style.setProperty("--lc",L.color);
   $("board").style.setProperty("--lcg",alpha(disp,.38));
   $("toast").style.setProperty("--lc",L.color);
-  $("zhChip").textContent=L.num;$("zhChip").style.background=L.color;$("zhChip").style.color=txOn(L.color);
+  $("zhChip").textContent=L.num;$("zhChip").style.background=btnBg(L.color);$("zhChip").style.color=txOn(L.color);
   buildMap(gMap,{train:true});collectNodes();
   $("trainBand").setAttribute("fill",L.color);
   // dim other lines + their exclusive stations
@@ -614,7 +614,7 @@ function showResult(rerender){show("result");
   const nb=$("newbest");$("rTitle").childNodes[0].nodeValue=title;
   const col=boss?"#e5484d":S.line.color;
   $("rcard").style.setProperty("--lc",col);
-  $("rAgain").style.setProperty("--cc",col);
+  $("rAgain").style.setProperty("--cc",boss?col:btnBg(col));
   $("rAgain").style.setProperty("--cc-tx",txOn(col));
   $("rSub").textContent=boss
     ?t("bossSub",S.bossDone,S.bossList.length,"♥".repeat(S.lives)||"—")
@@ -668,6 +668,16 @@ const txOn=hex=>lumOf(hex)>.19?"#0a0f1a":"#fff";
 // dark-theme display variant: lighten dark line colors until they read as text on the near-black board
 const mixW=(hex,t)=>{const n=hex.replace("#","");return"#"+[0,2,4].map(i=>Math.round(parseInt(n.slice(i,i+2),16)*(1-t)+255*t).toString(16).padStart(2,"0")).join("")};
 const dispOf=hex=>{if(lumOf(hex)>=.19)return hex;let lo=0,hi=1;for(let i=0;i<8;i++){const m=(lo+hi)/2;if(lumOf(mixW(hex,m))<.19)lo=m;else hi=m}return mixW(hex,hi)};
+// button/chip fills: keep the official line color, but for the mid-tone lines where neither
+// black nor white text is comfortable, nudge the fill toward the far end until the txOn-chosen
+// text clears BTN_MIN:1. Leaves the map/strokes (raw L.color) untouched.
+const BTN_MIN=6;
+const crOf=(a,b)=>{const l=[lumOf(a),lumOf(b)].sort((x,y)=>y-x);return (l[0]+.05)/(l[1]+.05)};
+const mixTo=(hex,t,tgt)=>{const n=hex.replace("#",""),T=tgt.replace("#","");return"#"+[0,2,4].map(i=>Math.round(parseInt(n.slice(i,i+2),16)*(1-t)+parseInt(T.slice(i,i+2),16)*t).toString(16).padStart(2,"0")).join("")};
+const btnBg=hex=>{const tx=lumOf(hex)>.19?"#0a0f1a":"#ffffff";if(crOf(hex,tx)>=BTN_MIN)return hex;
+  const toward=tx==="#0a0f1a"?"#ffffff":"#0a0f1a";let lo=0,hi=1;
+  for(let i=0;i<12;i++){const m=(lo+hi)/2;if(crOf(mixTo(hex,m,toward),tx)<BTN_MIN)lo=m;else hi=m}
+  return mixTo(hex,hi,toward)};
 const REDUCED=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 function ovHighlight(id){const ov=$("ovMap");
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
@@ -836,7 +846,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
     const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
     const best=bests[L.id];
     const card=document.createElement("div");card.className="card";card.dataset.line=L.id;
-    card.style.setProperty("--cc",L.color);card.style.setProperty("--cc-tx",txOn(L.color));
+    card.style.setProperty("--cc",btnBg(L.color));card.style.setProperty("--cc-tx",txOn(L.color));
     card.innerHTML=`
       <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
         <span class="crow">
