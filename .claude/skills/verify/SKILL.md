@@ -25,7 +25,7 @@ const ctx = await browser.newContext({ viewport:{width:1440,height:900}, colorSc
 
 ## Driving
 
-- `page.on('dialog', d => d.accept())` — **required**: quitting a run (`#homeBtn`) fires `confirm()`; without a handler Playwright cancels it and you never get back to the menu.
+- Quitting a run (`#homeBtn`, or Esc) — **since v0.4.6 there is no `confirm()`**, so no `page.on('dialog')` handler is needed. It opens an in-game modal `<dialog id="quitDlg">` and pauses the run (`S.paused=true` freezes train/timer/boss countdown). To reach the menu: click `#homeBtn` → `#quitGoBtn` (退出). To resume: `#quitStayBtn` (继续游戏) / backdrop / Esc — the close handler shifts `S.t0`/`S.firstT`/`S.deadline` forward so the pause is free.
 - Game globals are top-level `const` in classic scripts — still reachable from `page.evaluate` (e.g. `S.key` = current station's toneless pinyin).
 - Start a run: `page.click('.card .go')` (cards are in line-number order since v0.3.2: first = Line 1; `.card[data-line="l18"] .go` picks a line). Boss: `.card.boss .go`.
 - Type a station: `await page.type('#pyin', await page.evaluate(() => S.key))`. Loop until `#result` unhides (~10 s for a full line; travels are queued, wait ≤60 s).
