@@ -10,7 +10,7 @@ const SB_URL="https://rlnkfalmlnjxqtbjrnrk.supabase.co";
 const SB_KEY="sb_publishable_gxT6qQFLqfEMIU2ip5tdcg_1xroL0KP";
 
 let SESS=null,PROFILE=null,MY_BADGES=new Set();
-let NOTE=null,NEW_BADGES=[],LB_MODE="l1",LB_CACHE={};
+let NOTE=null,NEW_BADGES=[],LB_MODE="l1",LB_CACHE={},REC_MODE="l1",REC_CACHE={};
 try{SESS=JSON.parse(store.get("sb_session")||"null")}catch(e){SESS=null}
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -43,10 +43,11 @@ async function rest(method,path,body,prefer){
   const j=await r.json().catch(()=>null);
   if(!r.ok)throw{code:(j&&j.code)||String(r.status),msg:(j&&j.message)||("HTTP "+r.status)};
   return j}
-async function countBetter(mode,score){
-  const r=await fetch(SB_URL+`/rest/v1/leaderboard?mode=eq.${mode}&score=gt.${score}&select=user_id`,
+async function countRows(query){
+  const r=await fetch(SB_URL+"/rest/v1/"+query,
     {method:"HEAD",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,Prefer:"count=exact"}});
   return +(r.headers.get("content-range")||"/0").split("/")[1]||0}
+const countBetter=(mode,score)=>countRows(`leaderboard?mode=eq.${mode}&score=gt.${score}&select=user_id`);
 
 /* ---------- session lifecycle ---------- */
 async function afterLogin(){
@@ -67,7 +68,7 @@ async function claimNick(nick,code){
     {p_nickname:nick,p_code:code,p_lang:lang,p_theme:theme});
   PROFILE={nickname:nick,lang,theme};updAccBtn()}
 function doLogout(){const tok=SESS&&SESS.access_token;
-  saveSess(null);PROFILE=null;MY_BADGES=new Set();NOTE=null;NEW_BADGES=[];
+  saveSess(null);PROFILE=null;MY_BADGES=new Set();NOTE=null;NEW_BADGES=[];REC_CACHE={};
   if(tok)fetch(SB_URL+"/auth/v1/logout",{method:"POST",
     headers:{apikey:SB_KEY,Authorization:"Bearer "+tok}}).catch(()=>{});
   updAccBtn();paintCloudNote();if(LB_CACHE[LB_MODE])paintLb(LB_CACHE[LB_MODE])}
@@ -95,13 +96,16 @@ async function cloudOnResult(run){
   try{
     await rest("POST","scores",{user_id:SESS.user.id,mode:run.key,score:run.score,
       wpm:run.wpm,acc:run.acc,max_combo:run.maxCombo,duration_s:run.durS,stars:run.stars});
-    delete LB_CACHE[run.key];
+    delete LB_CACHE[run.key];delete REC_CACHE[run.key];
     // the note promises current global standing, so rank the player's best in
     // this mode (the run just uploaded may not be it), never counting themselves
     let rank=null;try{
       const me=await rest("GET",`leaderboard?mode=eq.${run.key}&user_id=eq.${SESS.user.id}&select=score`);
       rank=1+await countBetter(run.key,Math.max(run.score,me&&me[0]?me[0].score:0))}catch(e){}
-    NOTE={ok:true,rank};
+    // where this run sits among the player's own uploads (it's already in, gt excludes it)
+    let myRank=null;try{
+      myRank=1+await countRows(`scores?user_id=eq.${SESS.user.id}&mode=eq.${run.key}&score=gt.${run.score}&select=id`)}catch(e){}
+    NOTE={ok:true,rank,myRank};
     NEW_BADGES=BADGE_DEFS.filter(b=>!MY_BADGES.has(b[0])&&b[2](run));
     for(const b of NEW_BADGES){MY_BADGES.add(b[0]);
       rest("POST","badges?on_conflict=user_id,badge",{user_id:SESS.user.id,badge:b[0]},
@@ -112,7 +116,10 @@ function paintCloudNote(){
   const el=$("cloudNote"),nb=$("newBadges");
   if(!NOTE){el.hidden=true;nb.hidden=true;return}
   el.hidden=false;
-  el.textContent=NOTE.ok?(NOTE.rank?t("cloudSaved",NOTE.rank):t("cloudSavedNoRank")):t("cloudErr");
+  let msg=NOTE.rank?t("cloudSaved",NOTE.rank):t("cloudSavedNoRank");
+  if(NOTE.myRank===1)msg+=" · "+t("cloudPB");
+  else if(NOTE.myRank&&NOTE.myRank<=5)msg+=" · "+t("cloudMyBest",NOTE.myRank);
+  el.textContent=NOTE.ok?msg:t("cloudErr");
   nb.hidden=!NEW_BADGES.length;
   nb.innerHTML=NEW_BADGES.map(b=>
     `<span class="bdgchip new">${b[1]} ${t("badge_"+b[0])} · ${t("badgeNew")}</span>`).join("")}
@@ -153,6 +160,9 @@ function renderDlg(){const d=$("accDlg");let h;
       <div class="bdgs">${BADGE_DEFS.map(b=>
         `<span class="bdgchip${MY_BADGES.has(b[0])?"":" off"}">${b[1]} ${t("badge_"+b[0])}</span>`).join("")}</div>
       ${MY_BADGES.size?"":`<p class="dmut">${t("accNoBadges")}</p>`}
+      <h4>${t("accRecords")}</h4>
+      <div class="lbtabs rectabs" id="recTabs"></div>
+      <div class="recbody" id="recBody"></div>
       <div class="dbtns"><button class="dbtn alt" id="dLogout">${t("accLogout")}</button>
         <button class="dbtn" id="dClose">${t("accClose")}</button></div>`}
   else if(DLG_MODE==="nick"){
@@ -180,7 +190,32 @@ function renderDlg(){const d=$("accDlg");let h;
     const f=d.querySelector("input");if(f)f.focus()};
   if(q("dGo"))q("dGo").onclick=dlgSubmit;
   d.querySelectorAll("input").forEach(i=>i.addEventListener("keydown",e=>{
-    if(e.key==="Enter"){e.preventDefault();dlgSubmit()}}))}
+    if(e.key==="Enter"){e.preventDefault();dlgSubmit()}}));
+  if(DLG_MODE==="in"){renderRecTabs();loadRecs(REC_MODE)}}
+
+/* ---------- personal records (best 5 per mode, in the account dialog) ---------- */
+const recDate=iso=>new Date(iso).toLocaleDateString(LANG==="zh"?"zh-CN":"en-GB",{month:"short",day:"numeric"});
+function renderRecTabs(){const el=$("recTabs");if(!el)return;
+  el.innerHTML=LINES.map(L=>
+    `<button class="lbtab${REC_MODE===L.id?" on":""}" data-m="${L.id}" style="--cc:${L.color};--cc-tx:${typeof txOn==="function"?txOn(L.color):"#0a0f1a"}">${t("lineName",L)}</button>`).join("")+
+    `<button class="lbtab${REC_MODE==="boss"?" on":""}" data-m="boss" style="--cc:var(--bad)">${t("lbBoss")}</button>`;
+  el.querySelectorAll(".lbtab").forEach(b=>
+    b.onclick=()=>{REC_MODE=b.dataset.m;renderRecTabs();loadRecs(REC_MODE)})}
+async function loadRecs(mode){if(!$("recBody"))return;
+  if(REC_CACHE[mode]){paintRecs(REC_CACHE[mode]);return}
+  $("recBody").innerHTML=`<p class="lbmsg">${t("lbLoading")}</p>`;
+  try{const rows=await rest("GET",
+      `scores?user_id=eq.${SESS.user.id}&mode=eq.${mode}&select=score,wpm,acc,stars,created_at&order=score.desc,created_at.asc&limit=5`);
+    REC_CACHE[mode]=rows;if(mode===REC_MODE&&$("recBody"))paintRecs(rows)}
+  catch(e){if($("recBody"))$("recBody").innerHTML=`<p class="lbmsg">${t("recErr")}</p>`}}
+function paintRecs(rows){const el=$("recBody");
+  if(!rows.length){el.innerHTML=`<p class="lbmsg">${t("recEmpty")}</p>`;return}
+  el.innerHTML=rows.map((r,i)=>
+    `<div class="lbrow${i?"":" me"}">
+      <span class="lbrank">${i+1}</span>
+      <span class="lbnick recwhen">${recDate(r.created_at)}<i>${"★".repeat(r.stars)}</i></span>
+      <span class="lbsub">${r.wpm} wpm</span><span class="lbsub">${Math.round(r.acc)}%</span>
+      <b class="lbscore">${r.score}</b></div>`).join("")}
 function mapErr(e){
   if(e instanceof TypeError)return t("accNetErr");
   switch(e.code){
@@ -224,7 +259,7 @@ async function dlgSubmit(){if(DLG_BUSY)return;setErr("");
       await afterLogin();
       if(!PROFILE){setBusy(false);DLG_MODE="nick";renderDlg();return}
       d.close()}
-    updAccBtn();LB_CACHE={};loadLb(LB_MODE)}
+    updAccBtn();LB_CACHE={};REC_CACHE={};loadLb(LB_MODE)}
   catch(e){
     if(e&&e.code==="23503"){ // session points at a deleted auth user — start over
       saveSess(null);PROFILE=null;MY_BADGES=new Set();updAccBtn();

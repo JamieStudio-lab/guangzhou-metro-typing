@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.14";
+const APP_VERSION="0.3.0";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -88,6 +88,8 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   accClose:"关闭",accLogout:"退出登录",
   accSync:"语言与主题随账号同步，完成行程后成绩自动上传排行榜。",
   accBadges:"我的徽章",accNoBadges:"还没有徽章 — 跑完一条线路就能拿到第一枚！",
+  accRecords:"我的纪录",recEmpty:"还没有成绩 — 完成一局就会出现在这里！",
+  recErr:"纪录暂时加载不出来",
   accNeedNick:"起个昵称吧（显示在排行榜上，2–20 个字符）",
   accNickTaken:"昵称已被占用，换一个试试",accNickShort:"昵称至少 2 个字符",
   accBadCred:"邮箱或密码不正确",accEmailUsed:"该邮箱已注册，试试直接登录",
@@ -98,6 +100,7 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   lbTitle:"全球排行榜",lbBoss:"长站名",lbLoading:"加载中…",
   lbEmpty:"虚位以待 — 登录后完成一局即可上榜！",lbErr:"排行榜暂时加载不出来",
   cloudSaved:r=>`☁ 成绩已上传 · 当前全球第 ${r} 名`,cloudSavedNoRank:"☁ 成绩已上传",
+  cloudMyBest:r=>`个人第 ${r} 佳`,cloudPB:"个人新纪录！",
   cloudErr:"☁ 成绩上传失败（本局成绩仍在本页显示）",badgeNew:"新徽章",
   badge_first:"初次通勤",badge_l1:"一号线通关",badge_l2:"二号线通关",badge_l3:"三号线通关",
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
@@ -137,6 +140,8 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   accClose:"CLOSE",accLogout:"SIGN OUT",
   accSync:"Language & theme sync with your account; finished runs upload to the leaderboard.",
   accBadges:"My badges",accNoBadges:"No badges yet — finish any line to earn your first!",
+  accRecords:"My records",recEmpty:"No runs yet — finish one and it'll show up here!",
+  recErr:"Records unavailable right now",
   accNeedNick:"Pick a nickname (shown on the leaderboard, 2–20 chars)",
   accNickTaken:"Nickname taken — try another",accNickShort:"Nickname needs 2+ characters",
   accBadCred:"Wrong email or password",accEmailUsed:"Email already registered — try signing in",
@@ -147,6 +152,7 @@ en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn
   lbTitle:"GLOBAL LEADERBOARD",lbBoss:"GAUNTLET",lbLoading:"Loading…",
   lbEmpty:"Nobody here yet — sign in and finish a run to claim it!",lbErr:"Leaderboard unavailable right now",
   cloudSaved:r=>`☁ Score uploaded · #${r} worldwide`,cloudSavedNoRank:"☁ Score uploaded",
+  cloudMyBest:r=>`your #${r} best`,cloudPB:"new personal best!",
   cloudErr:"☁ Upload failed (score still shown here)",badgeNew:"NEW",
   badge_first:"First Ride",badge_l1:"Line 1 Cleared",badge_l2:"Line 2 Cleared",badge_l3:"Line 3 Cleared",
   badge_star3:"Triple Star",badge_boss:"Gauntlet Slayer",badge_wpm60:"Bullet Train",badge_wpm100:"Maglev",

@@ -307,7 +307,8 @@ button{font-family:inherit;cursor:pointer}
 .cloudnote{color:var(--mut);font-size:12.5px;font-family:var(--mono);margin-top:8px}
 
 /* ---------- account dialog ---------- */
-.accdlg{margin:auto;width:min(92vw,380px);background:var(--panel);color:var(--paper);
+.accdlg{margin:auto;width:min(92vw,380px);max-height:calc(100dvh - 32px);overflow:auto;
+  background:var(--panel);color:var(--paper);
   border:none;border-radius:var(--r-xl);box-shadow:var(--sh3);padding:24px}
 .accdlg::backdrop{background:rgba(4,7,13,.55)}
 .accdlg h3{font-size:20px;font-weight:700;margin-bottom:4px}
@@ -334,6 +335,16 @@ button{font-family:inherit;cursor:pointer}
 .dlink{display:block;margin:14px auto 0;background:none;border:none;color:var(--mut);
   font-size:12.5px;text-decoration:underline;text-underline-offset:3px}
 .dlink:hover{color:var(--paper)}
+
+/* personal records (account dialog) — reuses the leaderboard row/tab classes, denser */
+.rectabs{margin-top:10px}
+.rectabs .lbtab{padding:5px 12px;font-size:12.5px}
+.recbody{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.recbody .lbrow{grid-template-columns:1.2em minmax(0,1fr) auto auto auto;gap:8px;
+  padding:8px 10px;font-size:13.5px}
+.recbody .lbscore{font-size:14px}
+.recwhen{font-size:12px;color:var(--mut);font-weight:600}
+.recwhen i{font-style:normal;color:var(--amber-tx);margin-left:6px;font-size:10.5px;letter-spacing:.06em}
 
 /* ---------- game ---------- */
 #game{height:100dvh;display:grid;gap:10px;padding:10px 12px;

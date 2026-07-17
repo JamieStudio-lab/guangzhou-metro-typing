@@ -4,6 +4,15 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.3.0] - 2026-07-17
+
+### Added
+- **My records — your best 5 runs per line.** The signed-in account dialog grows a 我的纪录 / My records section: Line 1/2/3/Gauntlet tabs (same pill style as the leaderboard) with up to five of your top-scoring uploaded runs each, showing rank, date, stars, WPM, accuracy, and score. Your #1 run wears the leaderboard's amber highlight. Rows come straight from the existing `scores` table (no backend changes), are cached per mode, refresh after each upload, and degrade to a quiet message offline.
+- **The upload note now places the run in your own history.** Alongside the global rank, finishing a signed-in run appends 个人新纪录！/ new personal best! when the run tops your uploads in that mode, or 个人第 N 佳 / your #N best when it lands in your top 5. Slower runs outside your top 5 add nothing.
+
+### Changed
+- The account dialog scrolls when its content outgrows short viewports (it now hosts badges *and* records).
+
 ## [0.2.14] - 2026-07-17
 
 ### Changed
@@ -334,6 +343,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.3.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.14...v0.3.0
 [0.2.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.13...v0.2.14
 [0.2.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.11...v0.2.12
