@@ -4,6 +4,13 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.4] - 2026-07-16
+
+### Changed
+- **The last letter lands the train on the platform.** The throttle/brake physics (live typing rate → target speed → acceleration clamps) are replaced by direct drive: each correct letter owns its slice of the segment's distance, and the train pursues that earned point with a short chase constant (`CHASE`, 0.17 s) plus a minimum closing speed (`ARRIVE_V`, 30% of cap), so finishing a station's name glides the train onto that platform within ~0.3 s — arrival is synchronized with typing, not seconds behind it. Pause mid-name and the train settles exactly at the distance you've earned.
+- **Speed is now honest per segment.** The speedometer reads the derivative of real motion (lightly smoothed for the needle): the same typing pace rides visibly faster across a long gap with a short name (市桥 → 汉溪长隆) than through dense old-town hops — and on such express segments the readout can genuinely exceed the line cap (the needle pegs, the digits tell the truth, TOP SPEED on the result screen included). Hot-streak flames still key off the same per-line redline fractions from v0.2.3.
+- **Feel knobs simplified.** `ERR_KEEP` and the 2 s keystroke-rate window are gone (they only fed the old throttle); a typo now brakes the train naturally because credit stops flowing. The knobs are `CRUISE_CPS` (display scale), `CHASE`, and `ARRIVE_V`.
+
 ## [0.2.3] - 2026-07-16
 
 ### Changed
@@ -255,6 +262,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.0...v0.2.1

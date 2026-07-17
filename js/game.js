@@ -1,11 +1,9 @@
-const APP_VERSION="0.2.3";
-// feel knobs: typing rate (chars/s) that sustains the line's speed cap, and the
-// fraction of the rate window kept after a typo (lower = harsher brake)
-const CRUISE_CPS=5.5,ERR_KEEP=.5;
-// earned track is always consumed: with credit ahead the train coasts at ≥COAST
-// of the line cap even when typing pauses, so a completed name always carries it
-// through its stop (the arrival brake curve still eases it in)
-const COAST=.32;
+const APP_VERSION="0.2.4";
+// feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
+// average segment reads ≈the line cap. The train is driven directly by typed letters:
+// it pursues the earned track with time constant CHASE (s), never closing slower than
+// ARRIVE_V of the cap, so a name's last letter lands it on that platform in ~0.3 s.
+const CRUISE_CPS=5.5,CHASE=.17,ARRIVE_V=.3;
 // per-line ease scaling (L.ease 1 = easiest line, 0 = hardest): flames light at a
 // lower speed fraction, big flames at lower combos, combo score step more generous
 const HOT_ON=e=>.84-.14*e,HOT_HYS=.1,TIER2=e=>Math.round(10-4*e),CSTEP=e=>.1+.04*e;
@@ -299,8 +297,8 @@ function buildMap(svg,opts){
 const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
-  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,cum:[],kms:90,
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,
+  pos:0,credit:0,arrivedI:0,hot:false,fireT:1,cum:[],kms:90,
   hotOn:.84,t2:10,t3:20,cstep:.1,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
 const dirState={},bests={};
@@ -334,8 +332,8 @@ function show(name){S.screen=name;
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
-  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,fireT:1,revealing:false,
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,
+  pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,
   hotOn:.84,t2:10,t3:20,cstep:.1});
   $("gaugeBox").classList.remove("hot","t2","t3");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
@@ -451,12 +449,10 @@ function handleTyping(raw){
   const prev=S.typed,err=v.length>ok;
   if(err){S.errors+=v.length-ok;S.errSt=true;
     if(S.combo>0){S.combo=0;$("cCombo").textContent="0"}
-    S.keyT.splice(0,Math.ceil(S.keyT.length*(1-ERR_KEEP))); // fumble = brakes
     shake();sErr()}
   if(ok>S.typed){const now=performance.now();
     if(S.firstT===null){S.firstT=now;if(S.t0===null)S.t0=S.firstT}
-    S.correct+=ok-S.typed;
-    for(let k=S.typed;k<ok;k++)S.keyT.push(now)}
+    S.correct+=ok-S.typed}
   S.typed=ok;inp.value=S.key.slice(0,ok);
   updCredit();paintPy(ok>prev?prev:-1,err);updLive();
   if(ok===S.key.length)S.mode==="boss"?bossComplete():completeStation()}
@@ -489,7 +485,7 @@ function completeStation(){
     announce(t("doors"));S.idx++;setPrompt();movePulse();return}
   S.idx++;setPrompt()}
 
-/* ---------- continuous travel: typed letters earn track, typing rate drives speed ---------- */
+/* ---------- continuous travel: typed letters earn track and drive the train directly ---------- */
 // km unlocked so far: each correct letter buys its share of the segment being typed
 function updCredit(){if(S.mode!=="line")return;
   if(S.idx===0){S.credit=0;return}
@@ -758,23 +754,19 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
   if(S.screen==="game"&&S.mode==="line"){
     const cap=S.line.cap;
     if(!S.done){
-      // live typing rate (chars/s over a 2 s window) sets the throttle;
-      // unclaimed letter-credit ahead of the train sets the brake curve
-      while(S.keyT.length&&now-S.keyT[0]>2000)S.keyT.shift();
-      const rate=S.keyT.length/2;
-      // all names typed (terminus pending) → full throttle to coast home on earned credit
-      let vTyp=S.key?cap*Math.min(1,Math.pow(rate/CRUISE_CPS,.85)):cap;
+      // direct drive: each letter owns its slice of the segment, the train pursues
+      // the earned track point, so finishing a name lands it on that platform;
+      // speed between stops = km-per-letter × typing pace, honest per segment
       const lead=Math.max(0,S.credit-S.pos);
-      if(lead>0)vTyp=Math.max(vTyp,cap*COAST); // never stall short of an earned stop
-      S.tgtV=Math.min(vTyp,Math.sqrt(3.6*cap*S.kms*lead));
-      S.dispV=clamp(S.tgtV,S.dispV-cap*dt/.55,S.dispV+cap*dt/1.1);
+      const step=Math.min(lead,lead*Math.min(1,dt/CHASE)+(lead>0?ARRIVE_V*cap*dt/S.kms:0));
+      S.pos+=step;S.dist=S.pos;
+      const vRaw=dt>0?step/dt*S.kms:0;
+      S.dispV+=(vRaw-S.dispV)*Math.min(1,dt/.22); // gauge smoothing only — motion stays sync
       if(S.dispV>S.topV)S.topV=S.dispV;
-      S.pos=Math.min(S.credit,S.pos+S.dispV*dt/S.kms);
-      S.dist=S.pos;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
-      // camera widens with speed for a sense of pace
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*(S.dispV/cap)}
+      // camera widens with speed for a sense of pace (express segments peg at full width)
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*Math.min(1,S.dispV/cap)}
       const hot=S.dispV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;
