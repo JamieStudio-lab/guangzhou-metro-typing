@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.3";
+const APP_VERSION="0.4.4";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -59,7 +59,7 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
-  nextStop:"下一站",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
+  nextStop:"下一站",upNext:"接下来",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
   diffShort:"短",diffMid:"中",diffLong:"长",
   placeholder:"在此输入拼音…",inHint:"无声调 · 空格可省",inputAria:"输入站名拼音（无声调）",
   kbWarn:"请切换到英文键盘",
@@ -112,7 +112,7 @@ en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitB
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
-  nextStop:"NEXT STOP",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
+  nextStop:"NEXT STOP",upNext:"THEN",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
   diffShort:"SHORT",diffMid:"MEDIUM",diffLong:"LONG",
   placeholder:"type pinyin here…",inHint:"toneless · no spaces needed",inputAria:"Type the station name in pinyin",
   kbWarn:"Please switch to an English keyboard",
@@ -180,7 +180,8 @@ function refreshBoardLang(){const st=curStation();
     if(st&&!S.done)$("dTag").textContent=t(diffOf(st.key.length).t)+" · "+st.key.length}
   else if(st){$("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
     $("dTag").textContent=t(diffOf(st.key.length).t)}
-  else{$("brdLabel").textContent=t("arriving");$("zhTxt").textContent=t("terminus")}}
+  else{$("brdLabel").textContent=t("arriving");$("zhTxt").textContent=t("terminus")}
+  setNextUp()}
 const LANGS=["zh","en"]; // ordered; arrows step through and wrap (room for more languages later)
 function cycleLang(dir){const i=(LANGS.indexOf(LANG)+dir+LANGS.length)%LANGS.length;setLang(LANGS[i])}
 $("langBtn").onclick=()=>cycleLang(1);
@@ -437,14 +438,25 @@ function setPrompt(){const st=S.seq[S.idx];
   if(!st){ // terminus reached (all names typed) — waiting on final arrival
     $("zhTxt").textContent=t("terminus");$("py").innerHTML="";
     $("brdLabel").textContent=t("arriving");$("cnt").textContent="";
-    $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updCredit();updPbar();return}
+    $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updCredit();updPbar();setNextUp();return}
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;
   inp.disabled=false;inp.value="";
   $("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
   $("zhTxt").textContent=st.zh;
   const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t);
   $("cnt").textContent=(S.idx+1)+"/"+S.seq.length+(S.idx>0?" · "+S.segs[S.idx-1].toFixed(1)+" km":"");
-  updCredit();paintPy();updPbar();flashBoard()}
+  updCredit();paintPy();updPbar();flashBoard();setNextUp()}
+
+// look-ahead: preview the stop AFTER the current target (line mode only) — v0.4.4.
+// When that stop is the terminus, the label switches to 终点站/TERMINUS; while the
+// terminus itself is being typed there's no stop after, so the panel hides.
+function setNextUp(){const box=$("nextUp");
+  const cur=S.mode==="line"?S.seq[S.idx]:null;
+  const nxt=cur?S.seq[S.idx+1]:null;
+  if(!nxt){box.hidden=true;return}
+  $("nuLabel").textContent=t(S.idx+1===S.seq.length-1?"terminus":"upNext");
+  $("nuZh").textContent=nxt.zh;$("nuPy").textContent=nxt.py;
+  box.hidden=false}
 
 function setBossPrompt(){const st=S.bossList[S.bossI];
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;S.revealing=false;

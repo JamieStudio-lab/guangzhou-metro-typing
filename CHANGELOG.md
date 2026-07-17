@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.4] - 2026-07-17
+
+### Added
+- **The board now previews the stop after this one.** To the right of the station you're currently typing (labeled 下一站 / NEXT STOP), a smaller, dimmed panel shows what's coming up next on the line — 接下来 / THEN, with the next station's name and toned pinyin — so you can read ahead the way a real metro display lets you. When that upcoming stop is the end of the line the label switches to 终点站 / TERMINUS; once you reach the terminus itself the panel steps aside. It's a line-run touch only — the Long-Name Gauntlet keeps its surprise (and its countdown ring).
+
 ## [0.4.3] - 2026-07-17
 
 ### Changed
@@ -446,6 +451,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.0...v0.4.1
