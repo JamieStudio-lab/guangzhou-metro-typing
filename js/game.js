@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.11";
+const APP_VERSION="0.2.12";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -600,12 +600,22 @@ function showResult(rerender){show("result");
   $("rSub").textContent=boss
     ?t("bossSub",S.bossDone,S.bossList.length,"♥".repeat(S.lives)||"—")
     :t("lineSub",S.line,S.seq[0].zh,S.seq[S.seq.length-1].zh);
+  // row 1 = run logistics, row 2 = performance: wpm/acc lightly tinted, score is the hero
   const cells=[[t("rTime"),fmtT(total),""],
     boss?[t("rCleared"),S.bossDone+"/"+S.bossList.length,""]:[t("rDist"),S.dist.toFixed(1),"km"],
     boss?[t("rLives"),S.lives,"♥"]:[t("rTop"),Math.round(S.topV),"km/h"],
-    [t("rSpeed"),wpm,"wpm"],[t("rAcc"),acc,"%"],[t("rCombo"),"×"+S.maxCombo,""],
-    [t("rErr"),S.errors,""],[t("rScore"),S.score,"","emph"]];
+    [t("rErr"),S.errors,""],
+    [t("rSpeed"),wpm,"wpm","sub"],[t("rAcc"),acc,"%","sub"],[t("rCombo"),"×"+S.maxCombo,""],
+    [t("rScore"),S.score,"","emph"]];
   $("rGrid").innerHTML=cells.map(c=>`<div class="rcell${c[3]?" "+c[3]:""}"><label>${c[0]}</label><b>${c[1]}<small> ${c[2]}</small></b></div>`).join("");
+  // score counts up once per finish (not on language re-renders)
+  const sb=$("rGrid").querySelector(".rcell.emph b");
+  if(sb&&!rerender&&!REDUCED()&&S.score>0){const a0=performance.now(),D=900;
+    sb.firstChild.nodeValue="0";
+    const step=n=>{const p=Math.min(1,(n-a0)/D),e=1-Math.pow(1-p,3);
+      sb.firstChild.nodeValue=Math.round(S.score*e);
+      if(p<1)requestAnimationFrame(step)};
+    requestAnimationFrame(step)}
   // heat strip + fastest/slowest
   const hs=$("heatstrip");hs.innerHTML="";
   const list=boss?S.bossList:S.seq;
@@ -854,11 +864,11 @@ $("setClose").onclick=()=>$("setDlg").close();
 $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
 // boot intro plays once per page load (.intro set in markup); a click/keypress fast-forwards.
 // Removing the class also prevents a replay when #menu is re-shown after a run.
-(function intro(){const hero=document.querySelector("#menu .hero");
+(function intro(){const hero=document.querySelector("#menu .hero");let tm;
   const end=()=>{hero.classList.remove("intro");clearTimeout(tm);
     removeEventListener("pointerdown",end);removeEventListener("keydown",end)};
   if(REDUCED())return end();
-  const tm=setTimeout(end,3400);
+  tm=setTimeout(end,3400);
   addEventListener("pointerdown",end);addEventListener("keydown",end)})();
 
 /* ---------- overview map + legend + boot ---------- */
