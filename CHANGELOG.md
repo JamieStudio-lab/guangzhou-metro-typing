@@ -4,6 +4,12 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.1.13] - 2026-07-16
+
+### Changed
+- **New settings icon.** The top-right settings chip swaps the text glyph ⚙ for a proper stroked gear SVG (inherits the button's text color, so it works in both themes and both button states). The icon lives outside the `data-i18n` span so language switches can't wipe it.
+- **Bigger settings-dialog text.** The dialog title grows 20px → 22px and the row labels (SOUND/THEME/LANGUAGE · 音效/主题/语言) 11px → 13px; the buttons are unchanged.
+
 ## [0.1.12] - 2026-07-16
 
 ### Fixed
@@ -209,6 +215,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.1.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.9...v0.1.10

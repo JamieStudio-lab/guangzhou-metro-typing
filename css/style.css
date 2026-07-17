@@ -92,9 +92,12 @@ button{font-family:inherit;cursor:pointer}
 #fchips .hbtn{background:color-mix(in srgb,var(--panel) 70%,transparent);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--sh2)}
 #fchips .hbtn:hover{background:color-mix(in srgb,var(--amber) 14%,color-mix(in srgb,var(--panel) 76%,transparent))}
+#setBtn{display:inline-flex;align-items:center;gap:6px}
+#setBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* settings dialog rows */
+#setDlg h3{font-size:22px}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
-.srow>span{font-size:11px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
+.srow>span{font-size:13px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
 .srow .hbtn{min-width:118px;text-align:center;background:var(--panel2)}
 /* keep the amber .on state visible where later/stronger rules reset the background */
 #fchips .hbtn.on,.srow .hbtn.on{background:var(--amber)}

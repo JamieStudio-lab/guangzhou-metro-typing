@@ -1,4 +1,4 @@
-const APP_VERSION="0.1.12";
+const APP_VERSION="0.1.13";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -41,7 +41,7 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
 zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",quitBtn:"⏏ 退出",
-  setBtn:"⚙ 设置",setTitle:"设置",setTheme:"主题",setLang:"语言",
+  setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言",
   startBtn:"选择关卡",backTop:"↑ 首页",
   footnote:"☆ 本作为粉丝自制打字游戏，收录 1 / 2 / 3 号线经典主线区段（不含延长段与支线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
@@ -89,7 +89,7 @@ zh:{lang:"中文",sound:"音效",muted:"静音",dark:"深色",light:"浅色",qui
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",muted:"MUTED",dark:"DARK",light:"LIGHT",quitBtn:"⏏ Quit",
-  setBtn:"⚙ SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
+  setBtn:"SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
   startBtn:"SELECT LEVEL",backTop:"↑ TOP",
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. Classic main-line segments of Lines 1 / 2 / 3 only (no extensions or branches); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
