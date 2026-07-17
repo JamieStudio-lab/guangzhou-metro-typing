@@ -475,9 +475,10 @@ body.boss #ringBox{display:flex}
 }
 
 /* ---------- result ---------- */
-#result{max-width:720px;margin:0 auto;padding:30px 16px 60px;position:relative;overflow:hidden;overflow:clip;z-index:0}
-.rcard{background:var(--panel);border-radius:var(--r-xl);padding:32px 28px 28px;position:relative;overflow:hidden;box-shadow:var(--sh2)}
-.rcard::before{content:"";position:absolute;left:0;top:0;right:0;height:6px;background:var(--lc,var(--amber))}
+#result{min-height:100svh;display:flex;align-items:center;justify-content:center;
+  padding:30px 16px;position:relative;overflow:hidden;overflow:clip;z-index:0}
+.rcard{background:var(--panel);border-radius:var(--r-xl);padding:32px 28px 28px;position:relative;overflow:hidden;box-shadow:var(--sh2);
+  width:100%;max-width:688px}
 .rhead{display:flex;align-items:center;gap:18px}
 .medal{font-size:56px;line-height:1}
 .rtitle b{display:block;font-size:28px;font-weight:700}

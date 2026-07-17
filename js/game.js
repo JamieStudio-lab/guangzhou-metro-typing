@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.12";
+const APP_VERSION="0.2.13";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than

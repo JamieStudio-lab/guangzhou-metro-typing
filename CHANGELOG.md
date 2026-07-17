@@ -4,6 +4,15 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.13] - 2026-07-16
+
+### Changed
+- **The result card floats centered.** `#result` is now a full-viewport flex container that centers the card both ways on any screen size; previously the card hugged the top with a fixed margin. The card keeps its 688 px width cap.
+- **Colored top bar removed.** The 6 px line-color strip across the top of the result card (`​.rcard::before`) is gone — the line color already speaks through the score/WPM/ACC cell tints and the replay button.
+
+### Fixed
+- **The global-rank note now reports your real standing.** After an upload it said “当前全球第 N 名 / #N worldwide” but ranked *this run's* score against every player's best — so replaying below your own record counted **your own best against you** (e.g. the #1 player finishing a casual slower run was told they were #2). The note now looks up your best in the mode first and ranks that, matching what the leaderboard actually shows. Verified against the live backend.
+
 ## [0.2.12] - 2026-07-16
 
 ### Added
@@ -320,6 +329,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.9...v0.2.10

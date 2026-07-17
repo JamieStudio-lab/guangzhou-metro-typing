@@ -96,7 +96,11 @@ async function cloudOnResult(run){
     await rest("POST","scores",{user_id:SESS.user.id,mode:run.key,score:run.score,
       wpm:run.wpm,acc:run.acc,max_combo:run.maxCombo,duration_s:run.durS,stars:run.stars});
     delete LB_CACHE[run.key];
-    let rank=null;try{rank=1+await countBetter(run.key,run.score)}catch(e){}
+    // the note promises current global standing, so rank the player's best in
+    // this mode (the run just uploaded may not be it), never counting themselves
+    let rank=null;try{
+      const me=await rest("GET",`leaderboard?mode=eq.${run.key}&user_id=eq.${SESS.user.id}&select=score`);
+      rank=1+await countBetter(run.key,Math.max(run.score,me&&me[0]?me[0].score:0))}catch(e){}
     NOTE={ok:true,rank};
     NEW_BADGES=BADGE_DEFS.filter(b=>!MY_BADGES.has(b[0])&&b[2](run));
     for(const b of NEW_BADGES){MY_BADGES.add(b[0]);
