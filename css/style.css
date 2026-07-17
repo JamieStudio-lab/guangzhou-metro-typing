@@ -533,6 +533,9 @@ text{font-family:var(--sans);pointer-events:none}
 .stg{transition:opacity .25s var(--ease)}
 #ovMap .stg text{opacity:0;transition:opacity .25s var(--ease)}
 #ovMap .stg.lbl text{opacity:1}
+/* game map: names fade once the run's first keystroke lands, return at the terminus */
+#gMap .stg text{transition:opacity .45s var(--ease)}
+#gMap.noNames .stg text{opacity:0}
 
 /* confetti + misc */
 #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
@@ -548,6 +551,6 @@ text{font-family:var(--sans);pointer-events:none}
   .doors,.train{display:none}
   .scue{animation:none;opacity:1}
   .fab{transition:none}
-  .cbody,.chev,.lpath,.stg,#ovMap .stg text{transition:none}
+  .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text{transition:none}
   .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active{transform:none}
 }

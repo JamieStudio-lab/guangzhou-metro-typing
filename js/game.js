@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.5";
+const APP_VERSION="0.2.6";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -238,14 +238,14 @@ function labelMarkup(st){
   const A={};
   const set=(anchor,x,zy,py2,ty)=>{A.anchor=anchor;A.x=x;A.zy=zy;A.py=py2;A.ty=ty};
   switch(st.lb){
-    case"l": st.tr?set("end",st.x-16,st.y-8,st.y+5,st.y+16):set("end",st.x-16,st.y-2,st.y+11,0);break;
-    case"r": st.tr?set("start",st.x+16,st.y-8,st.y+5,st.y+16):set("start",st.x+16,st.y-2,st.y+11,0);break;
-    case"a": set("middle",st.x,st.y-20,st.y-8,st.y-32);break;
-    case"b": set("middle",st.x,st.y+22,st.y+35,st.y+47);break;
-    case"ul":set("end",st.x-11,st.y-18,st.y-6,st.y-30);break;
-    case"ur":set("start",st.x+11,st.y-18,st.y-6,st.y-30);break;
-    case"bl":set("end",st.x-12,st.y+30,st.y+44,st.y+56);break;
-    case"br":set("start",st.x+12,st.y+30,st.y+44,st.y+56);break;
+    case"l": st.tr?set("end",st.x-23,st.y-8,st.y+5,st.y+16):set("end",st.x-23,st.y-2,st.y+11,0);break;
+    case"r": st.tr?set("start",st.x+23,st.y-8,st.y+5,st.y+16):set("start",st.x+23,st.y-2,st.y+11,0);break;
+    case"a": set("middle",st.x,st.y-26,st.y-14,st.y-38);break;
+    case"b": set("middle",st.x,st.y+28,st.y+41,st.y+53);break;
+    case"ul":set("end",st.x-16,st.y-23,st.y-11,st.y-35);break;
+    case"ur":set("start",st.x+16,st.y-23,st.y-11,st.y-35);break;
+    case"bl":set("end",st.x-17,st.y+35,st.y+49,st.y+61);break;
+    case"br":set("start",st.x+17,st.y+35,st.y+49,st.y+61);break;
   }
   let out=`<g text-anchor="${A.anchor}">`;
   out+=zh.replace("<text ",`<text x="${A.x}" y="${A.zy}" `);
@@ -286,11 +286,19 @@ function buildMap(svg,opts){
         <line class="sp" x1="-20" y1="-13" x2="-46" y2="-13" stroke="#ffb020" stroke-width="2" stroke-linecap="round"/>
         <line class="sp s2" x1="-20" y1="13" x2="-46" y2="13" stroke="#ffb020" stroke-width="2" stroke-linecap="round"/>
       </g>
-      <rect x="-16" y="-9" width="32" height="18" rx="7" fill="#dfe7f3" stroke="#0a0f1a" stroke-width="2"/>
-      <rect id="trainBand" x="-16" y="-2" width="32" height="4" fill="#ffb020"/>
-      <rect x="-10" y="-6" width="6" height="4" rx="1" fill="#22304a"/>
-      <rect x="-1" y="-6" width="6" height="4" rx="1" fill="#22304a"/>
-      <circle cx="14" cy="0" r="2.4" fill="#fff6d8"/>
+      <ellipse cx="18.5" cy="0" rx="4.5" ry="3.2" fill="#fff6d8" opacity=".22"/>
+      <rect x="-16" y="-7.5" width="32" height="15" rx="6.5" fill="#dfe7f3" stroke="#0a0f1a" stroke-width="2"/>
+      <g id="trainBand" fill="#ffb020">
+        <rect x="-14" y="-6.2" width="24" height="2.2" rx="1.1"/>
+        <rect x="-14" y="4" width="24" height="2.2" rx="1.1"/>
+      </g>
+      <line x1="-6" y1="-7.5" x2="-6" y2="7.5" stroke="#0a0f1a" stroke-width="1.2" opacity=".3"/>
+      <line x1="4" y1="-7.5" x2="4" y2="7.5" stroke="#0a0f1a" stroke-width="1.2" opacity=".3"/>
+      <rect x="-13.5" y="-2.6" width="6" height="5.2" rx="1.3" fill="#b9c7da" stroke="#7c8ca4" stroke-width="1"/>
+      <rect x="-3.5" y="-2.6" width="6" height="5.2" rx="1.3" fill="#b9c7da" stroke="#7c8ca4" stroke-width="1"/>
+      <path d="M 10 -5.6 Q 14.8 0 10 5.6" fill="none" stroke="#22304a" stroke-width="2.8" stroke-linecap="round"/>
+      <circle cx="14.6" cy="-3.4" r="1.5" fill="#fff6d8"/>
+      <circle cx="14.6" cy="3.4" r="1.5" fill="#fff6d8"/>
     </g></g>`}
   svg.innerHTML=s}
 
@@ -336,8 +344,9 @@ function show(name){S.screen=name;
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
   heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,avgV:0,
-  pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,
+  pos:0,credit:0,arrivedI:0,hot:false,fireT:1,revealing:false,mapClean:false,
   hotOn:.84,t2:10,t3:20,cstep:.1});
+  gMap.classList.remove("noNames");
   $("gaugeBox").classList.remove("hot","t2","t3");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
@@ -448,6 +457,8 @@ function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
   if(/[\u3400-\u9fff]/.test(raw))announce(t("kbWarn"));
   let v="";for(const ch of raw.toLowerCase()){const c=TONE[ch]||ch;if(c>="a"&&c<="z")v+=c}
+  // first keystroke of the run clears the map: station names fade until the terminus
+  if(S.mode==="line"&&!S.mapClean&&v.length>0){S.mapClean=true;gMap.classList.add("noNames")}
   let ok=0;while(ok<v.length&&ok<S.key.length&&v[ok]===S.key[ok])ok++;
   const prev=S.typed,err=v.length>ok;
   if(err){S.errors+=v.length-ok;S.errSt=true;
@@ -532,6 +543,7 @@ function announce(msg){const t=$("toast");t.textContent=msg;t.classList.add("on"
 
 function finishRun(){S.done=true;S.endT=performance.now();
   inp.disabled=true;camFollow=false;fitAll(false);
+  gMap.classList.remove("noNames"); // terminus: names return for the zoomed-out recap
   sWin();confetti();announce(t("terminusReached"));
   setTimeout(showResult,1200)}
 
@@ -770,8 +782,9 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
-      // camera widens with speed for a sense of pace (express segments peg at full width)
-      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470+230*Math.min(1,S.dispV/cap)}
+      // camera widens with speed for a sense of pace (express segments peg at full width);
+      // wide base keeps more line in frame so short hops read calmer, not darty
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=560+240*Math.min(1,S.dispV/cap)}
       const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;
