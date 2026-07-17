@@ -4,6 +4,18 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.2.1] - 2026-07-16
+
+### Added
+- **Hot-streak fire effects.** Sustained fast, clean typing pushes the needle into the redline (≥84% of the line cap, with hysteresis so it doesn't flicker) and the cab catches fire: the speedometer box glows, vibrates subtly, and an ember gradient flickers up from its base, while the map train grows an animated two-tone exhaust flame plus trailing speed lines. Any typo cuts the rate window in half — the flames die on their own as the needle falls. Everything is suppressed under `prefers-reduced-motion`.
+- **Per-letter feedback on the LED board.** Correctly typed letters pop in (brief white flash + scale bounce as they turn green); a wrong keystroke shakes the expected letter and flashes it red, alongside the existing input-field shake.
+
+### Changed
+- **The train now moves *while* you type, not per completed name.** Each correct letter buys its share of the segment's real distance ("track credit"), and your live typing rate (2 s window) is the throttle: type fast and the train accelerates toward the line's real cap (~5.5 letters/s sustains it), slow down and it decelerates, stop and it brakes smoothly to a halt at the edge of the distance you've earned — including a natural dwell at a platform if you pause between names. Errors brake the train too. The per-segment travel queue, the express catch-up runs, and the per-station speed formula are gone; once the terminus name is typed the train coasts home at full throttle on its remaining credit. Arrivals (heat rings, toasts, the finish) now fire the moment the train physically passes each station.
+- **The speedometer is truly live.** The needle and digital readout follow the physics every frame — accelerating on keystrokes, sagging when you hesitate — instead of replaying a canned per-segment speed curve. TOP SPEED on the result screen now means your real sustained peak.
+- **Cleaner gauge face.** The static labels (MAX n km/h, the 0 / cap endpoints, the km/h unit) are gone — just arc, redline, ticks, needle, and the big readout — and the SVG viewBox is cropped to the drawn face so the dial sits vertically centered in its box instead of floating high.
+- **HUD breathing room.** The cab cluster starts 62px down (was 44px), clearing the floating ⚙ SETTINGS / ⏏ QUIT pills comfortably.
+
 ## [0.2.0] - 2026-07-16
 
 ### Added
@@ -228,6 +240,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.2.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.13...v0.2.0
 [0.1.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.1.11...v0.1.12

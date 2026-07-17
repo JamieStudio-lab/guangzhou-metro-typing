@@ -1,4 +1,4 @@
-const APP_VERSION="0.2.0";
+const APP_VERSION="0.2.1";
 
 // project GEO lat/lon (js/geo.js, OSM data) → SVG units, keyed by 汉字.
 // Equirectangular around Guangzhou; K≈34 units/km keeps dot/stroke/label sizes sane.
@@ -267,6 +267,12 @@ function buildMap(svg,opts){
     s+=labelMarkup(st)+"</g>"}
   if(opts&&opts.train){
     s+=`<g id="trainG" opacity="0"><g id="trainR">
+      <g id="trainFire" style="opacity:0" aria-hidden="true">
+        <path class="fl" d="M-17 -5 C-30 -8 -37 -3 -47 0 C-37 3 -30 8 -17 5 Z" fill="#ffb020"/>
+        <path class="fl f2" d="M-17 -3 C-25 -4.5 -30 -2 -35 0 C-30 2 -25 4.5 -17 3 Z" fill="#ff5a2a"/>
+        <line class="sp" x1="-20" y1="-13" x2="-46" y2="-13" stroke="#ffb020" stroke-width="2" stroke-linecap="round"/>
+        <line class="sp s2" x1="-20" y1="13" x2="-46" y2="13" stroke="#ffb020" stroke-width="2" stroke-linecap="round"/>
+      </g>
       <rect x="-16" y="-9" width="32" height="18" rx="7" fill="#dfe7f3" stroke="#0a0f1a" stroke-width="2"/>
       <rect id="trainBand" x="-16" y="-2" width="32" height="4" fill="#ffb020"/>
       <rect x="-10" y="-6" width="6" height="4" rx="1" fill="#22304a"/>
@@ -281,8 +287,8 @@ function buildMap(svg,opts){
 const S={screen:"menu",mode:null,line:null,rev:false,seq:[],segs:[],
   idx:0,key:"",typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,distDone:0,topV:0,dispV:0,tgtV:0,
-  travels:[],trav:null,
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
+  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,cum:[],kms:90,
   bossList:[],bossI:0,lives:3,bossDone:0,deadline:0,bossSec:10,revealing:false};
 const dirState={},bests={};
 let lastRun=null;
@@ -315,13 +321,18 @@ function show(name){S.screen=name;
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
   t0:null,endT:null,correct:0,errors:0,combo:0,maxCombo:0,score:0,
-  heats:[],times:[],perfs:[],dist:0,distDone:0,topV:0,dispV:0,tgtV:0,travels:[],trav:null,revealing:false});
+  heats:[],times:[],perfs:[],dist:0,topV:0,dispV:0,tgtV:0,
+  pos:0,credit:0,arrivedI:0,keyT:[],hot:false,revealing:false});
+  $("gaugeBox").classList.remove("hot");
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
 
 function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",L,rev};
   S.seq=rev?[...L.stations].reverse():L.stations.slice();
   S.segs=rev?[...L.segKm].reverse():L.segKm.slice();
+  S.cum=[0];for(const k of S.segs)S.cum.push(S.cum[S.cum.length-1]+k);
+  // movement scale: sustained typing at ~5.5 chars/s cruises at the line cap
+  S.kms=clamp(L.cap*(L.letters/L.km)/5.5,40,220);
   resetStats();show("game");
   document.body.style.setProperty("--lc",L.color);
   document.body.style.setProperty("--lcg",alpha(L.color,.32));
@@ -357,12 +368,14 @@ function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   setBossPrompt();setTimeout(()=>inp.focus(),80)}
 
 /* ---------- prompt / board ---------- */
-function paintPy(){const el=$("py");el.classList.remove("reveal");
+function paintPy(popFrom=-1,miss=false){const el=$("py");el.classList.remove("reveal");
   const st=curStation();if(!st){el.innerHTML="";return}
   let n=0,html="",word="";
   const flush=()=>{if(word){html+=`<span class="w">${word}</span>`;word=""}};
   for(const ch of st.py){const base=TONE[ch.toLowerCase()]||ch.toLowerCase();
-    if(base>="a"&&base<="z"){const cls=n<S.typed?"done":n===S.typed?"next":"todo";
+    if(base>="a"&&base<="z"){let cls=n<S.typed?"done":n===S.typed?"next":"todo";
+      if(popFrom>=0&&n>=popFrom&&n<S.typed)cls+=" pop";
+      if(miss&&n===S.typed)cls+=" miss";
       word+=`<span class="c ${cls}">${ch}</span>`;n++}
     else flush()}
   flush();el.innerHTML=html}
@@ -373,14 +386,14 @@ function setPrompt(){const st=S.seq[S.idx];
   if(!st){ // terminus reached (all names typed) — waiting on final arrival
     $("zhTxt").textContent=t("terminus");$("py").innerHTML="";
     $("brdLabel").textContent=t("arriving");$("cnt").textContent="";
-    $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updPbar();return}
+    $("dTag").hidden=true;inp.value="";inp.disabled=true;S.key="";updCredit();updPbar();return}
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;
   inp.disabled=false;inp.value="";
   $("brdLabel").textContent=t(S.idx===0?"origin":"nextStop");
   $("zhTxt").textContent=st.zh;
   const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t);
   $("cnt").textContent=(S.idx+1)+"/"+S.seq.length+(S.idx>0?" · "+S.segs[S.idx-1].toFixed(1)+" km":"");
-  paintPy();updPbar();flashBoard()}
+  updCredit();paintPy();updPbar();flashBoard()}
 
 function setBossPrompt(){const st=S.bossList[S.bossI];
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;S.revealing=false;
@@ -420,14 +433,17 @@ function handleTyping(raw){
   if(/[\u3400-\u9fff]/.test(raw))announce(t("kbWarn"));
   let v="";for(const ch of raw.toLowerCase()){const c=TONE[ch]||ch;if(c>="a"&&c<="z")v+=c}
   let ok=0;while(ok<v.length&&ok<S.key.length&&v[ok]===S.key[ok])ok++;
-  if(v.length>ok){S.errors+=v.length-ok;S.errSt=true;
+  const prev=S.typed,err=v.length>ok;
+  if(err){S.errors+=v.length-ok;S.errSt=true;
     if(S.combo>0){S.combo=0;$("cCombo").textContent="0"}
+    S.keyT.splice(0,Math.ceil(S.keyT.length/2)); // fumble = brakes
     shake();sErr()}
-  if(ok>S.typed){
-    if(S.firstT===null){S.firstT=performance.now();if(S.t0===null)S.t0=S.firstT}
-    S.correct+=ok-S.typed}
+  if(ok>S.typed){const now=performance.now();
+    if(S.firstT===null){S.firstT=now;if(S.t0===null)S.t0=S.firstT}
+    S.correct+=ok-S.typed;
+    for(let k=S.typed;k<ok;k++)S.keyT.push(now)}
   S.typed=ok;inp.value=S.key.slice(0,ok);
-  paintPy();updLive();
+  updCredit();paintPy(ok>prev?prev:-1,err);updLive();
   if(ok===S.key.length)S.mode==="boss"?bossComplete():completeStation()}
 
 function shake(){inp.classList.remove("shake");void inp.offsetWidth;inp.classList.add("shake")}
@@ -456,25 +472,33 @@ function completeStation(){
     const n=nodes[S.seq[0].zh];
     if(n){n.heat.setAttribute("stroke",HEATC[S.heats[0]]);if(n.zh)n.zh.classList.add("passed")}
     announce(t("doors"));S.idx++;setPrompt();movePulse();return}
-  const a=S.seq[i-1],b=S.seq[i],km=S.segs[i-1],cap=S.line.cap;
-  const vmax=cap*clamp(.3+perf*.35,.35,1);
-  // travel time = √km ÷ speed: distance shows but the long/short spread stays ≈2×
-  const dur=clamp(Math.sqrt(km)/vmax*68000,500,3600);
-  S.travels.push({a,b,km,vmax,dur,idx:i});
   S.idx++;setPrompt()}
 
-/* ---------- travel / arrival ---------- */
+/* ---------- continuous travel: typed letters earn track, typing rate drives speed ---------- */
+// km unlocked so far: each correct letter buys its share of the segment being typed
+function updCredit(){if(S.mode!=="line")return;
+  if(S.idx===0){S.credit=0;return}
+  const st=S.seq[S.idx];
+  S.credit=st?S.cum[S.idx-1]+S.segs[S.idx-1]*(S.typed/S.key.length):S.cum[S.seq.length-1]}
+
 function angleTo(i,j){const a=S.seq[i],b=S.seq[j];return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
 function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x} ${y})`);
   $("trainR").setAttribute("transform",`rotate(${ang})`)}
+function posXY(p){const c=S.cum;let j=0;
+  while(j<S.segs.length-1&&p>c[j+1])j++;
+  const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
+  return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,ang:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}}
 
-function arrive(tr){S.distDone+=tr.km;S.dist=S.distDone;
-  const st=tr.b,n=nodes[st.zh],reg=REG.get(st.zh);
+function setHot(on){S.hot=on;$("gaugeBox").classList.toggle("hot",on);
+  const f=document.getElementById("trainFire");if(f)f.style.opacity=on?"1":"0"}
+
+function arriveAt(j){S.arrivedI=j;
+  const st=S.seq[j],n=nodes[st.zh],reg=REG.get(st.zh);
   if(n){if(reg&&reg.lines.length<=1)n.dot.style.fill=S.line.color;
-    n.heat.setAttribute("stroke",HEATC[S.heats[tr.idx]||"good"]);
+    n.heat.setAttribute("stroke",HEATC[S.heats[j]||"good"]);
     if(n.zh)n.zh.classList.add("passed")}
   movePulse();
-  if(tr.idx===S.seq.length-1){finishRun()}
+  if(j===S.seq.length-1){finishRun()}
   else announce(t("arriveAt",st.zh,st.py))}
 
 function movePulse(){gMap.querySelectorAll(".pulseHolder").forEach(p=>{p.setAttribute("opacity","0");p.classList.remove("pulse")});
@@ -691,13 +715,9 @@ function setGauge(v,cap){gaugeCap=cap;const g=$("gauge");
   s+=`<path d="M ${rx} ${ry} A 74 74 0 0 1 174 104" fill="none" stroke="rgba(229,72,77,.55)" stroke-width="11" stroke-linecap="round"/>`;
   for(let i=0;i<=8;i++){const ang=Math.PI*i/8,c=Math.cos(ang),si=Math.sin(ang);
     s+=`<line x1="${100-66*c}" y1="${104-66*si}" x2="${100-74*c}" y2="${104-74*si}" style="stroke:var(--tick)" stroke-width="2"/>`}
-  s+=`<text x="24" y="121" style="fill:var(--dim)" font-size="12" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="168" y="121" style="fill:var(--dim)" font-size="12" font-family="Sono,ui-monospace,Menlo,Consolas,monospace" text-anchor="middle">${cap}</text>`;
-  s+=`<text x="100" y="33" style="fill:var(--dim)" font-size="10.5" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">MAX ${cap} km/h</text>`;
   s+=`<g id="needleG" transform="rotate(0,100,104)"><line x1="100" y1="104" x2="34" y2="104" style="stroke:var(--lct)" stroke-width="4" stroke-linecap="round"/></g>`;
   s+=`<circle cx="100" cy="104" r="6.5" style="fill:var(--input-bg);stroke:var(--tick)" stroke-width="2"/>`;
   s+=`<text id="gaugeV" class="gv" x="100" y="88" font-size="33" font-weight="800" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">0</text>`;
-  s+=`<text x="100" y="100" style="fill:var(--dim)" font-size="10" text-anchor="middle" font-family="Sono,ui-monospace,Menlo,Consolas,monospace">km/h</text>`;
   g.innerHTML=s}
 function gaugeTo(v){const deg=clamp(v/gaugeCap,0,1)*180;
   const n=document.getElementById("needleG");if(n)n.setAttribute("transform",`rotate(${deg},100,104)`);
@@ -716,22 +736,26 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
   // camera
   cam.cx+=(camT.cx-cam.cx)*.09;cam.cy+=(camT.cy-cam.cy)*.09;cam.w+=(camT.w-cam.w)*.09;
   if(S.screen==="game"&&S.mode==="line"){
-    if(!S.trav&&S.travels.length){S.trav=S.travels.shift();S.trav.t0=now;
-      const q=Math.min(S.travels.length,3); // typed-ahead backlog → express run to catch up
-      if(q){S.trav.dur/=1+q*.35;S.trav.vmax=Math.min(S.line.cap,S.trav.vmax*(1+q*.12))}}
-    if(S.trav){const tr=S.trav,p=clamp((now-tr.t0)/tr.dur,0,1),e=easeIO(p);
-      const x=tr.a.x+(tr.b.x-tr.a.x)*e,y=tr.a.y+(tr.b.y-tr.a.y)*e;
-      const ang=Math.atan2(tr.b.y-tr.a.y,tr.b.x-tr.a.x)*180/Math.PI;
-      placeTrain(x,y,ang);
-      S.dist=S.distDone+tr.km*e;
-      S.tgtV=tr.vmax*Math.sin(Math.PI*p);
-      if(camFollow){camT.cx=x;camT.cy=y;camT.w=470}
-      if(p>=1){S.trav=null;arrive(tr)}}
-    else{S.tgtV=0;
-      if(camFollow&&!S.done){const prev=S.seq[Math.max(0,Math.min(S.idx-1,S.seq.length-1))];
-        camT.cx=prev.x;camT.cy=prev.y;camT.w=470}}
-    S.dispV+=(S.tgtV-S.dispV)*Math.min(1,dt*6);
-    if(S.dispV>S.topV)S.topV=S.dispV;
+    const cap=S.line.cap;
+    if(!S.done){
+      // live typing rate (chars/s over a 2 s window) sets the throttle;
+      // unclaimed letter-credit ahead of the train sets the brake curve
+      while(S.keyT.length&&now-S.keyT[0]>2000)S.keyT.shift();
+      const rate=S.keyT.length/2;
+      // all names typed (terminus pending) → full throttle to coast home on earned credit
+      const vTyp=S.key?cap*Math.min(1,Math.pow(rate/5.5,.85)):cap;
+      const lead=Math.max(0,S.credit-S.pos);
+      S.tgtV=Math.min(vTyp,Math.sqrt(3.6*cap*S.kms*lead));
+      S.dispV=clamp(S.tgtV,S.dispV-cap*dt/.55,S.dispV+cap*dt/1.1);
+      if(S.dispV>S.topV)S.topV=S.dispV;
+      S.pos=Math.min(S.credit,S.pos+S.dispV*dt/S.kms);
+      S.dist=S.pos;
+      while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
+      const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
+      if(camFollow){camT.cx=P.x;camT.cy=P.y;camT.w=470}
+      const hot=S.dispV>=cap*(S.hot?.74:.84); // hysteresis so the flames don't flicker
+      if(hot!==S.hot&&!REDUCED())setHot(hot)}
+    else{S.dispV=Math.max(0,S.dispV-cap*dt*2);if(S.hot)setHot(false)}
     gaugeTo(S.dispV);
     $("cDist").firstChild.nodeValue=S.dist.toFixed(1);
     if(S.t0&&!S.done)$("cTime").textContent=fmtT(now-S.t0);

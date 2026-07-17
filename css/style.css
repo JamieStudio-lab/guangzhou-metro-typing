@@ -339,13 +339,23 @@ button{font-family:inherit;cursor:pointer}
 #game{height:100dvh;display:grid;gap:10px;padding:10px 12px;
   grid-template-rows:auto minmax(180px,1fr) auto}
 /* margin-top clears the fixed #fchips pills (settings/quit), which float over the HUD corner */
-#hud{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:44px}
+#hud{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:62px}
 /* driver's-cab cluster: gauge + chips wear the LED board's hardware look
    (dark glass, dot matrix, glowing digits; light theme → tonal cards via the shared --brd-* override) */
 #gaugeBox{background:linear-gradient(180deg,var(--brd1),var(--brd2));border:1px solid var(--brd-edge);
-  border-radius:var(--r-lg);padding:8px 12px 3px;flex:none;position:relative;overflow:hidden}
-#gaugeBox svg{display:block;width:196px;height:125px;position:relative}
+  border-radius:var(--r-lg);padding:10px 12px;flex:none;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;transition:box-shadow .3s var(--ease)}
+#gaugeBox svg{display:block;width:196px;height:94px;position:relative}
 #gauge .gv{fill:var(--lct);filter:drop-shadow(0 0 7px var(--lcg,rgba(255,176,32,.4)))}
+/* hot streak: fast clean typing pushes the needle into the redline — the cluster catches fire */
+#gaugeBox.hot{box-shadow:0 0 22px rgba(255,110,32,.45),var(--sh2);animation:hudsh .09s linear infinite}
+#gaugeBox.hot::after{content:"";position:absolute;inset:auto 0 0 0;height:52%;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 100%,rgba(255,110,32,.3),transparent 72%);
+  animation:fglow .22s ease-in-out infinite alternate}
+#gaugeBox.hot .gv{fill:#ff9b3d;filter:drop-shadow(0 0 10px rgba(255,110,40,.75))}
+:root[data-theme="light"] #gaugeBox.hot .gv{fill:#c94f00;filter:none}
+@keyframes hudsh{25%{transform:translate(.6px,-.6px)}75%{transform:translate(-.6px,.6px)}}
+@keyframes fglow{from{opacity:.55}to{opacity:1}}
 .chips{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;min-width:200px}
 .chip{background:linear-gradient(180deg,var(--brd1),var(--brd2));border:1px solid var(--brd-edge);
   border-radius:var(--r-lg);padding:10px 14px 11px;min-width:0;position:relative;overflow:hidden}
@@ -361,7 +371,7 @@ button{font-family:inherit;cursor:pointer}
 :root[data-theme="light"] .chip b,:root[data-theme="light"] #chipCombo b{text-shadow:none}
 :root[data-theme="light"] #gauge .gv{filter:none}
 @media(max-width:560px){
-  #gaugeBox svg{width:160px;height:102px}
+  #gaugeBox svg{width:160px;height:77px}
   .chips{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
   .chip b{font-size:22px}}
 #mapWrap{position:relative;background:radial-gradient(1100px 560px at 60% 40%,var(--map1),var(--map2));
@@ -417,10 +427,16 @@ body.boss #ringBox{display:flex}
 #py{display:flex;flex-wrap:wrap;gap:4px 16px;font-family:var(--mono);
   font-size:clamp(15px,3.8vw,21px);letter-spacing:.1em;position:relative;min-height:1.4em}
 #py .w{display:inline-flex;gap:2px}
-#py .c{transition:color .08s}
+#py .c{display:inline-block;transition:color .08s}
 #py .c.done{color:var(--done);text-shadow:0 0 10px rgba(59,217,140,.55)}
 #py .c.next{color:var(--amber-tx);border-bottom:2px solid var(--amber-tx)}
 #py .c.todo{color:var(--todo)}
+#py .c.pop{animation:cpop .3s var(--ease)}
+@keyframes cpop{0%{transform:scale(1.55) translateY(-2px);color:#fff;text-shadow:0 0 14px rgba(59,217,140,.9)}
+  55%{transform:scale(.92)}100%{transform:none}}
+#py .c.miss{animation:cmiss .26s}
+@keyframes cmiss{15%,55%{transform:translateX(-3px)}35%,75%{transform:translateX(3px)}
+  0%,100%{color:var(--bad)}50%{color:var(--bad);text-shadow:0 0 10px rgba(229,72,77,.6)}}
 #py.reveal .c{color:var(--bad)!important;text-shadow:0 0 10px rgba(229,72,77,.5)}
 #inRow{display:flex;gap:10px;margin-top:12px;position:relative;align-items:center}
 /* MD3 filled text field: rounded top, 2px bottom border */
@@ -490,6 +506,15 @@ text{font-family:var(--sans);pointer-events:none}
 .st-tr{font-size:8px;fill:var(--st-tr);letter-spacing:.05em}
 .pulse{transform-box:fill-box;transform-origin:center;animation:pl 1.15s ease-out infinite}
 @keyframes pl{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+/* hot-streak exhaust flames + speed lines behind the train (opacity driven by game.js) */
+#trainFire{transition:opacity .25s var(--ease)}
+#trainFire .fl{transform-box:fill-box;transform-origin:100% 50%;
+  animation:flick .26s ease-in-out infinite alternate}
+#trainFire .f2{animation-duration:.19s;animation-delay:-.1s}
+@keyframes flick{from{transform:scaleX(.72) scaleY(.85)}to{transform:scaleX(1.18) scaleY(1.08)}}
+#trainFire .sp{opacity:.55;stroke-dasharray:9 15;animation:spd .45s linear infinite}
+#trainFire .s2{animation-delay:-.22s}
+@keyframes spd{to{stroke-dashoffset:-24}}
 .riv{fill:none;stroke:var(--riv);stroke-width:26;stroke-linecap:round;opacity:.55}
 .lpath{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;cursor:pointer;
   transition:opacity .25s var(--ease)}
@@ -504,6 +529,8 @@ text{font-family:var(--sans);pointer-events:none}
 @keyframes fall{to{transform:translateY(105vh) rotate(560deg)}}
 @media(prefers-reduced-motion:reduce){
   .pulse,#pbar i.cur,.chip b.bump{animation:none}
+  #gaugeBox.hot,#gaugeBox.hot::after,#trainFire .fl,#trainFire .sp{animation:none}
+  #py .c.pop,#py .c.miss{animation:none}
   #fx{display:none}
   #board.fresh::after{animation:none}
   .rails .g{display:none}
