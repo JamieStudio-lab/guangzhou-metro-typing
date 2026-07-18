@@ -4,6 +4,13 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.13] - 2026-07-17
+
+### Fixed
+- **Selected-line view: station names no longer pile onto each other.** Zooming the menu map to one line used to draw its labels at fixed positions and full map size, which collapsed into an unreadable stack wherever stations sit close together — most visibly the APM line, whose labels all overlapped. Labels are now laid out per line from their real measured sizes: on rotated "strip" views the tilted names stagger above and below the track and step into a little staircase where stations bunch up; stretches that end up near-vertical switch to level names beside the dots, alternating left and right; and on un-rotated views names that would collide slide apart. Every label also keeps a measured clearance from its station dot (广州塔's name no longer sat on the interchange circle), and on deep-zoom short lines the labels now counter-scale like the rest of the map furniture (v0.4.11) instead of ballooning.
+- **Selected-line view: no more station names cut off at the edge of the map.** The fit used to frame only the station dots with a fixed margin, so wide side labels — 西塱 and 坑口 on Line 1, for example — ran off the edge of the view. The zoom now caps itself so the frame covers every measured label box: the line sits a touch smaller, and every name is on screen.
+- **Terminus recap: the ridden line's name labels all fit on screen too.** The end-of-run zoom-out on the game map now frames the measured labels along with the stations, so no name is clipped when they fade back in.
+
 ## [0.4.12] - 2026-07-17
 
 ### Fixed
@@ -496,6 +503,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.9...v0.4.10

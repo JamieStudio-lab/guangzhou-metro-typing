@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.12";
+const APP_VERSION="0.4.13";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -364,11 +364,17 @@ function fitAll(instant){const bb=NETBB,pad=64,
   asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   camT={cx:bb.x+bb.width/2,cy:bb.y+bb.height/2,w:Math.max(bb.width+pad*2,(bb.height+pad*2)*asp)};
   camFollow=false;if(instant){cam={...camT};applyCam()}}
-// frame just the ridden line (the whole 19-line network dwarfs any single run)
+// frame just the ridden line (the whole 19-line network dwarfs any single run);
+// the box covers the measured label boxes too, so the terminus recap (names
+// return zoomed-out) clips no station name
 function fitSeq(instant){if(!S.seq.length)return fitAll(instant);
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
   for(const s of S.seq){x0=Math.min(x0,s.x);y0=Math.min(y0,s.y);x1=Math.max(x1,s.x);y1=Math.max(y1,s.y)}
-  const pad=90,asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)); // pad covers side labels
+  for(const s of S.seq){const g=gMap.querySelector(`.stg[data-st="${s.zh}"]`),
+    lg=g&&g.lastElementChild;if(!lg)continue;const b=lbox(lg,lg.dataset.ta);
+    x0=Math.min(x0,b[0]-4);y0=Math.min(y0,b[1]-4);
+    x1=Math.max(x1,b[0]+b[2]+4);y1=Math.max(y1,b[1]+b[3]+4)}
+  const pad=40,asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   camT={cx:(x0+x1)/2,cy:(y0+y1)/2,w:Math.max(x1-x0+pad*2,(y1-y0+pad*2)*asp)};
   camFollow=false;if(instant){cam={...camT};applyCam()}}
 
@@ -760,21 +766,44 @@ function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n
   const z=ovIsZoomed();ov.classList.toggle("zoomed",z);$("ovReset").classList.toggle("show",z);
   ovShrink(ov,Math.min(1,OV_BASEZ*vb[2]/FULL_VB[2]))}
 // v0.4.11: past OV_BASEZ the map furniture counter-scales (constant on-screen size
-// instead of ballooning): strokes/dots via --zs in CSS, hover labels via a matching
-// scale about their own station so text and offset shrink together
-function ovShrink(ov,k){if(Math.abs(k-ovK)<.004)return;ovK=k;
+// instead of ballooning): strokes/dots via --zs in CSS, labels via ovLabelXf
+function ovFurn(ov,k){if(Math.abs(k-ovK)<.004)return false;ovK=k;
   // bend radius counter-scales with the strokes: the rounded corners cut across the
   // vertex the dot sits on, so a fixed 14-unit radius leaves dots visibly off the
   // slimmed line at depth — tightening it keeps the path through the dots
   ov.querySelectorAll(".lpath").forEach(p=>{const L=LINES.find(l=>l.id===p.dataset.line);
     if(L)p.setAttribute("d",roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations,14*k))});
-  if(k>.999){ov.style.removeProperty("--zs");
-    ov.querySelectorAll(".stg>g:last-child").forEach(g=>g.removeAttribute("transform"))}
-  else{ov.style.setProperty("--zs",k.toFixed(3));
-    ov.querySelectorAll(".stg>g:last-child").forEach(g=>{const d=g.dataset;
-      g.setAttribute("transform",`translate(${(d.sx*(1-k)).toFixed(1)} ${(d.sy*(1-k)).toFixed(1)}) scale(${k.toFixed(3)})`)})}}
+  if(k>.999)ov.style.removeProperty("--zs");else ov.style.setProperty("--zs",k.toFixed(3));
+  return true}
+// v0.4.13: one transform pass over every station label, shared by free zoom and
+// the focused view. Focused strip labels (data-m="s") tilt by data-t about an
+// anchor offset (data-oy, unit space — scales with k) past their station dot;
+// everything else stays level (counter-rotating the map's a) and counter-scales
+// about its own station, so hover labels read the same at any depth or rotation.
+let ovGsAll=null;
+function ovLabelXf(ov,a,cx,cy,k){
+  const ident=Math.abs(a)<.05&&k>.999,r=a*Math.PI/180,co=Math.cos(r),si=Math.sin(r),
+    kf=k.toFixed(3),af=(-a).toFixed(2),cxf=cx.toFixed(1),cyf=cy.toFixed(1);
+  for(const g of ovGsAll||(ovGsAll=[...ov.querySelectorAll(".stg>g:last-child")])){
+    const d=g.dataset,px=cx+(d.sx-cx)*co-(d.sy-cy)*si,py=cy+(d.sx-cx)*si+(d.sy-cy)*co;
+    if(d.m==="s")g.setAttribute("transform",
+      `rotate(${af} ${cxf} ${cyf}) translate(${(px+k*d.ox).toFixed(1)} ${(py+k*d.oy).toFixed(1)}) scale(${kf}) rotate(${d.t}) translate(${-d.lx} ${-d.ly})`);
+    else if(ident&&!d.ox)g.removeAttribute("transform");
+    else g.setAttribute("transform",
+      `rotate(${af} ${cxf} ${cyf}) translate(${(px-k*(d.sx-(d.ox||0))).toFixed(1)} ${(py-k*(d.sy-(d.oy||0))).toFixed(1)}) scale(${kf})`)}}
+function ovShrink(ov,k){if(ovFurn(ov,k))ovLabelXf(ov,0,0,0,k)}
 function ovClearFree(){freeVB=null;const ov=$("ovMap");if(ov){ov.classList.remove("zoomed");
-  ovShrink(ov,1);const r=$("ovReset");r&&r.classList.remove("show")}}
+  const r=$("ovReset");r&&r.classList.remove("show")}}
+// measured label boxes (getBBox sees opacity-hidden text), cached per <g> and per
+// text-anchor since strip mode re-anchors to "start"; webfont arrival re-measures
+let LBB=new WeakMap();
+if(document.fonts)document.fonts.ready.then(()=>{LBB=new WeakMap()});
+function lbox(g,anchor){let m=LBB.get(g);if(!m)LBB.set(g,m={});
+  if(!m[anchor]){const cur=g.getAttribute("text-anchor");
+    if(cur!==anchor)g.setAttribute("text-anchor",anchor);
+    const b=g.getBBox();m[anchor]=[b.x,b.y,b.width,b.height];
+    if(cur!==anchor)g.setAttribute("text-anchor",cur)}
+  return m[anchor]}
 function ovClampVB(vb){ // keep the window inside the full-network bounds; centre axes that fully fit
   const[FX,FY,FW,FH]=FULL_VB;let[x,y,w]=vb;
   w=clamp(w,FW/OV_MAXZ,FW);const h=w*FH/FW; // uniform scale → height tracks width at the fit aspect
@@ -791,57 +820,164 @@ function ovPanBy(dxPx,dyPx){if(!ovFree())return;const m=$("ovMap").getScreenCTM(
   const cur=freeVB||[...FULL_VB];freeVB=ovClampVB([cur[0]-dxPx/m.a,cur[1]-dyPx/m.d,cur[2],cur[3]]);
   ovApplyVB(freeVB)}
 function ovResetView(){if(ovFocused())return;ovZoom(null)} // animates back to the full-network fit
+// v0.4.13: place the focused line's labels and grow the target viewBox to cover
+// every measured label box — the fit zoom is capped so no name leaves the screen.
+// All in the rotate(a,tc) frame bestFit's vb lives in. Strip mode (|a|>20°):
+// ±45°-tilted labels are staggered above/below the track — a label flips sides
+// when it would overlap the previous one on its own side (a tilt parallel to the
+// local track stays banned) — and the perpendicular offset is measured so the box
+// clears its station dot. The counter-scale k depends on the viewBox, which
+// depends on the label boxes, so iterate to a fixed point.
+function layoutLabels(ov,LL,a,tc,vb0){
+  const strip=Math.abs(a)>20,r=a*Math.PI/180,co=Math.cos(r),si=Math.sin(r),
+    rot=st=>[tc[0]+(st.x-tc[0])*co-(st.y-tc[1])*si,tc[1]+(st.x-tc[0])*si+(st.y-tc[1])*co],
+    G=zh=>{const g=ov.querySelector(`.stg[data-st="${zh}"]`);return g&&g.lastElementChild},
+    sts=LL.stations,lay=new Map(),
+    th=sts.map((st,i)=>{const p=sts[Math.max(0,i-1)],n=sts[Math.min(sts.length-1,i+1)],
+      dx=n.x-p.x,dy=n.y-p.y;
+      let t=Math.atan2(dx*si+dy*co,dx*co-dy*si)*180/Math.PI;
+      if(t>=90)t-=180;if(t<-90)t+=180;return t});
+  let vb=vb0,k=1;
+  for(let it=0;it<3;it++){
+    k=FULL_VB?clamp(OV_BASEZ*vb[2]/FULL_VB[2],.05,1):1;
+    let x0=vb0[0],y0=vb0[1],x1=vb0[0]+vb0[2],y1=vb0[1]+vb0[3];
+    const grow=(xa,xb,ya,yb)=>{x0=Math.min(x0,xa-6);x1=Math.max(x1,xb+6);
+      y0=Math.min(y0,ya-6);y1=Math.max(y1,yb+6)};
+    const placed=[], // inset boxes every pass must dodge
+      hits=bb=>placed.some(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
+    if(strip){
+      const RP=sts.map(rot),clearOf=st=>(REG.get(st.zh).lines.length>1?13:8)+2,
+        idx=sts.map((s,i)=>i).filter(i=>G(sts[i].zh)),
+        steepI=idx.filter(i=>Math.abs(th[i])>55).sort((p,q)=>RP[p][1]-RP[q][1]),
+        tiltI=idx.filter(i=>Math.abs(th[i])<=55).sort((p,q)=>RP[q][0]-RP[p][0]);
+      // near-vertical track after rotation: stations share the same rotated x,
+      // so tilted labels could only stack — these sit level beside the dot
+      // instead, staggered left/right, walked in y order
+      const lastY={start:-1e9,end:-1e9};
+      for(const i of steepI){const st=sts[i],g=G(st.zh),[px,py]=RP[i],
+          d=g.dataset,clear=clearOf(st);
+        const side=an=>{const bb=lbox(g,an),sx=an==="start"?1:-1,
+            rx=[bb[0]-d.lx,bb[0]+bb[2]-d.lx],ry=[bb[1]-d.ly,bb[1]+bb[3]-d.ly],
+            ox=sx*(clear+2)+(sx>0?-rx[0]:-rx[1]);
+          return{an,ox,x:[px+k*(ox+rx[0]),px+k*(ox+rx[1])],y:[py+k*ry[0],py+k*ry[1]]}},
+          a1=side("start"),a2=side("end"),
+          bx=a=>[a.x[0]+2,a.x[1]-2,a.y[0]+2,a.y[1]-2],
+          fit=a=>a.y[0]>=lastY[a.an]+4*k&&!hits(bx(a)),
+          c=fit(a1)?a1:fit(a2)?a2:(lastY.start<=lastY.end?a1:a2);
+        for(let n=0,sx=(c.an==="start"?5:-5);n<8&&hits(bx(c));n++){ // slide outward
+          c.ox+=sx;c.x[0]+=k*sx;c.x[1]+=k*sx}
+        lastY[c.an]=c.y[1];
+        placed.push(bx(c));
+        lay.set(st.zh,{m:"s",t:0,ox:c.ox,oy:0,an:c.an});
+        grow(c.x[0],c.x[1],c.y[0],c.y[1])}
+      // tilted labels, walked right to left: preferred side first, then the
+      // other; when both are crowded, keep the roomier side and lift the label
+      // along the tilt's perpendicular — dense runs become a readable staircase
+      const lastL={"-45":null,"45":null}; // leftmost placed anchor+height per side
+      for(const i of tiltI){const st=sts[i],g=G(st.zh),[px,py]=RP[i],
+          d=g.dataset,clear=clearOf(st),b=lbox(g,"start"),
+          rel=[[b[0]-d.lx,b[1]-d.ly],[b[0]+b[2]-d.lx,b[1]-d.ly],
+               [b[0]-d.lx,b[1]+b[3]-d.ly],[b[0]+b[2]-d.lx,b[1]+b[3]-d.ly]];
+        const cand=t=>{const tr=t*Math.PI/180,c2=Math.cos(tr),s2=Math.sin(tr),
+            P=rel.map(([x,y])=>[x*c2-y*s2,x*s2+y*c2]),
+            xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);
+          return{t,ox:10,oy:t<0?-(clear+Math.max(...ys)):clear-Math.min(...ys),xs,ys}};
+        const sep=c=>{const L=lastL[c.t];return L?
+            .707*((L.ax-(px+k*c.ox))+(c.t<0?1:-1)*(L.ay-(py+k*c.oy))):1e9},
+          need=c=>{const L=lastL[c.t];return k*((b[3]+6+(L?L.h:0))/2+4)},
+          ok=t=>{const d0=Math.abs(th[i]-t);return Math.min(d0,180-d0)>28},
+          pref=th[i]<0?45:-45,alt=-pref,cp=cand(pref),ca=cand(alt);
+        let c;
+        if(ok(pref)&&sep(cp)>=need(cp))c=cp;
+        else if(ok(alt)&&sep(ca)>=need(ca))c=ca;
+        else{c=!ok(pref)?ca:(sep(cp)-need(cp)>=sep(ca)-need(ca)?cp:ca);
+          const dz=(need(c)-sep(c))/.707; // lift clear of the crowd
+          if(dz>0)c.oy+=(c.t<0?-dz:dz)/k}
+        // a 45° label's axis-aligned box is mostly air — the inset keeps this
+        // last-resort dodge (vs everything already placed) from over-shoving;
+        // each step moves straight away from the box actually hit
+        const box=()=>{const xs=c.xs.map(x=>px+k*(c.ox+x)),ys=c.ys.map(y=>py+k*(c.oy+y)),
+            x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),
+            ix=.2*(x1-x0),iy=.2*(y1-y0);
+          return[x0+ix,x1-ix,y0+iy,y1-iy]};
+        for(let n=0;n<12;n++){const bb=box(),hb=placed.find(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
+          if(!hb)break;
+          let mx=(bb[0]+bb[1]-hb[0]-hb[1])/2,my=(bb[2]+bb[3]-hb[2]-hb[3])/2,
+            L3=Math.hypot(mx,my);
+          if(!L3){mx=0;my=c.t<0?-1:1;L3=1}
+          c.ox+=mx/L3*5;c.oy+=my/L3*5}
+        lastL[c.t]={ax:px+k*c.ox,ay:py+k*c.oy,h:b[3]+6};
+        placed.push(box());
+        lay.set(st.zh,{m:"s",t:c.t,ox:c.ox,oy:c.oy});
+        grow(px+k*(c.ox+Math.min(...c.xs)),px+k*(c.ox+Math.max(...c.xs)),
+             py+k*(c.oy+Math.min(...c.ys)),py+k*(c.oy+Math.max(...c.ys)))}}
+    else for(const st of sts){const g=G(st.zh);if(!g)continue;
+      // small rotation: labels keep their authored spots, but clashes in dense
+      // stretches slide away from their station until the boxes come apart
+      const[px,py]=rot(st),b=lbox(g,g.dataset.ta);
+      let ox=0,oy=0;
+      const bx=()=>{const ax=px+k*(b[0]-st.x+ox),bxx=px+k*(b[0]+b[2]-st.x+ox),
+          ay=py+k*(b[1]-st.y+oy),by=py+k*(b[1]+b[3]-st.y+oy),
+          ix=.1*(bxx-ax),iy=.1*(by-ay);return[ax+ix,bxx-ix,ay+iy,by-iy]};
+      const cx=b[0]+b[2]/2-st.x,cy=b[1]+b[3]/2-st.y,L2=Math.hypot(cx,cy)||1;
+      for(let n=0;n<12;n++){const bb=bx(),hb=placed.find(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
+        if(!hb)break;
+        let mx=(bb[0]+bb[1]-hb[0]-hb[1])/2,my=(bb[2]+bb[3]-hb[2]-hb[3])/2,L3=Math.hypot(mx,my);
+        if(!L3){mx=cx/L2;my=cy/L2;L3=1}
+        ox+=mx/L3*5;oy+=my/L3*5}
+      placed.push(bx());
+      lay.set(st.zh,{m:"u",ox,oy});
+      grow(px+k*(b[0]-st.x+ox),px+k*(b[0]+b[2]-st.x+ox),
+           py+k*(b[1]-st.y+oy),py+k*(b[1]+b[3]-st.y+oy))}
+    vb=[x0,y0,x1-x0,y1-y0]}
+  return{vb,lay,k}}
 function ovTarget(id){const ov=$("ovMap");
-  let tgt=FULL_VB,ta=0,tc=ovC,LL=null;
+  let tgt=FULL_VB,ta=0,tc=ovC,LL=null,lay=null,tk=1;
   if(id){LL=LINES.find(l=>l.id===id);
     if(LL){const f=bestFit(LL,ov.clientWidth||760,ov.clientHeight||580);
-      tgt=f.vb;ta=f.a;tc=[f.cx,f.cy];
-      // strip-map labels overhang the track up/down/rightward — reserve room
-      if(Math.abs(ta)>20)tgt=[tgt[0]-8,tgt[1]-34,tgt[2]+82,tgt[3]+62]}}
-  return{tgt,ta,tc,LL}}
+      ta=f.a;tc=[f.cx,f.cy];
+      const r=layoutLabels(ov,LL,ta,tc,f.vb);
+      tgt=r.vb;lay=r.lay;tk=r.k}}
+  return{tgt,ta,tc,LL,lay,tk}}
 function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
-  let{tgt,ta,tc,LL}=ovTarget(id);
+  let{tgt,ta,tc,lay,tk}=ovTarget(id);
   if(!tgt)return;
   ovClearFree(); // any focus change (or reset) supersedes a free pan/zoom
   cancelAnimationFrame(ovAnim);
-  // the focused line's label <g>s counter-rotate every frame so text stays level;
-  // big rotations switch them to 45°-tilted strip-map labels (constant footprint
-  // along the line, so long names can't collide once the line lies horizontal);
-  // ±45° is picked per station so a label never runs parallel to its own track
-  const strip=Math.abs(ta)>20,mine=id&&LINE_STS.get(id),gs=[],tilt=new Map();
-  if(strip){const r=ta*Math.PI/180,c=Math.cos(r),s=Math.sin(r),sts=LL.stations;
-    sts.forEach((st,i)=>{const p=sts[Math.max(0,i-1)],n=sts[Math.min(sts.length-1,i+1)],
-      dx=n.x-p.x,dy=n.y-p.y;
-      let th=Math.atan2(dx*s+dy*c,dx*c-dy*s)*180/Math.PI;
-      if(th>=90)th-=180;if(th<-90)th+=180;
-      tilt.set(st.zh,th<0?45:-45)})}
-  if(mine)ov.querySelectorAll(".stg").forEach(g=>{if(mine.has(g.dataset.st)){
-    const lg=g.lastElementChild;lg.dataset.m=strip?"s":"u";lg.dataset.t=tilt.get(g.dataset.st)||-45;
-    lg.setAttribute("text-anchor",strip?"start":lg.dataset.ta);gs.push(lg)}});
+  // hand layoutLabels' per-station placement to the focused labels; ovLabelXf
+  // re-poses every label each frame (focused strip labels tilt, the rest stay
+  // level and counter-scale), so text tracks the rotation and depth throughout
+  const gs=[];
+  if(lay)ov.querySelectorAll(".stg").forEach(g=>{const p=lay.get(g.dataset.st);if(!p)return;
+    const lg=g.lastElementChild;lg.dataset.m=p.m;
+    if(p.m==="s"){lg.dataset.t=p.t;lg.dataset.ox=p.ox.toFixed(1);lg.dataset.oy=p.oy.toFixed(1);
+      lg.setAttribute("text-anchor",p.an||"start")}
+    else{if(p.ox||p.oy){lg.dataset.ox=p.ox.toFixed(1);lg.dataset.oy=p.oy.toFixed(1)}
+      else{delete lg.dataset.ox;delete lg.dataset.oy}
+      lg.setAttribute("text-anchor",lg.dataset.ta)}
+    gs.push(lg)});
   const old=ovGs.filter(g=>!gs.includes(g));ovGs=gs;
-  const reset=g=>{g.removeAttribute("transform");g.setAttribute("text-anchor",g.dataset.ta)};
+  const reset=g=>{delete g.dataset.m;delete g.dataset.ox;delete g.dataset.oy;
+    g.setAttribute("text-anchor",g.dataset.ta)};
   const setVb=v=>ov.setAttribute("viewBox",v.map(n=>n.toFixed(1)).join(" "));
-  const setRot=(a,cx,cy)=>{
+  const kOf=v=>FULL_VB?clamp(OV_BASEZ*v[2]/FULL_VB[2],.05,1):1;
+  const setRot=(a,cx,cy,k)=>{
     if(Math.abs(a)<.05)mr.removeAttribute("transform");
     else mr.setAttribute("transform",`rotate(${a.toFixed(2)} ${cx.toFixed(1)} ${cy.toFixed(1)})`);
     if(nc){nc.style.opacity=Math.abs(a)<.05?"":"1";
       nc.firstElementChild.style.transform=`rotate(${a}deg)`}
-    for(const g of gs.concat(old)){const d=g.dataset;
-      if(d.m==="s"){const rr=a*Math.PI/180,co=Math.cos(rr),si=Math.sin(rr),t=+d.t||-45,
-        ax=cx+(d.sx-cx)*co-(d.sy-cy)*si+10,ay=cy+(d.sx-cx)*si+(d.sy-cy)*co+(t>0?10:-10);
-        g.setAttribute("transform",`rotate(${(-a).toFixed(2)} ${cx.toFixed(1)} ${cy.toFixed(1)}) translate(${ax.toFixed(1)} ${ay.toFixed(1)}) rotate(${t}) translate(${-d.lx} ${-d.ly})`)}
-      else if(Math.abs(a)<.05)g.removeAttribute("transform");
-      else g.setAttribute("transform",`rotate(${(-a).toFixed(2)} ${d.lx} ${d.ly})`)}};
-  const land=()=>{ovA=ta;ovC=tc;old.forEach(reset)};
+    ovFurn(ov,k);ovLabelXf(ov,a,cx,cy,k)};
+  const land=()=>{ovA=ta;ovC=tc;old.forEach(reset);
+    ovLabelXf(ov,ta,tc?tc[0]:0,tc?tc[1]:0,tk)};
   const vb=ov.viewBox.baseVal,from=[vb.x,vb.y,vb.width,vb.height];
   if(!tc)tc=[0,0];
-  if(REDUCED()||!from[2]){setVb(tgt);setRot(ta,tc[0],tc[1]);land();return}
+  if(REDUCED()||!from[2]){setVb(tgt);setRot(ta,tc[0],tc[1],tk);land();return}
   const c0=Math.abs(ovA)<.05?tc:(ovC||tc), // start centre = current, unless untransformed
     f7=[...from,ovA,c0[0],c0[1]],t7=[...tgt,ta,tc[0],tc[1]];
   const t0=performance.now();
-  const step=now=>{const p=Math.min(1,(now-t0)/420),e=1-Math.pow(1-p,3),
+  const step=now=>{const p=clamp((now-t0)/420,0,1),e=1-Math.pow(1-p,3), // rAF stamps can predate t0
     v=f7.map((f,i)=>f+(t7[i]-f)*e);
-    setVb(v.slice(0,4));setRot(v[4],v[5],v[6]);
+    setVb(v.slice(0,4));setRot(v[4],v[5],v[6],kOf(v));
     if(p<1)ovAnim=requestAnimationFrame(step);else land()};
   ovAnim=requestAnimationFrame(step)}
 // accordion state: which card is open ("l1"… or "boss"); survives re-renders
