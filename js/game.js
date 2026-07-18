@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.1";
+const APP_VERSION="0.5.2";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -456,7 +456,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   requestAnimationFrame(()=>{fitSeq(true);setTimeout(()=>{camFollow=true},700)});
   setPrompt();movePulse();
   announce(t("depart",o.zh));
-  setTimeout(()=>inp.focus(),80)}
+  inp.focus()} // sync inside the card tap: its user activation lets mobile raise the keyboard
 
 function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   S.bossList=shuffle(BOSS);S.bossI=0;S.lives=3;S.bossDone=0;
@@ -468,7 +468,7 @@ function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
   $("board").style.setProperty("--lc",c);$("board").style.setProperty("--lcg",alpha(cd,.35));
   $("zhChip").textContent="★";$("zhChip").style.background=c;$("zhChip").style.color=txOn(c);
   $("lives").textContent="♥♥♥";buildPbar();
-  setBossPrompt();setTimeout(()=>inp.focus(),80)}
+  setBossPrompt();inp.focus()}
 
 /* ---------- prompt / board ---------- */
 function paintPy(popFrom=-1,miss=false){const el=$("py");el.classList.remove("reveal");
@@ -537,6 +537,9 @@ function updPbar(){const cells=$("pbar").children;
 inp.addEventListener("input",e=>{if(!e.isComposing)handleTyping(inp.value)});
 inp.addEventListener("compositionend",()=>handleTyping(inp.value));
 inp.addEventListener("paste",e=>{e.preventDefault();shake()});
+// v0.4.3 lock-in on mobile too: IME deletes arrive as beforeinput, not Backspace keydown
+inp.addEventListener("beforeinput",e=>{
+  if(!e.isComposing&&/^(delete|history)/.test(e.inputType))e.preventDefault()});
 document.addEventListener("keydown",e=>{
   if(S.screen!=="game")return;
   if(S.paused)return; // quit dialog open — let the dialog own the keys (native Esc closes it)
@@ -544,8 +547,14 @@ document.addEventListener("keydown",e=>{
   // correct keystrokes lock in — no deleting/retyping (since v0.4.3)
   if(e.key==="Backspace"||e.key==="Delete"){e.preventDefault();return}
   if(document.activeElement!==inp&&e.key.length===1&&!e.metaKey&&!e.ctrlKey)inp.focus()});
-// tap the board to (re)summon the keyboard on touch devices
-$("board").addEventListener("pointerdown",()=>{if(S.screen==="game")inp.focus()});
+// tap the board to (re)summon the soft keyboard — on click, not pointerdown: the tap's
+// own mousedown-default blurs whatever pointerdown focused, so the keyboard closed before
+// it could open; by click time that blur is done and this focus sticks. blur() first
+// because a bare focus() is a no-op when the input kept focus without a keyboard
+// (run-start focus outside a tap), and blur→focus inside the tap re-raises the IME.
+$("board").addEventListener("click",()=>{if(S.screen!=="game")return;
+  if(document.activeElement===inp)inp.blur();
+  inp.focus()});
 
 function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
