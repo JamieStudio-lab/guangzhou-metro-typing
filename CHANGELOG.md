@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.16] - 2026-07-17
+
+### Changed
+- **The ride view dives way in — stations spread far apart, and nothing balloons.** The in-game camera used to pick its zoom from the hop's length alone, and every map element (dots, strokes, rings, the train) grew with the zoom, so diving deeper just made everything fatter. The game map now wears the menu map's v0.4.11 counter-scale: past a fixed depth, line strokes, station dots, heat rings, the next-stop pulse, station names and the train all hold a constant slim on-screen size — the same weight the menu map has at full free-zoom depth, so the two maps read as one system. With sizes capped, the lens is now set by the hop itself: the stretch you're riding spans most of the frame whatever its real length, which pushes on-screen station spacing to roughly 4–5× what it was (a downtown hop now stretches ~400 px instead of ~95 px). Short APM hops become dramatic close-ups; long express hops look about like before. The end-of-run recap, arrival punch-in, and next-hop crossfade all carry over, and corner rounding keeps tracking the slimmed strokes so dots stay on their line (v0.4.12). Rivers and city/district outlines deliberately stay at map scale — they're geography, not furniture.
+
 ## [0.4.15] - 2026-07-17
 
 ### Changed
@@ -513,6 +518,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.16]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.12...v0.4.13

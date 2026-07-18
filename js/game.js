@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.15";
+const APP_VERSION="0.4.16";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -351,15 +351,36 @@ let lastRun=null;
 const gMap=$("gMap"),mapWrap=$("mapWrap"),inp=$("pyin");
 let cam={cx:370,cy:633,w:1150},camT={cx:370,cy:633,w:1150},camFollow=false,camPunch=0;
 let nodes=null; // {dot,heat,pulse,zh} per 汉字 for game map
+// v0.4.16: past GM_BASEW the game map counter-scales like the menu map — dots,
+// strokes, rings, labels and the train hold the slim on-screen size they have
+// at that depth, so the follow lens can dive without anything ballooning
+const GM_BASEW=875;
+let gmK=1,gmKQ=1,trainAng=0,gmGs=null;
+const gmKof=w=>clamp(w/GM_BASEW,.08,1);
 
-function collectNodes(){nodes={};
+function collectNodes(){nodes={};gmGs=null;gmK=-1;gmKQ=-1;
   gMap.querySelectorAll("[data-d]").forEach(e=>{(nodes[e.dataset.d]=nodes[e.dataset.d]||{}).dot=e});
   gMap.querySelectorAll("[data-h]").forEach(e=>{(nodes[e.dataset.h]=nodes[e.dataset.h]||{}).heat=e});
   gMap.querySelectorAll("[data-p]").forEach(e=>{(nodes[e.dataset.p]=nodes[e.dataset.p]||{}).pulse=e});
   gMap.querySelectorAll("[data-zh]").forEach(e=>{(nodes[e.dataset.zh]=nodes[e.dataset.zh]||{}).zh=e})}
 
+function gmShrink(){const k=gmKof(cam.w);
+  if(Math.abs(k-gmK)<.003)return;gmK=k;
+  if(k>.999)gMap.style.removeProperty("--zs");else gMap.style.setProperty("--zs",k.toFixed(3));
+  const tr=$("trainR");
+  if(tr)tr.setAttribute("transform",`rotate(${trainAng.toFixed(1)}) scale(${(1.15*k).toFixed(3)})`);
+  for(const g of gmGs||(gmGs=[...gMap.querySelectorAll(".stg>g:last-child")])){const d=g.dataset;
+    if(k>.999)g.removeAttribute("transform");
+    else g.setAttribute("transform",`translate(${(d.sx*(1-k)).toFixed(1)} ${(d.sy*(1-k)).toFixed(1)}) scale(${k.toFixed(3)})`)}
+  // bend radius tracks the slimmed strokes (see v0.4.12); quantized so path
+  // rebuilds stay occasional while the lens glides
+  const q=Math.round(k*25)/25;
+  if(q!==gmKQ){gmKQ=q;gMap.querySelectorAll(".lpath").forEach(p=>{const L=LINES.find(l=>l.id===p.dataset.line);
+    if(L)p.setAttribute("d",roundPath(L.loop?[...L.stations,L.stations[0]]:L.stations,14*q))})}}
+
 function applyCam(){const asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
-  const h=cam.w/asp;gMap.setAttribute("viewBox",`${cam.cx-cam.w/2} ${cam.cy-h/2} ${cam.w} ${h}`)}
+  const h=cam.w/asp;gMap.setAttribute("viewBox",`${cam.cx-cam.w/2} ${cam.cy-h/2} ${cam.w} ${h}`);
+  gmShrink()}
 function fitAll(instant){const bb=NETBB,pad=64,
   asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
   camT={cx:bb.x+bb.width/2,cy:bb.y+bb.height/2,w:Math.max(bb.width+pad*2,(bb.height+pad*2)*asp)};
@@ -368,14 +389,20 @@ function fitAll(instant){const bb=NETBB,pad=64,
 // the box covers the measured label boxes too, so the terminus recap (names
 // return zoomed-out) clips no station name
 function fitSeq(instant){if(!S.seq.length)return fitAll(instant);
-  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  for(const s of S.seq){x0=Math.min(x0,s.x);y0=Math.min(y0,s.y);x1=Math.max(x1,s.x);y1=Math.max(y1,s.y)}
-  for(const s of S.seq){const g=gMap.querySelector(`.stg[data-st="${s.zh}"]`),
-    lg=g&&g.lastElementChild;if(!lg)continue;const b=lbox(lg,lg.dataset.ta);
-    x0=Math.min(x0,b[0]-4);y0=Math.min(y0,b[1]-4);
-    x1=Math.max(x1,b[0]+b[2]+4);y1=Math.max(y1,b[1]+b[3]+4)}
+  let sx0=1e9,sy0=1e9,sx1=-1e9,sy1=-1e9;
+  for(const s of S.seq){sx0=Math.min(sx0,s.x);sy0=Math.min(sy0,s.y);sx1=Math.max(sx1,s.x);sy1=Math.max(sy1,s.y)}
   const pad=40,asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight));
-  camT={cx:(x0+x1)/2,cy:(y0+y1)/2,w:Math.max(x1-x0+pad*2,(y1-y0+pad*2)*asp)};
+  // labels render counter-scaled at this depth, so scale the measured boxes by
+  // the k the target width implies (two passes converge close enough)
+  let w=Math.max(sx1-sx0+pad*2,(sy1-sy0+pad*2)*asp),cx=(sx0+sx1)/2,cy=(sy0+sy1)/2;
+  for(let it=0;it<2;it++){const k=gmKof(w);
+    let x0=sx0,y0=sy0,x1=sx1,y1=sy1;
+    for(const s of S.seq){const g=gMap.querySelector(`.stg[data-st="${s.zh}"]`),
+      lg=g&&g.lastElementChild;if(!lg)continue;const b=lbox(lg,lg.dataset.ta);
+      x0=Math.min(x0,s.x+k*(b[0]-s.x)-4);y0=Math.min(y0,s.y+k*(b[1]-s.y)-4);
+      x1=Math.max(x1,s.x+k*(b[0]+b[2]-s.x)+4);y1=Math.max(y1,s.y+k*(b[1]+b[3]-s.y)+4)}
+    w=Math.max(x1-x0+pad*2,(y1-y0+pad*2)*asp);cx=(x0+x1)/2;cy=(y0+y1)/2}
+  camT={cx,cy,w};
   camFollow=false;if(instant){cam={...camT};applyCam()}}
 
 const HEATC={good:"#2fbf71",mid:"#f0b429",bad:"#e5484d"};
@@ -584,8 +611,8 @@ function updCredit(){if(S.mode!=="line")return;
   S.credit=S.cum[S.idx-1]+S.segs[S.idx-1]*(p+(e-p)*EASE)}
 
 function angleTo(i,j){const a=S.seq[i],b=S.seq[j];return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
-function placeTrain(x,y,ang){$("trainG").setAttribute("transform",`translate(${x} ${y})`);
-  $("trainR").setAttribute("transform",`rotate(${ang}) scale(1.15)`)} // upscale offsets the wide camera
+function placeTrain(x,y,ang){trainAng=ang;$("trainG").setAttribute("transform",`translate(${x} ${y})`);
+  $("trainR").setAttribute("transform",`rotate(${ang}) scale(${(1.15*(gmK>0?gmK:1)).toFixed(3)})`)} // 1.15 hero bump × counter-scale
 function posXY(p){const c=S.cum;let j=0;
   while(j<S.segs.length-1&&p>c[j+1])j++;
   const a=S.seq[j],b=S.seq[j+1],f=S.segs[j]?clamp((p-c[j])/S.segs[j],0,1):0;
@@ -1201,21 +1228,22 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
       const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
-      // lens frames the hop being ridden: close stops pull the camera way in, far
-      // stops ease it out a little — every segment crossing reads at a similar pace.
-      // Center leans toward the next platform, the hop's zoom crossfades into the
-      // next hop's over the last 20%, arrivals punch in briefly, and a hard floor
-      // keeps both the stop behind and the stop ahead inside the frame
-      if(camFollow){const j=P.j,a=S.seq[j],b=S.seq[j+1],
-          cx=P.x+.25*(b.x-P.x),cy=P.y+.25*(b.y-P.y);
-        const Wof=s=>clamp(230+110*s,310,780);
-        let w=Wof(S.segs[j]);
-        if(P.f>.8&&j<S.segs.length-1){const m=(P.f-.8)/.2;w+=(Wof(S.segs[j+1])-w)*(m*m*(3-2*m))}
+      // v0.4.16 lens: the hop itself sets the depth — with the furniture
+      // counter-scaled to a constant size, the frame is just the hop's own
+      // extent at ~80% fill (floored so micro-hops never hit the k clamp).
+      // Center still leans toward the next platform, the depth crossfades into
+      // the next hop's over the last 20%, and arrivals punch in briefly
+      if(camFollow){const j=P.j,b=S.seq[j+1],
+          cx=P.x+.25*(b.x-P.x),cy=P.y+.25*(b.y-P.y),
+          asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)),
+          wFor=i=>{const A=S.seq[i],B=S.seq[i+1],
+            mx=Math.max(Math.abs(A.x-cx),Math.abs(B.x-cx)),
+            my=Math.max(Math.abs(A.y-cy),Math.abs(B.y-cy));
+            return Math.max(Math.max(2*mx,2*my*asp)/.8,70)};
+        let w=wFor(j);
+        if(P.f>.8&&j<S.segs.length-1){const m=(P.f-.8)/.2;w+=(wFor(j+1)-w)*(m*m*(3-2*m))}
         if(camPunch>0){w*=1-.04*camPunch;camPunch=Math.max(0,camPunch-dt*2)}
-        const asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)),PAD=52;
-        const nx=Math.max(Math.abs(a.x-cx),Math.abs(b.x-cx))+PAD,
-              ny=Math.max(Math.abs(a.y-cy),Math.abs(b.y-cy))+PAD;
-        camT.cx=cx;camT.cy=cy;camT.w=Math.max(w,2*nx,2*ny*asp)}
+        camT.cx=cx;camT.cy=cy;camT.w=w}
       const hot=S.avgV>=cap*(S.hot?S.hotOn-HOT_HYS:S.hotOn); // hysteresis so the flames don't flicker
       if(hot!==S.hot&&!REDUCED())setHot(hot);
       if(S.hot){const tier=S.combo>=S.t3?3:S.combo>=S.t2?2:1;

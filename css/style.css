@@ -671,6 +671,17 @@ text{font-family:var(--sans);pointer-events:none}
 #ovMap .dot.inter{r:calc(10px*var(--zs,1))}
 #ovMap .heat:not(.inter){r:calc(10px*var(--zs,1))}
 #ovMap .heat.inter{r:calc(14px*var(--zs,1))}
+/* v0.4.16: the game map wears the same counter-scale — past GM_BASEW game.js
+   sets --zs<1 on #gMap and the furniture holds its slim on-screen size while
+   the follow lens dives (rivers/boundaries stay map-scale: they're geography) */
+#gMap .lpath{stroke-width:calc(7px*var(--zs,1))}
+#gMap .dot{stroke-width:calc(3px*var(--zs,1))}
+#gMap .dot:not(.inter){r:calc(5.5px*var(--zs,1))}
+#gMap .dot.inter{r:calc(10px*var(--zs,1))}
+#gMap .heat{stroke-width:calc(2.5px*var(--zs,1))}
+#gMap .heat:not(.inter){r:calc(10px*var(--zs,1))}
+#gMap .heat.inter{r:calc(14px*var(--zs,1))}
+#gMap .pulseHolder{r:calc(9px*var(--zs,1));stroke-width:calc(2px*var(--zs,1))}
 #ovMap .stg:hover text{opacity:1}
 #ovMap .stg:hover .st-zh,#ovMap .stg:hover .st-py,#ovMap .stg:hover .st-tr{
   paint-order:stroke;stroke:var(--ink);stroke-width:3px;stroke-linejoin:round}
