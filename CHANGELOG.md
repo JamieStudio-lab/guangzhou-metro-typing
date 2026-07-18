@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.17] - 2026-07-17
+
+### Fixed
+- **The green completion burst is back to its proper size.** The one-shot effect that plays when you finish typing a stop — the expanding green ring on the platform with the station's name floating above it — was drawn at fixed map size and missed v0.4.16's counter-scaling, so at the new deep ride zoom it ballooned to roughly ten times its intended size, swallowing half the screen on every arrival. It now counter-scales about its station like every other map element (and keeps tracking the lens while it plays), so the ring and name read at the same size they did before the deep zoom — on every line.
+
 ## [0.4.16] - 2026-07-17
 
 ### Changed
@@ -518,6 +523,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.17]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.16...v0.4.17
 [0.4.16]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.13...v0.4.14
