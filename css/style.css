@@ -444,6 +444,15 @@ button{font-family:inherit;cursor:pointer}
 /* ---------- game ---------- */
 #game{height:100dvh;display:grid;gap:10px;padding:10px 12px;
   grid-template-rows:auto minmax(180px,1fr) auto}
+/* soft keyboard up (game.js sets body.kb + --vvh from visualViewport): compress the cab
+   into the strip above the IME so the word to type stays in view — the map row gives way
+   first; if HUD+board alone still can't fit, the screen scrolls inside, board pinned */
+/* board row = max-content: #board is overflow:hidden, so its automatic minimum is 0 and
+   a plain auto row would crush it under extreme squeeze — intrinsic rows never shrink */
+body.kb #game{height:var(--vvh,100dvh);grid-template-rows:auto minmax(0,1fr) max-content;
+  overflow-y:auto;overscroll-behavior:contain}
+body.kb #hud{margin-top:0}
+body.kb #mapWrap,body.kb #bossStage{min-height:0}
 /* margin-top clears the fixed #fchips pills (settings/quit), which float over the HUD corner */
 #hud{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:62px}
 /* driver's-cab cluster: gauge + chips wear the LED board's hardware look

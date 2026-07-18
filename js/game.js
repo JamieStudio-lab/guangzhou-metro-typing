@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.2";
+const APP_VERSION="0.5.3";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -555,6 +555,20 @@ document.addEventListener("keydown",e=>{
 $("board").addEventListener("click",()=>{if(S.screen!=="game")return;
   if(document.activeElement===inp)inp.blur();
   inp.focus()});
+// soft keyboard (mobile): while the sink is focused and the visual viewport is squeezed
+// well below the layout viewport (that gap is the IME — desktop resizes shrink both),
+// body.kb + --vvh compress the cab into the visible strip; released when it closes
+const vv=window.visualViewport;
+function kbFit(){if(!vv)return;
+  const on=S.screen==="game"&&document.activeElement===inp&&vv.scale<1.02&&
+    innerHeight-vv.height>140;
+  document.body.classList.toggle("kb",on);
+  if(on){document.body.style.setProperty("--vvh",Math.round(vv.height)+"px");
+    scrollTo(0,0);requestAnimationFrame(()=>$("board").scrollIntoView({block:"end"}))}
+  else document.body.style.removeProperty("--vvh")}
+if(vv){vv.addEventListener("resize",kbFit);
+  inp.addEventListener("focus",()=>setTimeout(kbFit,60));
+  inp.addEventListener("blur",()=>setTimeout(kbFit,60))}
 
 function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
