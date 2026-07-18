@@ -66,7 +66,7 @@ body{--lct:var(--lcd,var(--lc,var(--amber)));--tint:color-mix(in srgb,var(--lc,v
   --tint:color-mix(in srgb,var(--lc,var(--amber)) 6%,var(--panel))}
 :root[data-theme="light"] #bossStage h3{text-shadow:none}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html,body{height:100%;overscroll-behavior:none} /* no pull-to-refresh / swipe-nav mid-run */
 body{background:var(--ink);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 button{font-family:inherit;cursor:pointer}
 [hidden]{display:none!important}

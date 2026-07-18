@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.6";
+const APP_VERSION="0.5.7";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -412,7 +412,11 @@ function fitSeq(instant){if(!S.seq.length)return fitAll(instant);
 const HEATC={good:"#2fbf71",mid:"#f0b429",bad:"#e5484d"};
 
 /* ---------- screens ---------- */
+// v0.5.7: entering a run arms one history entry so a stray back (Android button/gesture,
+// iOS edge swipe, mouse back) pops it — handled in the popstate guard below — instead of
+// unloading the page straight to the title screen. try/catch: pushState can throw on file://.
 function show(name){S.screen=name;
+  if(name==="game")try{if(!(history.state&&history.state.run))history.pushState({run:1},"")}catch(e){}
   $("menu").hidden=name!=="menu";$("game").hidden=name!=="game";$("result").hidden=name!=="result";
   $("homeBtn").hidden=name!=="game";$("accBtn").hidden=name==="game";
   document.body.classList.toggle("boss",name==="game"&&S.mode==="boss")}
@@ -1313,7 +1317,8 @@ function pk(on,snap){const h=document.querySelector("#menu .hero");
   $("menu").classList.toggle("pk",on);$("backTop").classList.toggle("on",on);
   if(snap){void h.offsetHeight;h.style.transition=""}}
 function toPick(){pk(true,true);scrollTo(0,0)}
-function leaveRun(){show("menu");renderCards();toPick()}
+function leaveRun(){try{if(history.state&&history.state.run)history.back()}catch(e){}
+  show("menu");renderCards();toPick()}
 // mid-run quit confirms via an in-game dialog (settings-style). The run pauses while it's
 // open — train, timer, and boss countdown all freeze (tick() skips on S.paused) — and any
 // dismiss that isn't Quit resumes and shifts the clock forward so the pause costs nothing.
@@ -1331,7 +1336,16 @@ $("quitDlg").addEventListener("close",()=>{if(!S.paused)return; // cancel / back
   if(S.t0!==null)S.t0+=d;if(S.firstT!==null)S.firstT+=d;if(S.deadline)S.deadline+=d;
   S.paused=false;if(!S.done&&!inp.disabled)inp.focus()});
 $("rAgain").onclick=()=>{if(!lastRun)return;lastRun.mode==="boss"?startBoss():startLine(lastRun.L,lastRun.rev)};
-$("rBack").onclick=()=>{show("menu");renderCards();toPick()};
+$("rBack").onclick=leaveRun;
+// the back guard: a pop mid-run re-arms the entry and routes through the normal quit
+// confirm; on the result screen back = the back button. Pops with the menu up (incl. the
+// one leaveRun consumes) fall through to the browser untouched.
+addEventListener("popstate",()=>{
+  if(S.screen==="game"){try{history.pushState({run:1},"")}catch(e){}quit()}
+  else if(S.screen==="result")leaveRun()});
+// reload / tab-close with a run in progress asks first (pull-to-refresh casualties)
+addEventListener("beforeunload",e=>{
+  if(S.screen==="game"&&!S.done&&S.t0!==null){e.preventDefault();e.returnValue=""}});
 $("startBtn").onclick=()=>{pk(true);scrollTo(0,0)}; // hero folds up, picker rises into place
 $("backTop").onclick=()=>{scrollTo(0,0);pk(false)}; // jump home first, then the hero unfolds from the top
 // the valve: scrolling the hero fully off-screen collapses it in place — scroll position is

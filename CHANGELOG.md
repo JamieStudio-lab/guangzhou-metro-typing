@@ -4,6 +4,14 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.5.7] - 2026-07-18
+
+### Fixed
+- **The game no longer "suddenly jumps back to the title screen".** The reported random resets were never an in-app screen switch (every in-app exit goes through the quit confirm and lands on the line picker, not the hero) — they were the browser leaving or reloading the page mid-run: pull-to-refresh on a downward swipe (the game keeps the page scrolled to the top, so any swipe on the map qualifies), the Android back button/gesture (often pressed once too many when closing the soft keyboard), the iOS edge swipe, and plain accidental reloads. Three guards now cover all of them:
+  - `overscroll-behavior:none` on the page root disables pull-to-refresh and swipe-to-navigate overscroll gestures.
+  - Starting a run arms one history entry; a back gesture/button mid-run now pops that entry and opens the normal quit confirm instead of unloading the page (on the result screen, back acts as the back button). The entry is consumed on a normal exit, so back on the menu still leaves the site as expected.
+  - Reloading or closing the tab with a run in progress asks for confirmation first (`beforeunload`, armed only after the first keystroke of a run).
+
 ## [0.5.6] - 2026-07-18
 
 ### Changed
@@ -568,6 +576,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.5.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.3...v0.5.4
