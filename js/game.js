@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.18";
+const APP_VERSION="0.4.19";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -591,7 +591,7 @@ function typedFx(st){const reg=REG.get(st.zh),inter=reg&&reg.lines.length>1;
   const g=document.createElementNS("http://www.w3.org/2000/svg","g");
   g.setAttribute("class","doneFx");
   g.dataset.sx=st.x;g.dataset.sy=st.y;
-  g.innerHTML=`<circle cx="${st.x}" cy="${st.y}" r="${inter?15:11}" fill="none" stroke="${HEATC.good}" stroke-width="3"/>`+
+  g.innerHTML=`<circle cx="${st.x}" cy="${st.y}" r="${inter?17:13}" fill="none" stroke="${HEATC.good}" stroke-width="3.5"/>`+
     `<text x="${st.x}" y="${st.y-(inter?40:34)}" text-anchor="middle">${st.zh}</text>`;
   const k=gmK>0?gmK:1;
   if(k<.999)g.setAttribute("transform",

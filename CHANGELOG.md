@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.19] - 2026-07-17
+
+### Changed
+- **The completion burst steps up one more size.** Ring radius 11→13 (interchanges 15→17) with a 3.5 stroke, and the floating station name grows from 17px to 20px with a matching heavier outline — on screen that's a ring blooming to ~84px and a ~27px-tall name.
+
 ## [0.4.18] - 2026-07-17
 
 ### Changed
@@ -528,6 +533,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.19]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.18...v0.4.19
 [0.4.18]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.17...v0.4.18
 [0.4.17]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.16...v0.4.17
 [0.4.16]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.15...v0.4.16
