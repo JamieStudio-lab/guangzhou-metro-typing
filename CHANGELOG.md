@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.5.4] - 2026-07-18
+
+### Changed
+- **With the keyboard up, the cab squeezes instead of the map.** v0.5.3 made room for the soft keyboard by collapsing the map row, which left the ride view — the train actually moving — as a sliver while the full driver's cab sat above it. Flipped: the big speedometer steps aside entirely and the chips drop to a thin readout strip (small digits, tight grid, ~90px), so the freed space goes to the map — a real ride view (~230px on a typical phone) now stays on screen the whole time you type. Speed, accuracy, combo, score, time and distance stay live in the strip; the gauge returns the moment the keyboard closes. The extreme-squeeze fallback (screen scrolls internally, board pinned, the word always wins) is unchanged.
+
 ## [0.5.3] - 2026-07-18
 
 ### Added
@@ -552,6 +557,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.5.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.0...v0.5.1
