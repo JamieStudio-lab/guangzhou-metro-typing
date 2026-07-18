@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.5";
+const APP_VERSION="0.5.6";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -355,9 +355,10 @@ let nodes=null; // {dot,heat,pulse,zh} per 汉字 for game map
 // strokes, rings, labels and the train hold the slim on-screen size they have
 // at that depth, so the follow lens can dive without anything ballooning
 const GM_BASEW=875;
+const IS_TOUCH=matchMedia("(pointer:coarse)").matches;
 // touch screens ride with chunkier furniture (v0.5.5): train, dots, rings, strokes
 // and labels render 1.25× their desktop size at every depth — phones are small
-const GM_TOUCH=matchMedia("(pointer:coarse)").matches?1.25:1;
+const GM_TOUCH=IS_TOUCH?1.25:1;
 let gmK=1,gmKQ=1,trainAng=0,gmGs=null;
 const gmKof=w=>clamp(w/GM_BASEW,.08,1)*GM_TOUCH;
 
@@ -667,7 +668,9 @@ function arriveAt(j){S.arrivedI=j;
     if(n.zh)n.zh.classList.add("passed")}
   movePulse();
   if(j===S.seq.length-1){finishRun()}
-  else announce(t("arriveAt",st.zh,st.py))}
+  // phones: arrival goes to the screen reader only — the banner covered the small
+  // ride map every few seconds, and the green burst already names the stop
+  else announce(t("arriveAt",st.zh,st.py),IS_TOUCH)}
 
 function movePulse(){gMap.querySelectorAll(".pulseHolder").forEach(p=>{p.setAttribute("opacity","0");p.classList.remove("pulse")});
   const st=S.seq[S.idx];if(!st)return;const n=nodes[st.zh];
@@ -675,7 +678,10 @@ function movePulse(){gMap.querySelectorAll(".pulseHolder").forEach(p=>{p.setAttr
     n.pulse.setAttribute("stroke",S.line.color)}}
 
 let toastTimer=null;
-function announce(msg){const t=$("toast");t.textContent=msg;t.classList.add("on");
+// quiet: route to the visually-hidden role=status twin — SR still announces, and the
+// visible banner (possibly mid-display with another message) is never touched
+function announce(msg,quiet){if(quiet){$("srToast").textContent=msg;return}
+  const t=$("toast");t.textContent=msg;t.classList.add("on");
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),2100)}
 
 function finishRun(){S.done=true;S.endT=performance.now();

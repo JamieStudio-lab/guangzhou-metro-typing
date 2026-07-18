@@ -505,6 +505,7 @@ body.kb #mapWrap,body.kb #bossStage{min-height:0}
   padding:8px 14px;border-radius:var(--r-sm);font-size:13.5px;white-space:nowrap;pointer-events:none;
   transition:opacity .25s var(--ease),transform .25s var(--ease);max-width:92%;overflow:hidden;text-overflow:ellipsis}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.srOnly{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
 
 /* boss stage replaces map */
 #bossStage{display:none;position:relative;background:

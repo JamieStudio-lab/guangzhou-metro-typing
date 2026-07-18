@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.5.6] - 2026-07-18
+
+### Changed
+- **The 到达/arrival banner no longer pops up on phones.** The "到达 XX · pinyin" toast slid over the ride map at every stop — and since v0.5.5 that map is most of the screen while typing, so the banner kept covering the train. On touch devices arrivals now go to a visually-hidden `role="status"` twin instead: screen readers keep announcing every stop, sighted players just watch the green burst name it. Desktop keeps the visual banner, and the English-keyboard warning plus the run-start/doors banners stay visual everywhere. The hidden twin exists because the visible toast doubles as the SR live region — quietly swapping its text would rewrite a message still on screen (fast typists hit this within the first hop; the headless run caught it).
+
 ## [0.5.5] - 2026-07-18
 
 ### Changed
@@ -563,6 +568,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.5.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.2...v0.5.3
