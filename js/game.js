@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.19";
+const APP_VERSION="0.5.0";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -1273,7 +1273,14 @@ requestAnimationFrame(tick);
 
 /* ---------- quit / nav ---------- */
 // back from a run → land on the line-selection area, not the opening page
-function toPick(){$("pick").scrollIntoView({behavior:"auto"})}
+// one-way home (v0.5.0): pk(true) collapses the hero out of the document flow, so #pick is the
+// page top and scrolling can never wander back up — only the #backTop fab restores the hero.
+// snap commits the state without the min-height transition (off-screen valve, post-run returns).
+function pk(on,snap){const h=document.querySelector("#menu .hero");
+  if(snap)h.style.transition="none";
+  $("menu").classList.toggle("pk",on);$("backTop").classList.toggle("on",on);
+  if(snap){void h.offsetHeight;h.style.transition=""}}
+function toPick(){pk(true,true);scrollTo(0,0)}
 function leaveRun(){show("menu");renderCards();toPick()}
 // mid-run quit confirms via an in-game dialog (settings-style). The run pauses while it's
 // open — train, timer, and boss countdown all freeze (tick() skips on S.paused) — and any
@@ -1293,10 +1300,15 @@ $("quitDlg").addEventListener("close",()=>{if(!S.paused)return; // cancel / back
   S.paused=false;if(!S.done&&!inp.disabled)inp.focus()});
 $("rAgain").onclick=()=>{if(!lastRun)return;lastRun.mode==="boss"?startBoss():startLine(lastRun.L,lastRun.rev)};
 $("rBack").onclick=()=>{show("menu");renderCards();toPick()};
-$("startBtn").onclick=()=>$("pick").scrollIntoView({behavior:REDUCED()?"auto":"smooth"});
-$("backTop").onclick=()=>window.scrollTo({top:0,behavior:REDUCED()?"auto":"smooth"});
-new IntersectionObserver(es=>{$("backTop").classList.toggle("on",!es[es.length-1].isIntersecting)},
-  {threshold:.15}).observe(document.querySelector("#menu .hero"));
+$("startBtn").onclick=()=>{pk(true);scrollTo(0,0)}; // hero folds up, picker rises into place
+$("backTop").onclick=()=>{scrollTo(0,0);pk(false)}; // jump home first, then the hero unfolds from the top
+// the valve: scrolling the hero fully off-screen collapses it in place — scroll position is
+// compensated in the same frame so nothing visibly moves, but there is no longer anything above
+// #pick to scroll back to
+new IntersectionObserver(es=>{const h=document.querySelector("#menu .hero");
+  if(S.screen!=="menu"||$("menu").classList.contains("pk")||es[es.length-1].isIntersecting)return;
+  const y=scrollY-h.offsetHeight;pk(true,true);scrollTo(0,Math.max(0,y))},
+  {threshold:0}).observe(document.querySelector("#menu .hero"));
 
 /* ---------- settings dialog + boot splash ---------- */
 $("setBtn").onclick=()=>$("setDlg").showModal();

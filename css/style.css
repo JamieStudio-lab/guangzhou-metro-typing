@@ -145,7 +145,10 @@ button{font-family:inherit;cursor:pointer}
    Since v0.3.5 the scene is a theme-picked CSS background (night render in dark, day in light) so only
    the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  --hmask:rgba(0,0,0,.25)}
+  transition:min-height .5s var(--ease);--hmask:rgba(0,0,0,.25)}
+/* one-way home (v0.5.0): entering the picker collapses the hero out of the flow — #pick becomes
+   the document top so scrolling can never wander back up; only #backTop restores it (pk() in game.js) */
+#menu.pk .hero{min-height:0}
 :root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.48)}
 .hbg,.hfg{position:absolute;inset:0;background-size:cover;background-position:30% 62%;
   pointer-events:none}
@@ -707,7 +710,7 @@ text{font-family:var(--sans);pointer-events:none}
   #preload{display:none} /* skip the boot splash; game.js also skips it and never adds .play */
   .hero.play .train{display:none}
   .scue{animation:none;opacity:1}
-  .fab{transition:none}
+  .fab,.hero{transition:none}
   .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text,.swi,.swi::after,.arrow,.ovreset{transition:none}
   .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active,.arrow:active,.swi:active::after{transform:none}
   .swi.on:active::after{transform:translateX(20px)}
