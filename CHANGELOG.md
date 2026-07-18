@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.5.1] - 2026-07-17
+
+### Changed
+- **The home screen now slides away instead of squashing.** v0.5.0's fold animated the hero's height with its scene layers stretched to the box, so the artwork visibly compressed during the half-second collapse. The scene layers (city backdrop, tower cutout, rails, title) are now pinned to the hero's bottom edge at full viewport height, so the shrinking box clips them from the top — the whole scene glides up and out exactly like scrolling past it, and glides back down when ↑ 首页 unfolds it. The motion is also a touch slower (0.5s → 0.7s) to read as a scene change rather than a snap; still instant under reduced motion.
+
 ## [0.5.0] - 2026-07-17
 
 ### Changed
@@ -536,6 +541,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.5.1]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.19...v0.5.0
 [0.4.19]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.18...v0.4.19
 [0.4.18]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.17...v0.4.18

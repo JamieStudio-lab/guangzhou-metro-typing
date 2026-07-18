@@ -145,7 +145,7 @@ button{font-family:inherit;cursor:pointer}
    Since v0.3.5 the scene is a theme-picked CSS background (night render in dark, day in light) so only
    the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
-  transition:min-height .5s var(--ease);--hmask:rgba(0,0,0,.25)}
+  transition:min-height .7s var(--ease);--hmask:rgba(0,0,0,.25)}
 /* one-way home (v0.5.0): entering the picker collapses the hero out of the flow — #pick becomes
    the document top so scrolling can never wander back up; only #backTop restores it (pk() in game.js) */
 #menu.pk .hero{min-height:0}
@@ -189,6 +189,10 @@ button{font-family:inherit;cursor:pointer}
   color:var(--paper);text-shadow:0 1px 8px color-mix(in srgb,var(--ink) 60%,transparent);
   font-size:24px;line-height:1;pointer-events:none;animation:bnc 1.8s ease-in-out infinite}
 @keyframes bnc{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+/* bottom-anchored wipe (v0.5.1): the scene layers pin to the hero's bottom edge at full viewport
+   height, so the collapsing box clips them from the top — the scene slides up and away like real
+   scrolling instead of squashing. The .train (intro-sized) and .scue (edge-riding) stay as they are. */
+.hbg,.hmask,.hfg,.hero .rails,.heroTx,.hero::after{inset:auto 0 0 0;height:100svh}
 
 /* ===== boot splash (v0.4.0), placeholder until richer opening art lands =====
    Phase 1: #preload — a train-themed loading bar (amber fill + a mini train riding its leading edge)
