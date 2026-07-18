@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.14] - 2026-07-17
+
+### Fixed
+- **Selected-line view: the label layout now guarantees zero overlapping names.** v0.4.13 still let names collide around sharp corners (Lines 2/3/4/5/6 — e.g. the 纪念堂/公园前/广州火车站 tangle at Line 2's bend), because collisions were tested with rough padded rectangles: a 45°-tilted label's rectangle is mostly air, so the dodge could thrash between neighbours and give up while still overlapping. Labels now collide as their true rotated rectangles (separating-axis test with a small breathing gap) and every label must end fully clear of all earlier ones before it settles. A label that can't clear cheaply keeps its options open — the other tilt, or a level spot beside its dot — costed by how far it ends from its station, so names stay anchored next to their dots instead of drifting down a crowded band (un-rotated views probe a fan of directions for the nearest free spot the same way). Verified across all 19 lines: zero overlapping label pairs, zero names off-screen.
+
 ## [0.4.13] - 2026-07-17
 
 ### Fixed
@@ -503,6 +508,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.10...v0.4.11

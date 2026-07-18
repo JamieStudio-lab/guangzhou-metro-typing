@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.13";
+const APP_VERSION="0.4.14";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -843,8 +843,25 @@ function layoutLabels(ov,LL,a,tc,vb0){
     let x0=vb0[0],y0=vb0[1],x1=vb0[0]+vb0[2],y1=vb0[1]+vb0[3];
     const grow=(xa,xb,ya,yb)=>{x0=Math.min(x0,xa-6);x1=Math.max(x1,xb+6);
       y0=Math.min(y0,ya-6);y1=Math.max(y1,yb+6)};
-    const placed=[], // inset boxes every pass must dodge
-      hits=bb=>placed.some(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
+    // exact collision between placed labels: each is an oriented box (its true
+    // rotated rectangle), overlap tested by separating axes with a 2-unit gap.
+    // Every label's dodge moves monotonically along one free axis until clear
+    // of ALL earlier labels, so no pair can end up overlapping.
+    const placed=[],
+      obb=(cx,cy,t,hw,hh)=>{const q=t*Math.PI/180,c2=Math.cos(q),s2=Math.sin(q);
+        return{cx,cy,ux:c2,uy:s2,vx:-s2,vy:c2,hw,hh}},
+      pen=(A,B)=>{let m=1e9;
+        for(const[ax,ay]of[[A.ux,A.uy],[A.vx,A.vy],[B.ux,B.uy],[B.vx,B.vy]]){
+          const o=A.hw*Math.abs(A.ux*ax+A.uy*ay)+A.hh*Math.abs(A.vx*ax+A.vy*ay)
+                 +B.hw*Math.abs(B.ux*ax+B.uy*ay)+B.hh*Math.abs(B.vx*ax+B.vy*ay)
+                 +2-Math.abs((B.cx-A.cx)*ax+(B.cy-A.cy)*ay);
+          if(o<=0)return 0;if(o<m)m=o}
+        return m},
+      hitAny=A=>placed.some(p=>pen(A,p)>0),
+      settle=A=>{placed.push(A);
+        const ex=A.hw*Math.abs(A.ux)+A.hh*Math.abs(A.vx),
+          ey=A.hw*Math.abs(A.uy)+A.hh*Math.abs(A.vy);
+        grow(A.cx-ex,A.cx+ex,A.cy-ey,A.cy+ey)};
     if(strip){
       const RP=sts.map(rot),clearOf=st=>(REG.get(st.zh).lines.length>1?13:8)+2,
         idx=sts.map((s,i)=>i).filter(i=>G(sts[i].zh)),
@@ -857,78 +874,81 @@ function layoutLabels(ov,LL,a,tc,vb0){
       for(const i of steepI){const st=sts[i],g=G(st.zh),[px,py]=RP[i],
           d=g.dataset,clear=clearOf(st);
         const side=an=>{const bb=lbox(g,an),sx=an==="start"?1:-1,
-            rx=[bb[0]-d.lx,bb[0]+bb[2]-d.lx],ry=[bb[1]-d.ly,bb[1]+bb[3]-d.ly],
-            ox=sx*(clear+2)+(sx>0?-rx[0]:-rx[1]);
-          return{an,ox,x:[px+k*(ox+rx[0]),px+k*(ox+rx[1])],y:[py+k*ry[0],py+k*ry[1]]}},
+            rx=[bb[0]-d.lx,bb[0]+bb[2]-d.lx],ry=[bb[1]-d.ly,bb[1]+bb[3]-d.ly];
+          return{an,sx,ox:sx*(clear+2)+(sx>0?-rx[0]:-rx[1]),rx,ry}},
+          mk=a=>obb(px+k*(a.ox+(a.rx[0]+a.rx[1])/2),py+k*(a.ry[0]+a.ry[1])/2,0,
+            k*(a.rx[1]-a.rx[0])/2,k*(a.ry[1]-a.ry[0])/2),
           a1=side("start"),a2=side("end"),
-          bx=a=>[a.x[0]+2,a.x[1]-2,a.y[0]+2,a.y[1]-2],
-          fit=a=>a.y[0]>=lastY[a.an]+4*k&&!hits(bx(a)),
+          fit=a=>py+k*a.ry[0]>=lastY[a.an]+4*k&&!hitAny(mk(a)),
           c=fit(a1)?a1:fit(a2)?a2:(lastY.start<=lastY.end?a1:a2);
-        for(let n=0,sx=(c.an==="start"?5:-5);n<8&&hits(bx(c));n++){ // slide outward
-          c.ox+=sx;c.x[0]+=k*sx;c.x[1]+=k*sx}
-        lastY[c.an]=c.y[1];
-        placed.push(bx(c));
-        lay.set(st.zh,{m:"s",t:0,ox:c.ox,oy:0,an:c.an});
-        grow(c.x[0],c.x[1],c.y[0],c.y[1])}
+        for(let n=0;n<40&&hitAny(mk(c));n++)c.ox+=c.sx*4; // slide outward till clear
+        lastY[c.an]=py+k*c.ry[1];
+        settle(mk(c));
+        lay.set(st.zh,{m:"s",t:0,ox:c.ox,oy:0,an:c.an})}
       // tilted labels, walked right to left: preferred side first, then the
       // other; when both are crowded, keep the roomier side and lift the label
       // along the tilt's perpendicular — dense runs become a readable staircase
       const lastL={"-45":null,"45":null}; // leftmost placed anchor+height per side
       for(const i of tiltI){const st=sts[i],g=G(st.zh),[px,py]=RP[i],
           d=g.dataset,clear=clearOf(st),b=lbox(g,"start"),
+          rcx=b[0]+b[2]/2-d.lx,rcy=b[1]+b[3]/2-d.ly,
           rel=[[b[0]-d.lx,b[1]-d.ly],[b[0]+b[2]-d.lx,b[1]-d.ly],
                [b[0]-d.lx,b[1]+b[3]-d.ly],[b[0]+b[2]-d.lx,b[1]+b[3]-d.ly]];
         const cand=t=>{const tr=t*Math.PI/180,c2=Math.cos(tr),s2=Math.sin(tr),
-            P=rel.map(([x,y])=>[x*c2-y*s2,x*s2+y*c2]),
-            xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);
-          return{t,ox:10,oy:t<0?-(clear+Math.max(...ys)):clear-Math.min(...ys),xs,ys}};
-        const sep=c=>{const L=lastL[c.t];return L?
+            ys=rel.map(([x,y])=>x*s2+y*c2);
+          return{t,ox:10,oy:t<0?-(clear+Math.max(...ys)):clear-Math.min(...ys),
+            cx:rcx*c2-rcy*s2,cy:rcx*s2+rcy*c2}};
+        const mk=c=>obb(px+k*(c.ox+c.cx),py+k*(c.oy+c.cy),c.t,k*b[2]/2,k*b[3]/2),
+          sep=c=>{const L=lastL[c.t];return L?
             .707*((L.ax-(px+k*c.ox))+(c.t<0?1:-1)*(L.ay-(py+k*c.oy))):1e9},
           need=c=>{const L=lastL[c.t];return k*((b[3]+6+(L?L.h:0))/2+4)},
           ok=t=>{const d0=Math.abs(th[i]-t);return Math.min(d0,180-d0)>28},
           pref=th[i]<0?45:-45,alt=-pref,cp=cand(pref),ca=cand(alt);
         let c;
-        if(ok(pref)&&sep(cp)>=need(cp))c=cp;
-        else if(ok(alt)&&sep(ca)>=need(ca))c=ca;
-        else{c=!ok(pref)?ca:(sep(cp)-need(cp)>=sep(ca)-need(ca)?cp:ca);
-          const dz=(need(c)-sep(c))/.707; // lift clear of the crowd
-          if(dz>0)c.oy+=(c.t<0?-dz:dz)/k}
-        // a 45° label's axis-aligned box is mostly air — the inset keeps this
-        // last-resort dodge (vs everything already placed) from over-shoving;
-        // each step moves straight away from the box actually hit
-        const box=()=>{const xs=c.xs.map(x=>px+k*(c.ox+x)),ys=c.ys.map(y=>py+k*(c.oy+y)),
-            x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),
-            ix=.2*(x1-x0),iy=.2*(y1-y0);
-          return[x0+ix,x1-ix,y0+iy,y1-iy]};
-        for(let n=0;n<12;n++){const bb=box(),hb=placed.find(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
-          if(!hb)break;
-          let mx=(bb[0]+bb[1]-hb[0]-hb[1])/2,my=(bb[2]+bb[3]-hb[2]-hb[3])/2,
-            L3=Math.hypot(mx,my);
-          if(!L3){mx=0;my=c.t<0?-1:1;L3=1}
-          c.ox+=mx/L3*5;c.oy+=my/L3*5}
-        lastL[c.t]={ax:px+k*c.ox,ay:py+k*c.oy,h:b[3]+6};
-        placed.push(box());
-        lay.set(st.zh,{m:"s",t:c.t,ox:c.ox,oy:c.oy});
-        grow(px+k*(c.ox+Math.min(...c.xs)),px+k*(c.ox+Math.max(...c.xs)),
-             py+k*(c.oy+Math.min(...c.ys)),py+k*(c.oy+Math.max(...c.ys)))}}
+        if(ok(pref)&&sep(cp)>=need(cp)&&!hitAny(mk(cp)))c=cp;
+        else if(ok(alt)&&sep(ca)>=need(ca)&&!hitAny(mk(ca)))c=ca;
+        else{ // both sides crowded: staircase pre-lift each allowed tilt and
+          // keep lifting until clear, plus a level label beside the dot as a
+          // third candidate — costed by how far each ends from the station, so
+          // a label never gets flung down a long crowded band when there is
+          // room right next to its dot
+          const lift=x=>{const o0=x.oy,dz=(need(x)-sep(x))/.707;
+            if(dz>0)x.oy+=(x.t<0?-dz:dz)/k;
+            let n=0;for(;n<80&&hitAny(mk(x));n++)x.oy+=x.t<0?-4:4;
+            x.B=mk(x);return n<80?Math.abs(x.oy-o0):1e9};
+          const cs=[];
+          if(ok(pref))cs.push([lift(cp),cp]);
+          if(ok(alt))cs.push([lift(ca),ca]);
+          for(const an of["start","end"]){const bb=lbox(g,an),sx=an==="start"?1:-1,
+              rx=[bb[0]-d.lx,bb[0]+bb[2]-d.lx],ry=[bb[1]-d.ly,bb[1]+bb[3]-d.ly],
+              o0=sx*(clear+2)+(sx>0?-rx[0]:-rx[1]),
+              lv={t:0,an,oy:0,ox:o0},
+              mkL=()=>obb(px+k*(lv.ox+(rx[0]+rx[1])/2),py+k*(ry[0]+ry[1])/2,0,
+                k*(rx[1]-rx[0])/2,k*(ry[1]-ry[0])/2);
+            let n=0;for(;n<40&&hitAny(mkL());n++)lv.ox+=sx*4;
+            lv.B=mkL();if(n<40)cs.push([Math.abs(lv.ox-o0)+8,lv])}
+          c=cs.sort((p,q)=>p[0]-q[0])[0][1]}
+        if(c.t)lastL[c.t]={ax:px+k*c.ox,ay:py+k*c.oy,h:b[3]+6};
+        settle(c.B||mk(c));
+        lay.set(st.zh,{m:"s",t:c.t,ox:c.ox,oy:c.oy,an:c.an})}}
     else for(const st of sts){const g=G(st.zh);if(!g)continue;
-      // small rotation: labels keep their authored spots, but clashes in dense
-      // stretches slide away from their station until the boxes come apart
-      const[px,py]=rot(st),b=lbox(g,g.dataset.ta);
-      let ox=0,oy=0;
-      const bx=()=>{const ax=px+k*(b[0]-st.x+ox),bxx=px+k*(b[0]+b[2]-st.x+ox),
-          ay=py+k*(b[1]-st.y+oy),by=py+k*(b[1]+b[3]-st.y+oy),
-          ix=.1*(bxx-ax),iy=.1*(by-ay);return[ax+ix,bxx-ix,ay+iy,by-iy]};
-      const cx=b[0]+b[2]/2-st.x,cy=b[1]+b[3]/2-st.y,L2=Math.hypot(cx,cy)||1;
-      for(let n=0;n<12;n++){const bb=bx(),hb=placed.find(p=>bb[0]<p[1]&&bb[1]>p[0]&&bb[2]<p[3]&&bb[3]>p[2]);
-        if(!hb)break;
-        let mx=(bb[0]+bb[1]-hb[0]-hb[1])/2,my=(bb[2]+bb[3]-hb[2]-hb[3])/2,L3=Math.hypot(mx,my);
-        if(!L3){mx=cx/L2;my=cy/L2;L3=1}
-        ox+=mx/L3*5;oy+=my/L3*5}
-      placed.push(bx());
-      lay.set(st.zh,{m:"u",ox,oy});
-      grow(px+k*(b[0]-st.x+ox),px+k*(b[0]+b[2]-st.x+ox),
-           py+k*(b[1]-st.y+oy),py+k*(b[1]+b[3]-st.y+oy))}
+      // small rotation: labels keep their authored spots; a clash probes a fan
+      // of directions (away from the station first) and slides to whichever
+      // clear spot is nearest — one fixed direction can chain through a dense
+      // cluster forever
+      const[px,py]=rot(st),b=lbox(g,g.dataset.ta),
+        rcx=b[0]+b[2]/2-st.x,rcy=b[1]+b[3]/2-st.y,L2=Math.hypot(rcx,rcy)||1,
+        mk=(x,y)=>obb(px+k*(rcx+x),py+k*(rcy+y),0,k*b[2]/2,k*b[3]/2);
+      let ox=0,oy=0,best=null;
+      for(const[ux,uy]of[[rcx/L2,rcy/L2],[1,0],[-1,0],[0,-1],[0,1],
+          [.707,-.707],[-.707,-.707],[.707,.707],[-.707,.707]]){
+        let x=0,y=0,n=0;
+        for(;n<30&&hitAny(mk(x,y));n++){x+=ux*4;y+=uy*4}
+        if(n<30&&(!best||n<best[0]))best=[n,x,y];
+        if(best&&best[0]===0)break}
+      if(best){ox=best[1];oy=best[2]}
+      settle(mk(ox,oy));
+      lay.set(st.zh,{m:"u",ox,oy})}
     vb=[x0,y0,x1-x0,y1-y0]}
   return{vb,lay,k}}
 function ovTarget(id){const ov=$("ovMap");
