@@ -625,10 +625,10 @@ text{font-family:var(--sans);pointer-events:none}
 /* typed-name burst: one-shot green ring + the stop's 汉字 popping up above the dot */
 .doneFx circle{transform-box:fill-box;transform-origin:center;animation:dfxRing .85s ease-out forwards}
 @keyframes dfxRing{0%{transform:scale(.45);opacity:.95}100%{transform:scale(2.6);opacity:0}}
-.doneFx text{font-size:14px;font-weight:800;fill:var(--good);
-  paint-order:stroke;stroke:var(--ink);stroke-width:3px;stroke-linejoin:round;
+.doneFx text{font-size:17px;font-weight:800;fill:var(--good);
+  paint-order:stroke;stroke:var(--ink);stroke-width:3.5px;stroke-linejoin:round;
   animation:dfxName 1.6s var(--ease) forwards}
-@keyframes dfxName{0%{opacity:0;transform:translateY(7px)}14%{opacity:1;transform:translateY(0)}
+@keyframes dfxName{0%{opacity:0;transform:translateY(9px)}14%{opacity:1;transform:translateY(0)}
   70%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(0)}}
 /* hot-streak exhaust flames + speed lines behind the train (opacity driven by game.js;
    --fs scales the blaze with the combo tier) */
