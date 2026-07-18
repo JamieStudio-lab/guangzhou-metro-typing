@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.4";
+const APP_VERSION="0.5.5";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -355,8 +355,11 @@ let nodes=null; // {dot,heat,pulse,zh} per 汉字 for game map
 // strokes, rings, labels and the train hold the slim on-screen size they have
 // at that depth, so the follow lens can dive without anything ballooning
 const GM_BASEW=875;
+// touch screens ride with chunkier furniture (v0.5.5): train, dots, rings, strokes
+// and labels render 1.25× their desktop size at every depth — phones are small
+const GM_TOUCH=matchMedia("(pointer:coarse)").matches?1.25:1;
 let gmK=1,gmKQ=1,trainAng=0,gmGs=null;
-const gmKof=w=>clamp(w/GM_BASEW,.08,1);
+const gmKof=w=>clamp(w/GM_BASEW,.08,1)*GM_TOUCH;
 
 function collectNodes(){nodes={};gmGs=null;gmK=-1;gmKQ=-1;
   gMap.querySelectorAll("[data-d]").forEach(e=>{(nodes[e.dataset.d]=nodes[e.dataset.d]||{}).dot=e});
@@ -366,11 +369,11 @@ function collectNodes(){nodes={};gmGs=null;gmK=-1;gmKQ=-1;
 
 function gmShrink(){const k=gmKof(cam.w);
   if(Math.abs(k-gmK)<.003)return;gmK=k;
-  if(k>.999)gMap.style.removeProperty("--zs");else gMap.style.setProperty("--zs",k.toFixed(3));
+  if(Math.abs(k-1)<.001)gMap.style.removeProperty("--zs");else gMap.style.setProperty("--zs",k.toFixed(3));
   const tr=$("trainR");
   if(tr)tr.setAttribute("transform",`rotate(${trainAng.toFixed(1)}) scale(${(1.15*k).toFixed(3)})`);
   for(const g of gmGs||(gmGs=[...gMap.querySelectorAll(".stg>g:last-child")])){const d=g.dataset;
-    if(k>.999)g.removeAttribute("transform");
+    if(Math.abs(k-1)<.001)g.removeAttribute("transform");
     else g.setAttribute("transform",`translate(${(d.sx*(1-k)).toFixed(1)} ${(d.sy*(1-k)).toFixed(1)}) scale(${k.toFixed(3)})`)}
   // bend radius tracks the slimmed strokes (see v0.4.12); quantized so path
   // rebuilds stay occasional while the lens glides
@@ -617,7 +620,7 @@ function typedFx(st){const reg=REG.get(st.zh),inter=reg&&reg.lines.length>1;
   g.innerHTML=`<circle cx="${st.x}" cy="${st.y}" r="${inter?17:13}" fill="none" stroke="${HEATC.good}" stroke-width="3.5"/>`+
     `<text x="${st.x}" y="${st.y-(inter?40:34)}" text-anchor="middle">${st.zh}</text>`;
   const k=gmK>0?gmK:1;
-  if(k<.999)g.setAttribute("transform",
+  if(Math.abs(k-1)>.001)g.setAttribute("transform",
     `translate(${(st.x*(1-k)).toFixed(1)} ${(st.y*(1-k)).toFixed(1)}) scale(${k.toFixed(3)})`);
   gMap.appendChild(g);if(gmGs)gmGs.push(g);
   setTimeout(()=>{g.remove();if(gmGs){const i=gmGs.indexOf(g);if(i>=0)gmGs.splice(i,1)}},1700)}
