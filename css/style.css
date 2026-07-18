@@ -268,7 +268,6 @@ button{font-family:inherit;cursor:pointer}
 .lg[data-line]{position:relative;cursor:pointer}
 .lg[data-line]::after{content:"";position:absolute;inset:-5px -6px} /* invisible hit zone bridging the 10px gaps */
 .lg[data-line]:hover,.lg[data-line]:focus-visible{border-color:var(--edge2);color:var(--paper)}
-.lg.pin{border-color:var(--edge2);color:var(--paper);background:color-mix(in srgb,var(--amber) 10%,var(--pill-bg))}
 .legend.off{display:none}
 .lg i{width:14px;height:5px;border-radius:3px;display:block}
 @media(max-width:700px){

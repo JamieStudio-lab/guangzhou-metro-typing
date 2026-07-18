@@ -4,6 +4,11 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.4.15] - 2026-07-17
+
+### Changed
+- **Selecting a line from the legend now works exactly like selecting it anywhere else.** Clicking a legend pill used to "pin" the line: the map zoomed to it with the legend still on screen, so the line was fitted into a narrower map than the card view gives it — a different zoom, and sometimes a different rotation, than clicking the same line's card or tapping the line on the map. That inconsistency is why the selected-line view could still look wrong from the legend after v0.4.13/14 polished the card path. A legend pill now simply opens the line's card — the same gesture a map tap performs: the legend tucks away, the map frames the line at full width with the measured label layout, and selection/collapse flows through one consistent path (keyboard users land on the opened card's header). The separate pin state and its amber pill highlight are gone; the legend's hover highlight is unchanged.
+
 ## [0.4.14] - 2026-07-17
 
 ### Fixed
@@ -508,6 +513,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.4.15]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.4.11...v0.4.12

@@ -1,4 +1,4 @@
-const APP_VERSION="0.4.14";
+const APP_VERSION="0.4.15";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -732,7 +732,7 @@ function ovHighlight(id){const ov=$("ovMap");
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
   const mine=id&&LINE_STS.get(id);
   ov.querySelectorAll(".stg").forEach(g=>{g.style.opacity=!mine||mine.has(g.dataset.st)?"":".25"})}
-// station-name labels follow the zoom focus (card expand / legend pin), never hover
+// station-name labels follow the zoom focus (the expanded card's line), never hover
 function ovLabels(id){const mine=id&&LINE_STS.get(id);
   $("ovMap").querySelectorAll(".stg").forEach(g=>g.classList.toggle("lbl",!!mine&&mine.has(g.dataset.st)))}
 // zoom the overview map to one line (null → back to the full network), rotating the
@@ -759,7 +759,7 @@ let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
 // OV_BASEZ = depth where map furniture is drawn 1:1; boot raises OV_MAXZ so the
 // shortest line can fill the window, and past OV_BASEZ everything counter-scales
 const OV_BASEZ=5;let freeVB=null,OV_MAXZ=OV_BASEZ,ovK=1;
-const ovFocused=()=>legendBase(); // a pinned or expanded line owns the viewBox
+const ovFocused=()=>expandedLine(); // an expanded card's line owns the viewBox
 const ovFree=()=>!ovFocused()&&FULL_VB; // pan/zoom only in the default network view
 function ovIsZoomed(){return!!freeVB&&freeVB[2]<FULL_VB[2]-.5}
 function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n.toFixed(1)).join(" "));
@@ -1001,7 +1001,7 @@ function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue"
     if(p<1)ovAnim=requestAnimationFrame(step);else land()};
   ovAnim=requestAnimationFrame(step)}
 // accordion state: which card is open ("l1"… or "boss"); survives re-renders
-let expandedId=null,pinnedLine=null;
+let expandedId=null;
 // card ordering (session-only): sort key + direction, re-tap flips asc/desc
 let cardSort="num",cardAsc=true;
 // FLIP: capture card rects keyed by line id, run the reorder/reflow, then glide
@@ -1021,11 +1021,6 @@ function flipCards(mutate,onLayout){const wrap=$("cards");
     if(dw){kf[0].width=a.width+"px";kf[1].width=b.width+"px"}
     c.animate(kf,{duration:360,easing:"cubic-bezier(.2,0,0,1)"})})}
 const expandedLine=()=>expandedId&&expandedId!=="boss"?expandedId:null;
-// resting highlight: a legend pin wins over the expanded card
-const legendBase=()=>pinnedLine||expandedLine();
-function setPin(id){pinnedLine=id;
-  $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{const on=el.dataset.line===id;
-    el.classList.toggle("pin",on);el.setAttribute("aria-pressed",on)})}
 const absTop=el=>{let y=0;for(;el;el=el.offsetParent)y+=el.offsetTop;return y};
 function toggleCard(id,stay){expandedId=expandedId===id?null:id;
   flipCards(()=>{document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
@@ -1051,19 +1046,22 @@ function toggleCard(id,stay){expandedId=expandedId===id?null:id;
       const bot=absTop(c)+dSvg+finalH+PAD-innerHeight;
       const top=stay?Math.max(scrollY,bot):Math.max(absTop(mc)-PAD,bot);
       scrollTo({top:Math.max(0,top),behavior:REDUCED()?"auto":"smooth"})});
-  setPin(null);
   ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
-const legendLeave=()=>ovHighlight(legendBase());
+const legendLeave=()=>ovHighlight(expandedLine());
 function renderLegend(){
-  $("legend").innerHTML=LINES.map(L=>`<span class="lg${L.id===pinnedLine?" pin":""}" data-line="${L.id}" role="button" tabindex="0" aria-pressed="${L.id===pinnedLine}"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
+  $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" role="button" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
     `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`;
   $("legend").addEventListener("mouseleave",legendLeave); // no per-pill mouseleave: highlight sticks across the gaps
   $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{
     const id=el.dataset.line,on=()=>ovHighlight(id);
     el.addEventListener("mouseenter",on);el.addEventListener("focus",on);
     el.addEventListener("blur",legendLeave);
-    el.addEventListener("click",()=>{setPin(pinnedLine===id?null:id);
-      ovHighlight(legendBase());ovZoom(legendBase());ovLabels(legendBase())});
+    // v0.4.15: a legend pill opens the line's card — the exact gesture a map
+    // line click performs, so every way of selecting a line frames identically;
+    // the legend hides with the open card, so hand focus to the card header
+    el.addEventListener("click",()=>{toggleCard(id,true);
+      const ch=document.querySelector(`#cards .card[data-line="${id}"] .chead`);
+      if(expandedId===id&&ch)ch.focus({preventScroll:true})});
     el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
 const SORT_LB={num:"sortNum",stops:"sortStops",diff:"sortDiff"};
 function renderSortBar(){const bar=$("sortBar");
