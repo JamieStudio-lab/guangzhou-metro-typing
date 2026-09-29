@@ -104,6 +104,8 @@ button{font-family:inherit;cursor:pointer}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
 .srow>span{font-size:13px;letter-spacing:.12em;color:var(--mut);font-family:var(--mono);white-space:nowrap}
 .srow .hbtn{min-width:118px;text-align:center;background:var(--panel2)}
+.srow .hbtn[aria-disabled="true"]{opacity:.45;cursor:default;box-shadow:none;transform:none}
+.snote{margin:5px 0 0;font-size:11.5px;line-height:1.35;color:var(--mut);text-align:right}
 /* keep the amber .on state visible where later/stronger rules reset the background */
 #fchips .hbtn.on,.srow .hbtn.on{background:var(--amber)}
 #fchips .hbtn.on:hover,.srow .hbtn.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
@@ -600,6 +602,63 @@ body.boss #nextUp{display:none}
   #board{grid-area:board;align-self:end}
 }
 
+/* pixel ride (v0.6.0, body.px): js/px/ride.js draws the whole ride — map, cab cluster and LED board — into one full-bleed
+   canvas #pxCv (image-rendering:pixelated; --sa* hand it the safe-area insets). #hud and #board stay in the DOM, visually
+   hidden but read by screen readers and still updated (#pyin keeps the soft keyboard); the SVG map stays built but hidden
+   (the Classic fallback swaps back at once). --pxbb (set by ride.js) lifts the toast above the LED board, or just off the next-stop
+   sign when it would cover it; --pxtl/--pxtw put it in the map column when a very short screen docks the board left of the chips. */
+body.px #game{display:block;position:relative;height:var(--vvh,100dvh);padding:0;overflow:hidden}
+body.px #mapWrap{position:absolute;inset:0;height:var(--vvh,100dvh);min-height:0;border-radius:0;box-shadow:none}
+body.px #gMap{visibility:hidden}
+body.px #hud,body.px #board{position:absolute;left:0;bottom:0;width:1px;height:1px;margin:0;padding:0;border:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.px #toast{bottom:var(--pxbb,120px);left:var(--pxtl,50%);max-width:var(--pxtw,92%)} /* (tight: the map column) */
+body.px #mapWrap.pxTight #toast{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-left:calc(5*var(--pxu));padding-right:calc(3*var(--pxu))} /* (≤ 2 lines: the column is short; one line cut "Please switch to a…") */
+#pxCv{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;
+  --sat:env(safe-area-inset-top,0px);--sar:env(safe-area-inset-right,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px)}
+/* pixel chrome (body.px): the DOM over the canvas — the floating chips, the toast, the "preparing map" veil (only ever shown in
+   pixel mode) — built like the canvas' hardware (ui.js frame: square, 1 art px ui.edge outline, lit top-left / shaded bottom-right
+   bevel, 1 art px drop shadow), in fonts.js's FP12 at its native 12 px × the art px (--pxu = --pxk CSS px, set by game.js pxChrome
+   from the canvas' K: 1 font px = 1 art px, never smoothed) and in palette colours only (--px-*: pxChrome copies them from PAL for the
+   theme and the line; the MD3 tokens only stand in until js/px has loaded). Classic and the menu keep the rounded look */
+body.px{--pxu:calc(var(--pxk,2)*1px)}
+body.px #mapWrap{background:var(--px-ground,var(--map2))}
+body.px #fchips{top:calc(7*var(--pxu));right:calc(7*var(--pxu));gap:calc(4*var(--pxu))}
+body.px #fchips .hbtn,body.px #toast,#pxVeil{font-family:FP12,var(--mono);font-size:calc(12*var(--pxu));line-height:calc(14*var(--pxu));
+  font-weight:400;letter-spacing:0;font-kerning:none;font-synthesis:none;-webkit-font-smoothing:none;font-smooth:never;
+  color:var(--px-text,var(--paper));background:var(--px-fill,var(--panel));border:var(--pxu) solid var(--px-edge,var(--ink));border-radius:0;
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),
+    var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
+body.px #fchips .hbtn,body.px #fchips #homeBtn{padding:calc(3*var(--pxu)) calc(6*var(--pxu));gap:calc(4*var(--pxu));line-height:calc(12*var(--pxu));
+  background:var(--px-fill,var(--panel));-webkit-backdrop-filter:none;backdrop-filter:none;transition:none}
+body.px #fchips #homeBtn{color:var(--px-bad,var(--bad))}
+body.px #fchips .hbtn:hover,body.px #fchips .hbtn:focus-visible{background:var(--px-fill2,var(--panel2))}
+body.px #fchips #homeBtn:hover,body.px #fchips #homeBtn:focus-visible{background:var(--px-bad,var(--bad));color:var(--px-onbad,#fff);
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),
+    var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
+body.px #fchips .hbtn:focus-visible{outline:var(--pxu) solid var(--px-accent,var(--amber));outline-offset:var(--pxu)}
+body.px #fchips .hbtn:active,body.px #fchips #homeBtn:active{transform:translate(var(--pxu),var(--pxu));
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-lo,var(--ink)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi,var(--panel2))}
+#fchips .pxi,#fchips .pxt,body.px #setBtn>span:not(.pxt){display:none}
+body.px #fchips .pxt{display:inline}   /* (the pixel chips read in title case: "Settings" beside "Quit"; Classic keeps SETTINGS) */
+body.px #fchips .hbtn>svg{display:none}
+body.px #fchips .hbtn>svg.pxi{display:block;flex:none;width:calc(9*var(--pxu));height:calc(9*var(--pxu));fill:currentColor;stroke:none;shape-rendering:crispEdges}
+@media(max-width:560px){body.px.px3 #fchips .hbtn>span{display:none}}   /* (3× pixels: the labelled chips would outgrow a phone) */
+body.px #toast{padding:calc(3*var(--pxu)) calc(6*var(--pxu)) calc(3*var(--pxu)) calc(8*var(--pxu));transition:none;transform:translateX(-50%);
+  white-space:normal;width:max-content;overflow:visible;text-overflow:clip; /* (a narrow phone wraps it: the pixel font is wider) */
+  box-shadow:inset calc(2*var(--pxu)) 0 0 var(--px-line,var(--lc,var(--amber))),inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),
+    inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
+#pxVeil{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;
+  align-items:center;gap:calc(5*var(--pxu));padding:calc(6*var(--pxu)) calc(9*var(--pxu));white-space:nowrap}
+#pxVeil[hidden]{display:none}
+/* the bar: a recessed LED screen (ui.js inset: dark top-left lip, lit bottom-right lip, led.bg) lighting game.js PX_SEG = 26 segments of
+   2 lit + 1 dark art px in the line's screen colour (lsh.txt), a whole segment at a time */
+#pxVeil i{display:block;box-sizing:content-box;width:calc(78*var(--pxu));height:calc(3*var(--pxu));padding:var(--pxu) 0 var(--pxu) var(--pxu);
+  border:var(--pxu) solid;border-color:var(--px-edge,var(--ink)) var(--px-hi,var(--panel2)) var(--px-hi,var(--panel2)) var(--px-edge,var(--ink));
+  background:var(--px-screen,var(--rail))}
+#pxVeil b{display:block;height:100%;width:calc(var(--pxn,0)*3*var(--pxu));
+  background:repeating-linear-gradient(90deg,var(--px-seg,var(--lc,var(--amber))) 0 calc(2*var(--pxu)),transparent 0 calc(3*var(--pxu)))}
+
 /* ---------- result ---------- */
 #result{min-height:100svh;display:flex;align-items:center;justify-content:center;
   padding:30px 16px;position:relative;overflow:hidden;overflow:clip;z-index:0}
@@ -731,4 +790,5 @@ text{font-family:var(--sans);pointer-events:none}
   .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text,.swi,.swi::after,.arrow,.ovreset{transition:none}
   .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active,.arrow:active,.swi:active::after{transform:none}
   .swi.on:active::after{transform:translateX(20px)}
+  #pxVeil b{transition:none}
 }

@@ -14,7 +14,7 @@ tmp/
 # Guard in case tooling is ever added
 node_modules/
 
-# Full source fonts for tools/subset-fonts.js (tens of MB; download on demand)
+# Full source fonts for tools/subset-fonts.js and, under px/, tools/px/build-fonts.py (tens of MB; download on demand)
 tools/fonts-src/
 
 # Hero art source (2.2 MB PNG master; the page ships the derived .jpg)
@@ -22,3 +22,6 @@ assets/guangzhou-tower-v2.png
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Raw Overpass answers for tools/fetch-map.js → tools/pack-map.js (hundreds of MB; regenerate on demand)
+tools/.cache/

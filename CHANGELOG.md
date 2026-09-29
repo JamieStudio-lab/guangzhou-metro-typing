@@ -4,6 +4,23 @@ All notable changes to 地铁键速 · Metro Typing · Guangzhou (一键到底 b
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/) (0.x while in development).
 
+## [0.6.0] - 2026-09-29
+
+### Added
+- **The ride is now a pixel-art city.** All 19 lines, in both directions, ride over a detailed top-down pixel map built from real OpenStreetMap data: buildings at their real heights in a 3/4 view (the Canton Tower and Zhujiang New Town as landmarks), streets and expressways, rivers, parks and farmland, and the open sea off Nansha. Cars, buses and trucks drive the real road network, boats work the Pearl River, and now and then a Guangzhou shower rolls in — splashes, puddles, and at night wet streets mirroring the lamps. Night and day palettes follow the theme, and your train rides its line's real track.
+- **A camera that tells the ride.** At each arrival the view pulls back to show the whole next hop; a second after departure it glides down to a street-level follow that looks ahead of the train. Type faster than that glide and a hop of 5 km or more stays on its whole-trip overview instead, while other fast hops ride close all the way; the terminus zooms out over the city around the end of the line.
+- **A driver's cab and LED board drawn in pixels.** Top-right, the cab cluster carries the speedometer and the six live stats; bottom-centre, the LED board shows the next stop in 汉字 and toned pinyin above a route strip (passed stops red, the next one blinking). Between stops it runs real Guangzhou Metro announcements — transfer lines, the train's direction, the terminus — and cycles the real in-car reminders when you stop typing. Station names, the next-stop sign and a pointer toward an off-screen platform sit on the map itself.
+- **Three new Settings rows:** Ride view (Pixel / Classic), Pixel size (2× / 3×) and Weather (Auto / Clear / Rain). They apply live, even mid-ride, and are saved in this browser only.
+
+### Changed
+- **The SVG ride map lives on as the Classic view.** Pick it in Settings, or the game falls back to it on its own — when the browser can't draw the pixel map, its files fail to load or aren't ready within 12 s, or something breaks mid-ride — and the run simply carries on. On a device too slow for the pixel ride, it first sheds rain and traffic, then switches the next ride to Classic with one short note; choosing Pixel in Settings gives it another try. Boss mode is unchanged.
+- **Loading stays out of your way.** The menu loads exactly as before. The pixel ride's code arrives quietly a few seconds later, opening a line card fetches just that ride's first view, and the rest of the map streams in while you ride — about 0.3–1.3 MB per line. A short "Preparing the map…" bar covers the start of a ride; typing counts once it lifts.
+- **Phones:** with the soft keyboard up, the cluster steps aside and the pixel board docks right above the keyboard, so the map keeps the rest of the screen. The top-right buttons, toasts and loading bar wear the pixel look too, and arrivals are announced to screen readers only (the board and map already name each stop).
+- **Reduced motion** gets a calm pixel ride: camera cuts instead of glides, clear weather, no traffic, steadily lit lamps, and an announcement board that pages instead of scrolling. Screen readers keep the same live stats and board text; the canvas is hidden from them.
+
+### Fixed
+- **Station distances on 12 lines.** 46 hops were listed at lengths their track doesn't have (Line 3's 番禺广场→市桥 said 1.5 km; it runs 3.7). They now follow the real track, checked against Wikipedia where it lists distances: the cards read ≈17 km for Line 1 (was ≈18), ≈42 for Line 3 (≈37), ≈58 for Line 4 (≈56), ≈55 for Line 7 (≈54), ≈33 for Line 8 (≈34), ≈41 for Line 11 (≈42) and ≈65 for Line 14 (≈63); Lines 2, 5, 10, 12 and 21 move by under 0.5 km. The distance counter and result screen follow.
+
 ## [0.5.7] - 2026-07-18
 
 ### Fixed
@@ -576,6 +593,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Initial complete game in a single `index.html`: Guangzhou Metro Lines 1/2/3 with schematic SVG map, pinyin typing to drive the train, speedometer/WPM/accuracy/combo HUD, difficulty levels by station-name length, color-coded progress, and the Long-Name Gauntlet boss mode.
 - README, MIT license, `.gitignore`, `CLAUDE.md`.
 
+[0.6.0]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.7...v0.6.0
 [0.5.7]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/JamieStudio-lab/guangzhou-metro-typing/compare/v0.5.4...v0.5.5

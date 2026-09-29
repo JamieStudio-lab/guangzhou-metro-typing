@@ -1,4 +1,4 @@
-const APP_VERSION="0.5.7";
+const APP_VERSION="0.6.0";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -62,7 +62,10 @@ const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
   set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const T={
 zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系统",quitBtn:"退出",
-  setBtn:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言 (Language)",
+  setBtn:"设置",setChip:"设置",setTitle:"设置",setTheme:"主题",setLang:"语言 (Language)",
+  setRide:"地图风格",ridePixel:"像素",rideClassic:"经典",setPxScale:"像素大小",setWeather:"天气",
+  wxAuto:"自动",wxClear:"晴天",wxRain:"下雨",pxPrep:"正在准备地图…",pxSlow:"像素地图较卡，已改用经典视图",
+  pxOff:"像素地图暂不可用，点按重试",pxNoCv:"此浏览器无法绘制像素地图",
   startBtn:"选择关卡",backTop:"↑ 首页",
   footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
@@ -115,7 +118,10 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   badge_star3:"三星司机",badge_boss:"长名克星",badge_wpm60:"高速动车",badge_wpm100:"磁悬浮",
   badge_combo20:"连击达人",badge_acc100:"零失误"},
 en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitBtn:"Quit",
-  setBtn:"SETTINGS",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
+  setBtn:"SETTINGS",setChip:"Settings",setTitle:"SETTINGS",setTheme:"THEME",setLang:"LANGUAGE",
+  setRide:"RIDE VIEW",ridePixel:"PIXEL",rideClassic:"CLASSIC",setPxScale:"PIXEL SIZE",setWeather:"WEATHER",
+  wxAuto:"AUTO",wxClear:"CLEAR",wxRain:"RAIN",pxPrep:"Preparing the map…",pxSlow:"Pixel map too slow — using the Classic view",
+  pxOff:"Pixel map unavailable — tap to retry",pxNoCv:"This browser can't draw the pixel map",
   startBtn:"SELECT LEVEL",backTop:"↑ TOP",
   footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
@@ -176,12 +182,13 @@ function setLang(l){LANG=l;store.set("lang",l);
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
   $("langBtn").textContent=t("lang");
   paintTheme(); // theme button label follows the active language
+  paintPxSet();
   document.querySelector("#menu .footnote").textContent=t("footnote")+" · v"+APP_VERSION;
   inp.placeholder=t("placeholder");inp.setAttribute("aria-label",t("inputAria"));
   $("heatstrip").title=t("heatTitle");
   renderLegend();renderCards();
   if(typeof cloudLangRefresh==="function")cloudLangRefresh();
-  if(S.screen==="game")refreshBoardLang();
+  if(S.screen==="game"){refreshBoardLang();if(pxLive())pxTry(()=>RIDE.set({lab:pxLab()}))}
   if(S.screen==="result")showResult(true)}
 function refreshBoardLang(){const st=curStation();
   if(S.mode==="boss"){$("brdLabel").textContent=t("beatClock");
@@ -225,7 +232,10 @@ const resolveTheme=p=>p==="system"?(mqDark.matches?"dark":"light"):p;
 function paintTheme(){const r=resolveTheme(THEME);
   document.documentElement.dataset.theme=r;
   themeMeta.setAttribute("content",r==="light"?"#f5f1e8":"#0b101c");
-  const b=$("themeBtn");b.textContent=t(THEME);b.setAttribute("aria-label",t("setTheme")+" · "+t(THEME))}
+  const b=$("themeBtn");b.textContent=t(THEME);b.setAttribute("aria-label",t("setTheme")+" · "+t(THEME));
+  if(document.body.classList.contains("px"))pxChrome(); // (also runs at boot, before the pixel ride's globals exist)
+  if(typeof RIDE!=="undefined"&&r!==pxTheme){pxTheme=r;pxTry(()=>RIDE.theme())}}
+let pxTheme=null;
 function setTheme(p){THEME=p;paintTheme()}
 const onMq=()=>{if(THEME==="system")paintTheme()}; // re-resolve when the OS flips, while in system mode
 mqDark.addEventListener?mqDark.addEventListener("change",onMq):mqDark.addListener(onMq);
@@ -419,7 +429,98 @@ function show(name){S.screen=name;
   if(name==="game")try{if(!(history.state&&history.state.run))history.pushState({run:1},"")}catch(e){}
   $("menu").hidden=name!=="menu";$("game").hidden=name!=="game";$("result").hidden=name!=="result";
   $("homeBtn").hidden=name!=="game";$("accBtn").hidden=name==="game";
+  if(name!=="game"){pxRun++;S.px=S.pxWait=pxMiss=false;document.body.classList.remove("px");$("pxVeil").hidden=true;
+    if(typeof RIDE!=="undefined")RIDE.stop()}
+  if(name!=="menu"&&typeof RIDE!=="undefined")RIDE.prefetch(null); // (a line card's prefetch never queues ahead of a ride)
   document.body.classList.toggle("boss",name==="game"&&S.mode==="boss")}
+
+/* ---------- pixel ride (v0.6.0: js/px + js/map) ----------
+   Settings → Ride view: Pixel (default) | Classic (the SVG map above, also the automatic fallback). The scripts load on idle
+   ~3 s after boot (pxLoad: one shared Promise of classic <script async=false> tags, so file:// works). startLine stays
+   synchronous (its inp.focus() raises the phone keyboard): the SVG map is always built (hidden under body.px, so fitSeq
+   and a fallback work at once); the veil covers RIDE.prepare while S.pxWait (typing ignored, clocks not started). Rides
+   Classic instead: no 2D canvas, a script still failing after 2 retries or the map data fails, > 12 s, a throw in any RIDE call
+   (for the session), or the frame governor gave up (from the next ride, one toast) — Settings then shows Classic with a note, and
+   picking Pixel again retries. Stored locally (ride, pxScale, weather), not cloud-synced. An open line card prefetches only its
+   first frame's tiles (RIDE.prefetch; nothing on saveData); the whole ride streams from the Go tap.
+   Pieces: pxLoad (PX_JS in order; ?v=APP_VERSION + MAP.ver over http(s)) · pxAvail / pxOn / pxLive · pxRide (veil → RIDE.prepare →
+   RIDE.start, also a mid-run Classic→Pixel takeover) · pxClock (the 12 s give-up, visible time only) · pxClassic · pxTry (wraps
+   every drawing RIDE call) · pxChrome (PAL → the --px-* chrome) · pxVeil · pxChips / pxSize / pxLab (RIDE.set / prepare inputs) ·
+   paintPxSet (the Settings rows) · pxPre (a line card's prefetch). */
+let RIDE_MODE=store.get("ride")==="classic"?"classic":"pixel",PX_SCALE=store.get("pxScale")==="3"?3:2,
+  WX_MODE=["auto","clear","rain"].includes(store.get("weather"))?store.get("weather"):"auto";
+let pxP=null,pxDead=false,pxFail=false,pxRun=0,pxSlowTold=false,pxPrep=0,pxMiss=false; // pxPrep: the run whose prepare is in flight · pxMiss: this run's pixel ride failed
+// [script, the global it defines] in load order (a script that threw for want of an earlier one leaves its global unset)
+const PX_JS=[["map/lines","MAPLINES"],["map/map","MAP"],["px/pixel","PX"],["px/palette","PAL"],["px/fonts","FONTS"],["px/sprites","SPR"],
+  ["px/ann"],["px/geom","GEOM"],["px/src","PX.srcFor"],["px/world","WORLD"],["px/weather","WEATHER"],["px/train","TRAIN"],
+  ["px/traffic","TRAFFIC"],["px/labels","LABELS"],["px/ui","UI"],["px/ride","RIDE"]],pxOk={};
+const PX_CANVAS=(()=>{try{return!!document.createElement("canvas").getContext("2d")}catch(e){return false}})();
+// classic <script async=false> tags (file:// works). A script that failed to load never ran: only those (and any left without their
+// global) are injected again as fresh tags, twice at most (after 0.6 s, then 1.8 s), before the session gives up on the pixel ride.
+// Over http(s) they (and, through MAP.ver, the map tiles) carry ?v=APP_VERSION, so a release never mixes with a cached older set
+const PX_HTTP=/^https?:$/.test(location.protocol);
+function pxLoad(){if(pxP)return pxP;
+  const got=g=>!g||g.split(".").reduce((o,k)=>o&&o[k],window)!==undefined,miss=()=>PX_JS.filter(([f,g])=>!pxOk[f]||!got(g)),
+    put=(fs,k)=>Promise.all(fs.map(([f])=>new Promise(r=>{const s=document.createElement("script");
+      s.src="js/"+f+".js"+(PX_HTTP?"?v="+APP_VERSION+(k?"&r="+k:""):"");s.async=false; // (a retry skips a cached broken copy)
+      s.onload=()=>{pxOk[f]=1;if(f==="map/map"&&PX_HTTP&&typeof MAP!=="undefined")MAP.ver=APP_VERSION;r()};s.onerror=()=>{pxOk[f]=0;s.remove();r()};document.head.appendChild(s)})));
+  pxP=(async()=>{for(let k=0;;k++){const fs=miss();if(!fs.length)return;
+    if(k>2)throw new Error("pixel ride: "+fs.map(([f])=>"js/"+f+".js").join(" ")+" failed");
+    if(k)await new Promise(r=>setTimeout(r,600*(2*k-1)));await put(fs,k)}})();
+  pxP.catch(()=>{pxDead=pxFail=true;paintPxSet()});return pxP}
+const pxAvail=()=>PX_CANVAS&&!pxDead&&!(typeof RIDE!=="undefined"&&RIDE.giveUp);
+const pxOn=()=>RIDE_MODE==="pixel"&&pxAvail();
+const pxLive=()=>S.px&&!S.pxWait; // RIDE is loaded and drawing this run (S.px alone is also true behind the veil)
+const pxTight=()=>S.px&&mapWrap.classList.contains("pxTight"); // the map column beside a short LED board (ride.js): its notes go to the screen reader only
+const pxLab=()=>({time:t("chipTime"),dist:t("chipDist"),wpm:t("chipWpm"),acc:t("chipAcc"),combo:t("chipCombo"),score:t("chipScore")});
+// the floating chips over the canvas: bottom (from #mapWrap's top) and left edge (from its right), CSS px — full: over the whole
+// window (the canvas-to-be of a takeover from the Classic layout); the pixel canvas' size
+const pxChips=full=>{const f=$("fchips").getBoundingClientRect(),m=full?{top:0,right:innerWidth,width:1}:mapWrap.getBoundingClientRect();
+  return{top:Math.max(0,f.bottom-m.top),right:Math.max(0,(m.width?m.right:innerWidth)-f.left)}};
+const pxSize=()=>({w:innerWidth,h:parseFloat(document.body.style.getPropertyValue("--vvh"))||innerHeight});
+// the veil's bar: PX_SEG LED segments of 3 art px (css: 2 lit + 1 gap), lit a whole segment at a time
+const PX_SEG=26;
+function pxVeil(p){if(p<0){$("pxVeil").hidden=true;return}
+  $("pxVeil").hidden=false;$("pxBar").style.setProperty("--pxn",Math.round(p*PX_SEG))}
+// pixel chrome (body.px): the chips, toast and veil over the canvas wear its palette (PAL, the theme's night/day and the line's shades)
+// at its art px: --pxk = CSS px per art px (the canvas' K = round(scale × dpr) device px, so pixel fonts stay 1:1 and crisp)
+const PXC={fill:["ui.panel","ui.panel2"],fill2:["ui.panel2","ui.panel"],edge:"ui.edge",hi:"ui.hi",lo:"ui.lo",shadow:"shadow",text:"text",
+  dim:"textDim",accent:"ui.accent",bad:"hud.bad",screen:"led.bg",ground:"land.d1"};
+function pxChrome(){const b=document.body.style,dpr=devicePixelRatio||1;b.setProperty("--pxk",Math.max(1,Math.round(PX_SCALE*dpr))/dpr);
+  document.body.classList.toggle("px3",PX_SCALE===3); // (a phone at 3×: icon-only chips)
+  if(typeof PAL==="undefined")return;
+  const day=document.documentElement.dataset.theme==="light",P=PAL[day?"day":"night"],col=k=>k.split(".").reduce((o,x)=>o&&o[x],P);
+  if(!P)return;
+  for(const k in PXC){const v=col(Array.isArray(PXC[k])?PXC[k][+day]:PXC[k]);if(v)b.setProperty("--px-"+k,v)}
+  const lum=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)).reduce((a,c,i)=>a+c*[.2126,.7152,.0722][i],0),
+    cr=(a,c)=>{const x=lum(a),y=lum(c);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)},bad=col("hud.bad"),on=[col("text"),col("textOutline")].filter(Boolean);
+  if(bad&&on.length)b.setProperty("--px-onbad",on.sort((x,y)=>cr(y,bad)-cr(x,bad))[0]);
+  const sh=S.line&&P.lsh&&P.lsh[S.line.id];
+  b.setProperty("--px-line",sh?sh.disp:col("ui.accent"));b.setProperty("--px-seg",sh?sh.txt:col("ui.accent"))}
+// back to the SVG map for this run (a waiting run gets its departure toast now)
+function pxClassic(){const w=S.pxWait;pxRun++;S.px=S.pxWait=false;document.body.classList.remove("px");pxVeil(-1);
+  if(typeof RIDE!=="undefined")RIDE.stop();
+  if(w&&S.screen==="game")announce(t("depart",S.seq[0].zh))}
+// every game.js → RIDE call (they draw): a throw switches to Classic for the session, the run itself goes on
+function pxTry(f){try{f()}catch(e){console.error("pixel ride → classic:",e);pxDead=true;pxClassic();paintPxSet()}}
+// the 12 s give-up clock of a prepare only runs while the page is visible (a background tab gets no frames to prepare in)
+function pxClock(ms){let left=ms,t0=0,tm=0,j=null;
+  const tick=()=>{if(document.hidden){if(tm){clearTimeout(tm);tm=0;left-=performance.now()-t0}}
+      else if(!tm){t0=performance.now();tm=setTimeout(()=>{off();j(new Error("pixel ride: not ready after 12 s"))},left)}},
+    off=()=>{clearTimeout(tm);document.removeEventListener("visibilitychange",tick)};
+  return{p:new Promise((_,x)=>{j=x;document.addEventListener("visibilitychange",tick);tick()}),off}}
+async function pxRide(L,rev,live){const run=++pxRun,pct=p=>{if(run===pxRun&&S.pxWait)pxVeil(p)},clk=pxClock(12000); // a dropped prepare never re-shows the veil
+  pxPrep=run;
+  try{await Promise.race([pxLoad().then(()=>{if(run!==pxRun)return; // (dropped while the scripts loaded: a quit, the 12 s fallback)
+        pxChrome();RIDE.set({scale:PX_SCALE,weather:WX_MODE,lab:pxLab(),kb:document.body.classList.contains("kb"),...pxChips(live)});
+        return RIDE.prepare(L,rev,live?null:pct,S,live?pxSize:null)}), // live: planned round the train, at the pixel canvas' size
+      clk.p]);clk.off();if(pxPrep===run)pxPrep=0;
+    if(run!==pxRun||S.screen!=="game"||S.mode!=="line"||S.line!==L||S.rev!==rev||(live&&(S.done||!pxOn())))return;
+    document.body.classList.add("px");S.px=true;pxChrome();
+    RIDE.set({scale:PX_SCALE,weather:WX_MODE,lab:pxLab(),kb:document.body.classList.contains("kb"),...pxChips()});
+    RIDE.start(L,S);
+    if(S.pxWait){S.pxWait=false;pxVeil(-1);announce(t("depart",S.seq[0].zh),pxTight())}}
+  catch(e){clk.off();if(pxPrep===run)pxPrep=0;if(run!==pxRun)return;console.warn("pixel ride → classic:",e);pxClassic();pxMiss=true;paintPxSet()}} // (Settings: Classic, tap to retry)
 
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
@@ -432,7 +533,8 @@ function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,don
   $("cCombo").textContent="0";$("cScore").textContent="0";$("cWpm").textContent="0";
   $("cAcc").firstChild.nodeValue="100";$("cTime").textContent="0:00";$("cDist").firstChild.nodeValue="0.0"}
 
-function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",L,rev};
+function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",L,rev};pxMiss=false;
+  ac(); // (inside the Go tap: the AudioContext is created / resumed now, not on the first station's ding)
   S.seq=rev?[...L.stations].reverse():L.stations.slice();
   S.segs=rev?[...L.segKm].reverse():L.segKm.slice();
   S.cum=[0];for(const k of S.segs)S.cum.push(S.cum[S.cum.length-1]+k);
@@ -463,10 +565,16 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   placeTrain(o.x,o.y,angleTo(0,1));$("trainG").setAttribute("opacity","1");
   requestAnimationFrame(()=>{fitSeq(true);setTimeout(()=>{camFollow=true},700)});
   setPrompt();movePulse();
-  announce(t("depart",o.zh));
+  // pixel ride: the canvas takes over once its first frame is ready (the veil covers the wait)
+  const px=pxOn();S.px=S.pxWait=px;document.body.classList.toggle("px",px);
+  if(px){pxChrome();pxVeil(0);pxRide(L,rev,false)}
+  else{pxRun++;if(typeof RIDE!=="undefined")RIDE.stop();
+    if(RIDE_MODE==="pixel"&&typeof RIDE!=="undefined"&&RIDE.giveUp&&!pxSlowTold){pxSlowTold=true;announce(t("pxSlow"))}
+    else announce(t("depart",o.zh))}
   inp.focus()} // sync inside the card tap: its user activation lets mobile raise the keyboard
 
-function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};
+function startBoss(){S.mode="boss";S.line=null;lastRun={mode:"boss"};pxMiss=false;ac();
+  pxRun++;S.px=S.pxWait=false;document.body.classList.remove("px"); // boss mode never rides pixel
   S.bossList=shuffle(BOSS);S.bossI=0;S.lives=3;S.bossDone=0;
   resetStats();show("game");
   const c="#e5484d",cd=dispOf(c);
@@ -512,10 +620,11 @@ function setPrompt(){const st=S.seq[S.idx];
 function setNextUp(){const box=$("nextUp");
   const cur=S.mode==="line"?S.seq[S.idx]:null;
   const nxt=cur?S.seq[S.idx+1]:null;
-  if(!nxt){box.hidden=true;return}
-  $("nuLabel").textContent=t(S.idx+1===S.seq.length-1?"terminus":"upNext");
-  $("nuZh").textContent=nxt.zh;$("nuPy").textContent=nxt.py;
-  box.hidden=false}
+  if(nxt){$("nuLabel").textContent=t(S.idx+1===S.seq.length-1?"terminus":"upNext");
+    $("nuZh").textContent=nxt.zh;$("nuPy").textContent=nxt.py}
+  box.hidden=!nxt;pyDesc()}
+// #pyin's description: board label + name, and the look-ahead only while it shows (not at the terminus, not in boss mode)
+const pyDesc=()=>inp.setAttribute("aria-describedby","brdLabel zhTxt"+(S.mode==="line"&&!$("nextUp").hidden?" nuZh":""));
 
 function setBossPrompt(){const st=S.bossList[S.bossI];
   S.key=st.key;S.typed=0;S.firstT=null;S.errSt=false;S.revealing=false;
@@ -523,7 +632,7 @@ function setBossPrompt(){const st=S.bossList[S.bossI];
   $("brdLabel").textContent=t("beatClock");
   $("zhTxt").textContent=st.zh;
   const d=diffOf(st.key.length);const tg=$("dTag");tg.hidden=false;tg.className="tag "+d.k;tg.textContent=t(d.t)+" · "+st.key.length;
-  $("cnt").textContent=(S.bossI+1)+"/"+S.bossList.length;
+  $("cnt").textContent=(S.bossI+1)+"/"+S.bossList.length;pyDesc();
   S.bossSec=Math.max(6,Math.round(st.key.length*0.55));
   S.deadline=performance.now()+S.bossSec*1000;
   paintPy();updPbar();flashBoard()}
@@ -560,9 +669,11 @@ document.addEventListener("keydown",e=>{
 // it could open; by click time that blur is done and this focus sticks. blur() first
 // because a bare focus() is a no-op when the input kept focus without a keyboard
 // (run-start focus outside a tap), and blur→focus inside the tap re-raises the IME.
-$("board").addEventListener("click",()=>{if(S.screen!=="game")return;
+const refocus=()=>{if(S.screen!=="game")return;
   if(document.activeElement===inp)inp.blur();
-  inp.focus()});
+  inp.focus()};
+$("board").addEventListener("click",refocus);
+mapWrap.addEventListener("click",e=>{if(e.target.id==="pxCv")refocus()}); // the pixel LED board lives in the canvas
 // soft keyboard (mobile): while the sink is focused and the visual viewport is squeezed
 // well below the layout viewport (that gap is the IME — desktop resizes shrink both),
 // body.kb + --vvh compress the cab into the visible strip; released when it closes
@@ -570,7 +681,7 @@ const vv=window.visualViewport;
 function kbFit(){if(!vv)return;
   const on=S.screen==="game"&&document.activeElement===inp&&vv.scale<1.02&&
     innerHeight-vv.height>140;
-  document.body.classList.toggle("kb",on);
+  document.body.classList.toggle("kb",on);if((S.px||pxPrep===pxRun&&pxPrep)&&typeof RIDE!=="undefined")pxTry(()=>RIDE.set({kb:on})); // (behind the veil / a takeover: its prepare re-aims)
   if(on){document.body.style.setProperty("--vvh",Math.round(vv.height)+"px");
     scrollTo(0,0);requestAnimationFrame(()=>$("board").scrollIntoView({block:"end"}))}
   else document.body.style.removeProperty("--vvh")}
@@ -580,6 +691,7 @@ if(vv){vv.addEventListener("resize",kbFit);
 
 function handleTyping(raw){
   if(S.screen!=="game"||S.done||S.revealing||!S.key)return;
+  if(S.pxWait){inp.value="";return} // the pixel map is still being prepared: nothing counts yet
   if(/[\u3400-\u9fff]/.test(raw))announce(t("kbWarn"));
   let v="";for(const ch of raw.toLowerCase()){const c=TONE[ch]||ch;if(c>="a"&&c<="z")v+=c}
   // first keystroke of the run clears the map: station names fade until the terminus
@@ -595,6 +707,7 @@ function handleTyping(raw){
     S.correct+=ok-S.typed}
   S.typed=ok;inp.value=S.key.slice(0,ok);
   updCredit();paintPy(ok>prev?prev:-1,err);updLive();
+  if(pxLive()&&(ok>prev||err))RIDE.key(ok-prev,err);
   if(ok===S.key.length)S.mode==="boss"?bossComplete():completeStation()}
 
 function shake(){const b=$("board");b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake")}
@@ -633,11 +746,11 @@ function typedFx(st){const reg=REG.get(st.zh),inter=reg&&reg.lines.length>1;
 function completeStation(){
   const i=S.idx,{t:secs,perf}=stationPerf(); // no bare `t`: the i18n t() is called below
   S.heats[i]=heatOf(perf);S.times[i]=secs;S.perfs.push(perf);
-  award(perf);sDing();typedFx(S.seq[i]);
+  award(perf);sDing();typedFx(S.seq[i]);if(pxLive())RIDE.done(i);
   if(i===0){ // origin typed in place — doors close, the train departs with the next stop
     const n=nodes[S.seq[0].zh];
     if(n){n.heat.setAttribute("stroke",HEATC[S.heats[0]]);if(n.zh)n.zh.classList.add("passed")}
-    announce(t("doors"));S.idx++;setPrompt();movePulse();return}
+    announce(t("doors"),pxTight());S.idx++;setPrompt();movePulse();return}
   S.idx++;setPrompt()}
 
 /* ---------- continuous travel: typed letters earn track and drive the train directly ---------- */
@@ -674,7 +787,7 @@ function arriveAt(j){S.arrivedI=j;
   if(j===S.seq.length-1){finishRun()}
   // phones: arrival goes to the screen reader only — the banner covered the small
   // ride map every few seconds, and the green burst already names the stop
-  else announce(t("arriveAt",st.zh,st.py),IS_TOUCH)}
+  else announce(t("arriveAt",st.zh,st.py),IS_TOUCH||S.px)} // pixel: the LED board shows it
 
 function movePulse(){gMap.querySelectorAll(".pulseHolder").forEach(p=>{p.setAttribute("opacity","0");p.classList.remove("pulse")});
   const st=S.seq[S.idx];if(!st)return;const n=nodes[st.zh];
@@ -689,9 +802,9 @@ function announce(msg,quiet){if(quiet){$("srToast").textContent=msg;return}
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),2100)}
 
 function finishRun(){S.done=true;S.endT=performance.now();
-  inp.disabled=true;camFollow=false;fitSeq(false);
+  inp.disabled=true;camFollow=false;fitSeq(false);if(pxLive())pxTry(()=>RIDE.finish());
   gMap.classList.remove("noNames"); // terminus: names return for the zoomed-out recap
-  sWin();confetti();announce(t("terminusReached"));
+  sWin();if(!S.px)confetti();announce(t("terminusReached")); // (the pixel ride: no DOM confetti over the canvas)
   setTimeout(showResult,1200)}
 
 /* ---------- boss flow ---------- */
@@ -1116,7 +1229,15 @@ function toggleCard(id,stay){expandedId=expandedId===id?null:id;
       const bot=absTop(c)+dSvg+finalH+PAD-innerHeight;
       const top=stay?Math.max(scrollY,bot):Math.max(absTop(mc)-PAD,bot);
       scrollTo({top:Math.max(0,top),behavior:REDUCED()?"auto":"smooth"})});
-  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine())}
+  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine());
+  pxPre()}
+// pixel ride: the open card's first frame (its direction) — P0 tiles only, never on saveData; another card / closing drops the
+// rest. After the card's 360 ms unfold (planning the frame costs 10–55 ms of main thread; a card skimmed past costs nothing)
+let pxPreT=0;
+function pxPre(){clearTimeout(pxPreT);if(typeof RIDE!=="undefined")RIDE.prefetch(null);
+  const id=expandedLine(),c=navigator.connection;if(!id||!pxOn()||(c&&c.saveData))return;
+  pxPreT=setTimeout(()=>pxLoad().then(()=>{if(expandedLine()!==id||S.screen!=="menu")return;
+    RIDE.set({scale:PX_SCALE,kb:false,...pxChips()});return RIDE.prefetch(LINES.find(l=>l.id===id),!!dirState[id],pxSize())}).catch(()=>{}),400)}
 const legendLeave=()=>ovHighlight(expandedLine());
 function renderLegend(){
   $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" role="button" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
@@ -1185,7 +1306,7 @@ function renderCards(){const wrap=$("cards");wrap.innerHTML="";
       </div></div>`;
     card.querySelector(".chead").onclick=()=>toggleCard(L.id);
     card.querySelector(".rev").onclick=()=>{dirState[L.id]=!dirState[L.id];
-      card.querySelector(".tt").textContent=tt()};
+      card.querySelector(".tt").textContent=tt();if(expandedId===L.id)pxPre()};
     card.querySelector(".go").onclick=()=>startLine(L,!!dirState[L.id]);
     wrap.appendChild(card)});
   // boss card
@@ -1270,13 +1391,13 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
       S.avgV+=(vRaw-S.avgV)*Math.min(1,dt/1.2);   // slow average: station-ease dips don't kill flames
       if(S.dispV>S.topV)S.topV=S.dispV;
       while(S.arrivedI<S.seq.length-1&&S.pos>=S.cum[S.arrivedI+1]-1e-6)arriveAt(S.arrivedI+1);
-      const P=posXY(S.pos);placeTrain(P.x,P.y,P.ang);
+      const P=S.px?null:posXY(S.pos);if(P)placeTrain(P.x,P.y,P.ang);
       // v0.4.16 lens: the hop itself sets the depth — with the furniture
       // counter-scaled to a constant size, the frame is just the hop's own
       // extent at ~80% fill (floored so micro-hops never hit the k clamp).
       // Center still leans toward the next platform, the depth crossfades into
       // the next hop's over the last 20%, and arrivals punch in briefly
-      if(camFollow){const j=P.j,b=S.seq[j+1],
+      if(camFollow&&P){const j=P.j,b=S.seq[j+1],
           cx=P.x+.25*(b.x-P.x),cy=P.y+.25*(b.y-P.y),
           asp=Math.max(.2,mapWrap.clientWidth/Math.max(1,mapWrap.clientHeight)),
           wFor=i=>{const A=S.seq[i],B=S.seq[i+1],
@@ -1295,7 +1416,8 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
     gaugeTo(S.dispV);
     $("cDist").firstChild.nodeValue=S.dist.toFixed(1);
     if(S.t0&&!S.done)$("cTime").textContent=fmtT(now-S.t0);
-    applyCam()}
+    if(!S.px)applyCam();
+    else if(!S.pxWait)pxTry(()=>RIDE.frame(dt,S))}
   if(S.screen==="game"&&S.mode==="boss"&&!S.done&&!S.paused){
     if(S.t0&&!S.done)$("cTime").textContent=fmtT(now-S.t0);
     if(!S.revealing&&S.key){const rem=Math.max(0,S.deadline-now),frac=rem/(S.bossSec*1000);
@@ -1357,7 +1479,30 @@ new IntersectionObserver(es=>{const h=document.querySelector("#menu .hero");
   {threshold:0}).observe(document.querySelector("#menu .hero"));
 
 /* ---------- settings dialog + boot splash ---------- */
-$("setBtn").onclick=()=>$("setDlg").showModal();
+$("setBtn").onclick=()=>{paintPxSet();$("setDlg").showModal()};
+// ride view rows (v0.6.0): stored locally, applied live — Classic mid-run swaps to the SVG map at once; Pixel mid-run
+// prepares in the background and takes over when ready. Pixel unavailable (scripts failed, a throw, the governor gave up, no
+// canvas): the row reads Classic with a note, and a tap on it tries Pixel again; Pixel size / Weather are aria-disabled in Classic
+const WX_ORDER=["auto","clear","rain"],WX_KEY={auto:"wxAuto",clear:"wxClear",rain:"wxRain"};
+function paintPxSet(){const px=RIDE_MODE==="pixel"&&pxAvail()&&!pxMiss,note=!PX_CANVAS?t("pxNoCv"):RIDE_MODE==="pixel"&&!px?t("pxOff"):"",
+    b=(id,k,v,off)=>{const e=$(id);e.textContent=v;e.setAttribute("aria-label",t(k)+" · "+v);
+      off?e.setAttribute("aria-disabled","true"):e.removeAttribute("aria-disabled")};
+  b("rideBtn","setRide",t(px?"ridePixel":"rideClassic"),!PX_CANVAS);b("pxScaleBtn","setPxScale",PX_SCALE+"×",!px);
+  b("wxBtn","setWeather",t(WX_KEY[WX_MODE]),!px);
+  const n=$("rideNote");n.textContent=note;n.hidden=!note;$("rideBtn").title=note}
+const pxOff=id=>$(id).getAttribute("aria-disabled")==="true";
+$("rideBtn").onclick=()=>{if(pxOff("rideBtn"))return;
+  if(RIDE_MODE==="pixel"&&(!pxAvail()||pxMiss)){ // shown as Classic: picking Pixel again gives it another go (a failed load reloads what is missing)
+    if(typeof RIDE!=="undefined")RIDE.giveUp=false;if(pxFail)pxP=null;pxDead=pxFail=pxSlowTold=pxMiss=false}
+  else RIDE_MODE=RIDE_MODE==="pixel"?"classic":"pixel";
+  if(RIDE_MODE==="pixel"&&typeof RIDE!=="undefined"&&RIDE.giveUp){RIDE.giveUp=false;pxSlowTold=false}
+  store.set("ride",RIDE_MODE);paintPxSet();
+  if(S.screen!=="game"||S.mode!=="line"||S.done)return;
+  if(RIDE_MODE==="classic"){if(S.px||pxPrep===pxRun&&pxPrep)pxClassic()}else if(!S.px&&pxOn())pxRide(S.line,S.rev,true)}; // (also drops a takeover's prepare in flight)
+$("pxScaleBtn").onclick=()=>{if(pxOff("pxScaleBtn"))return;PX_SCALE=PX_SCALE===2?3:2;store.set("pxScale",String(PX_SCALE));paintPxSet();pxChrome();
+  if(typeof RIDE!=="undefined")pxTry(()=>RIDE.set({scale:PX_SCALE,...(S.px?pxChips():{})}))};
+$("wxBtn").onclick=()=>{if(pxOff("wxBtn"))return;WX_MODE=WX_ORDER[(WX_ORDER.indexOf(WX_MODE)+1)%WX_ORDER.length];store.set("weather",WX_MODE);paintPxSet();
+  if(typeof RIDE!=="undefined")pxTry(()=>RIDE.set({weather:WX_MODE}))};
 $("setClose").onclick=()=>$("setDlg").close();
 $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
 // Boot splash (#preload) plays once per browser session. The loading bar fills (CSS), then we fade the
@@ -1433,9 +1578,13 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
   ov.addEventListener("pointerup",ovUp);ov.addEventListener("pointercancel",ovUp);
   $("ovReset").addEventListener("click",e=>{e.stopPropagation();ovResetView()});
   setLang(LANG); // renders all i18n text + legend + cards
-  window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true)});
+  window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true);pxChrome(); // (a zoom changes the dpr)
+    if(S.px&&typeof RIDE!=="undefined")pxTry(()=>RIDE.set(pxChips()))});
   setTimeout(()=>{ // idle-prefetch the other theme's hero pair so the toggle swaps without a blank
     const n=document.documentElement.dataset.theme==="light"?"-night":"";
     ["assets/guangzhou-tower-v2"+n+".jpg","assets/guangzhou-tower-v2"+n+"-tower-only.png"]
-      .forEach(u=>{(new Image).src=u})},3000);
+      .forEach(u=>{(new Image).src=u});
+    // …and the pixel ride's scripts + map index, on idle (never before: the menu's first paint stays as it was)
+    const c=navigator.connection;
+    if(pxOn()&&!(c&&c.saveData))(window.requestIdleCallback||setTimeout)(()=>pxLoad().catch(e=>console.warn(e)))},3000);
 })();
