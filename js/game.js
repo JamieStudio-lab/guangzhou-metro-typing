@@ -1,4 +1,4 @@
-const APP_VERSION="0.6.0";
+const APP_VERSION="0.7.0";
 // feel knobs: CRUISE_CPS (chars/s) sets the km/h display scale — typing at it on an
 // average segment reads ≈the line cap. The train is driven directly by typed letters:
 // it pursues the earned track with time constant CHASE (s), never closing slower than
@@ -33,7 +33,7 @@ for(const L of LINES){
   L.stations=L.st.map(t=>{const g=GEOPOS&&GEOPOS.get(t[0]);
     if(GEOPOS&&!g)console.warn("no geo position for "+t[0]);
     return{zh:t[0],py:t[1],x:g?g.x:t[2],y:g?g.y:t[3],lb:t[4],tr:t[5]||null,key:normPy(t[1])}});
-  delete L.st;
+  // (L.st, the raw data.js tuples, stays: js/px/ovmap.js reads its names / pinyin / transfers)
   L.km=L.segKm.reduce((a,b)=>a+b,0);
   L.letters=L.stations.reduce((a,s)=>a+s.key.length,0);
   L.avgLen=L.letters/L.stations.length;
@@ -66,8 +66,13 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   setRide:"地图风格",ridePixel:"像素",rideClassic:"经典",setPxScale:"像素大小",setWeather:"天气",
   wxAuto:"自动",wxClear:"晴天",wxRain:"下雨",pxPrep:"正在准备地图…",pxSlow:"像素地图较卡，已改用经典视图",
   pxOff:"像素地图暂不可用，点按重试",pxNoCv:"此浏览器无法绘制像素地图",
-  startBtn:"选择关卡",backTop:"↑ 首页",
-  footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。地理数据 © OpenStreetMap 贡献者 (ODbL)。",
+  startBtn:"选择关卡",
+  footnote:"☆ 本作为粉丝自制打字游戏，收录广州地铁全网 19 条线路（含广佛线与 APM 线；十二号线暂为已通车东段，不含三号线机场支线与知识城线），站间距离为约值。未登录时成绩仅保存在本次会话中；登录后成绩会上传至全球排行榜。",
+  wTitle:"选择线路",wStart:"出发",wKeys:"← → 选择 · Enter 确定",wKeysOpen:"← → 换线 · R 换向 · Enter 出发 · Esc 关闭",
+  wKeysBoss:"← → 换线 · Enter 挑战 · Esc 关闭",wKeysTouch:"点按线路",wCleared:"通关",wAllClear:"全部通关",lbChip:"排行榜",
+  about:"关于",aboutTitle:"关于",wStarsAria:n=>`${n}/3 星`,wDiffAria:n=>`难度 ${n}/4`,wBest:s=>`最佳 ${s} 分`,wBestW:"最佳",wBestU:"分",
+  wNoBest:"还没通关",wStarting:n=>`正在发车：${n}`,wBossName:"长站名挑战",wBossPlate:"挑战",wMapAria:"线路图：点按线路 · 滚轮缩放 · ↑↓ 平移",
+  wPathAria:"线路",wOsm:"地图数据 © OpenStreetMap 贡献者 (ODbL)",
   chipTime:"用时",chipDist:"里程",chipWpm:"键速",chipAcc:"准确率",chipCombo:"连击",chipScore:"得分",
   bossTitle:"长站名挑战",bossDesc:`${BOSS.length} 个最长站名 · 限时输入 · 超时扣 ♥`,
   nextStop:"下一站",upNext:"接下来",arriving:"即将到达",terminus:"终点站",beatClock:"限时挑战",
@@ -85,16 +90,10 @@ zh:{lang:"中文",sound:"音效",dark:"深色",light:"浅色",system:"跟随系�
   fastest:(z,s)=>`⚡ 最快：<b>${z}</b>（${s}s）　`,slowest:(z,s)=>`🐢 最慢：<b>${z}</b>（${s}s）`,
   heatTitle:"每站颜色 = 输入速度",again:"再来一次",back:"选择线路",
   lineName:L=>L.zh,revTitle:"换向",revBtn:"换向",
-  stops:n=>`${n} 站`,bossCount:n=>`${n} 词`,
-  sortBy:"排序",sortNum:"线路",sortStops:"站数",sortDiff:"难度",
-  diffEasy:"简单",diffMedium:"中等",diffHard:"困难",diffImp:"极难",diffAria:d=>`难度：${d}`,
-  statKm:"线路全长",statLetters:"拼音总量",statAvg:"平均每站",
-  bossWords:"挑战词数",bossLongest:"最长站名",bossLives:"生命",
-  uLetters:"字母",uPerStop:"字母/站",uWords:"词",
-  best:b=>`本次最佳：${b.score} 分 · ${b.time} · ${b.acc}%`,
+  stops:n=>`${n} 站`,bossCount:n=>`${n} 个站名`,
+  diffEasy:"简单",diffMedium:"中等",diffHard:"困难",diffImp:"极难",
   go:"出发",challenge:"挑战",
-  bossFact:`全网络最长的站名轮番上阵——从 ${BOSS[BOSS.length-1].zh} 一路打到 ${BOSS[0].zh}（${BOSS[0].key.length} 个字母！）。超时即失去一颗心。`,
-  interchange:"换乘站",ovReset:"复位",ovHint:"滚轮缩放 · 拖拽平移",
+  bossFact:`全网最长的 ${BOSS.length} 个站名轮番上阵。超时就丢一颗心！`,
   accLogin:"登录",accTitle:"账号",accNick:"昵称",accEmail:"邮箱",accPw:"密码",
   accDoReg:"注册",accToReg:"没有账号？注册一个 →",accToLogin:"已有账号？直接登录 →",
   accClose:"关闭",accLogout:"退出登录",
@@ -122,8 +121,13 @@ en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitB
   setRide:"RIDE VIEW",ridePixel:"PIXEL",rideClassic:"CLASSIC",setPxScale:"PIXEL SIZE",setWeather:"WEATHER",
   wxAuto:"AUTO",wxClear:"CLEAR",wxRain:"RAIN",pxPrep:"Preparing the map…",pxSlow:"Pixel map too slow — using the Classic view",
   pxOff:"Pixel map unavailable — tap to retry",pxNoCv:"This browser can't draw the pixel map",
-  startBtn:"SELECT LEVEL",backTop:"↑ TOP",
-  footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard. Map data © OpenStreetMap contributors (ODbL).",
+  startBtn:"SELECT LEVEL",
+  footnote:"☆ Fan-made typing game, not affiliated with Guangzhou Metro. All 19 lines of the 2026 network (incl. Guangfo Line and the APM; Line 12 is its opened east section — the Line 3 airport branch and Knowledge City line aren't modeled); distances are approximate. Signed out, scores live in this session only; sign in to upload runs to the global leaderboard.",
+  wTitle:"SELECT LINE",wStart:"START",wKeys:"← → choose · Enter select",wKeysOpen:"← → switch · R reverse · Enter go · Esc back",
+  wKeysBoss:"← → switch · Enter fight · Esc back",wKeysTouch:"Tap a line",wCleared:"CLEARED",wAllClear:"ALL CLEAR",lbChip:"Ranks",
+  about:"About",aboutTitle:"ABOUT",wStarsAria:n=>`${n} of 3 stars`,wDiffAria:n=>`Difficulty ${n} of 4`,wBest:s=>`Best ${s} pts`,wBestW:"Best",wBestU:"pts",
+  wNoBest:"Not cleared",wStarting:n=>`Starting ${n}…`,wBossName:"GAUNTLET",wBossPlate:"BOSS",wMapAria:"Line map: tap a line · scroll to zoom · ↑↓ pan",
+  wPathAria:"Lines",wOsm:"Map data © OpenStreetMap contributors (ODbL)",
   chipTime:"TIME",chipDist:"DIST",chipWpm:"WPM",chipAcc:"ACC",chipCombo:"COMBO",chipScore:"SCORE",
   bossTitle:"LONG-NAME GAUNTLET",bossDesc:`The ${BOSS.length} longest names · beat the clock · timeouts cost ♥`,
   nextStop:"NEXT STOP",upNext:"THEN",arriving:"ARRIVING",terminus:"Terminus",beatClock:"BEAT THE CLOCK",
@@ -141,16 +145,10 @@ en:{lang:"English",sound:"SOUND",dark:"DARK",light:"LIGHT",system:"SYSTEM",quitB
   fastest:(z,s)=>`⚡ Fastest: <b>${z}</b> (${s}s)　`,slowest:(z,s)=>`🐢 Slowest: <b>${z}</b> (${s}s)`,
   heatTitle:"cell color = typing speed",again:"REPLAY",back:"CHOOSE LINE",
   lineName:L=>L.en,revTitle:"Reverse direction",revBtn:"Reverse",
-  stops:n=>`${n} stops`,bossCount:n=>`${n} words`,
-  sortBy:"SORT",sortNum:"LINE",sortStops:"STOPS",sortDiff:"DIFFICULTY",
-  diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"INSANE",diffAria:d=>`Difficulty: ${d}`,
-  statKm:"LINE LENGTH",statLetters:"LETTERS TO TYPE",statAvg:"AVG PER STOP",
-  bossWords:"WORDS TO CLEAR",bossLongest:"LONGEST NAME",bossLives:"LIVES",
-  uLetters:"letters",uPerStop:"per stop",uWords:"words",
-  best:b=>`Session best: ${b.score} pts · ${b.time} · ${b.acc}%`,
-  go:"DEPART",challenge:"CHALLENGE",
-  bossFact:`The network's longest station names, from ${BOSS[BOSS.length-1].zh} all the way up to ${BOSS[0].zh} (${BOSS[0].key.length} letters!). Run out of time and you lose a heart.`,
-  interchange:"Interchange",ovReset:"Reset",ovHint:"Scroll to zoom · drag to pan",
+  stops:n=>`${n} stops`,bossCount:n=>`${n} names`,
+  diffEasy:"EASY",diffMedium:"MEDIUM",diffHard:"HARD",diffImp:"INSANE",
+  go:"GO",challenge:"FIGHT",
+  bossFact:`The network's ${BOSS.length} longest station names, one after another. Too slow and you lose a heart!`,
   accLogin:"SIGN IN",accTitle:"Account",accNick:"Nickname",accEmail:"Email",accPw:"Password",
   accDoReg:"SIGN UP",accToReg:"No account? Sign up →",accToLogin:"Have an account? Sign in →",
   accClose:"CLOSE",accLogout:"SIGN OUT",
@@ -179,17 +177,17 @@ const t=(k,...a)=>{const v=T[LANG][k];return typeof v==="function"?v(...a):v};
 const descOf=L=>L.desc[LANG]||L.desc.zh;
 function setLang(l){LANG=l;store.set("lang",l);
   document.documentElement.lang=l==="zh"?"zh-Hans":"en";
-  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const v=t(el.dataset.i18n);if(v!=null)el.textContent=v});
   $("langBtn").textContent=t("lang");
   paintTheme(); // theme button label follows the active language
   paintPxSet();
-  document.querySelector("#menu .footnote").textContent=t("footnote")+" · v"+APP_VERSION;
   inp.placeholder=t("placeholder");inp.setAttribute("aria-label",t("inputAria"));
   $("heatstrip").title=t("heatTitle");
-  renderLegend();renderCards();
+  renderWorld(); // (the world screen, the About dialog, the map's START sign)
   if(typeof cloudLangRefresh==="function")cloudLangRefresh();
   if(S.screen==="game"){refreshBoardLang();if(pxLive())pxTry(()=>RIDE.set({lab:pxLab()}))}
-  if(S.screen==="result")showResult(true)}
+  if(S.screen==="result")showResult(true);
+  pxDlgs()}
 function refreshBoardLang(){const st=curStation();
   if(S.mode==="boss"){$("brdLabel").textContent=t("beatClock");
     if(st&&!S.done)$("dTag").textContent=t(diffOf(st.key.length).t)+" · "+st.key.length}
@@ -233,9 +231,9 @@ function paintTheme(){const r=resolveTheme(THEME);
   document.documentElement.dataset.theme=r;
   themeMeta.setAttribute("content",r==="light"?"#f5f1e8":"#0b101c");
   const b=$("themeBtn");b.textContent=t(THEME);b.setAttribute("aria-label",t("setTheme")+" · "+t(THEME));
-  if(document.body.classList.contains("px"))pxChrome(); // (also runs at boot, before the pixel ride's globals exist)
+  if(pxUp){if(S.screen==="menu"){ovTh=r;ovTry(()=>OVM.theme())}pxChrome()} // (also runs at boot, before the pixel globals exist)
   if(typeof RIDE!=="undefined"&&r!==pxTheme){pxTheme=r;pxTry(()=>RIDE.theme())}}
-let pxTheme=null;
+let pxTheme=null,pxUp=false; // pxUp: boot() ran (the pixel globals below exist)
 function setTheme(p){THEME=p;paintTheme()}
 const onMq=()=>{if(THEME==="system")paintTheme()}; // re-resolve when the OS flips, while in system mode
 mqDark.addEventListener?mqDark.addEventListener("change",onMq):mqDark.addListener(onMq);
@@ -429,45 +427,61 @@ function show(name){S.screen=name;
   if(name==="game")try{if(!(history.state&&history.state.run))history.pushState({run:1},"")}catch(e){}
   $("menu").hidden=name!=="menu";$("game").hidden=name!=="game";$("result").hidden=name!=="result";
   $("homeBtn").hidden=name!=="game";$("accBtn").hidden=name==="game";
-  if(name!=="game"){pxRun++;S.px=S.pxWait=pxMiss=false;document.body.classList.remove("px");$("pxVeil").hidden=true;
+  for(const id of["lbBtn","aboutBtn"])if($(id))$(id).hidden=name!=="menu"; // (the world screen's chips)
+  if(name!=="menu")wChips(false);
+  if(name!=="menu"&&wHov)wHover(null);
+  if(name!=="game"){pxRun++;S.px=S.pxWait=pxMiss=false;document.body.classList.remove("px");$("pxVeil").hidden=true;wGoEnd();
     if(typeof RIDE!=="undefined")RIDE.stop()}
   if(name!=="menu"&&typeof RIDE!=="undefined")RIDE.prefetch(null); // (a line card's prefetch never queues ahead of a ride)
-  document.body.classList.toggle("boss",name==="game"&&S.mode==="boss")}
+  document.body.classList.toggle("boss",name==="game"&&S.mode==="boss");
+  pxChrome()} // (the menu map re-paints here when it was freed, deferred, or its scale / theme changed meanwhile: ovSync)
 
 /* ---------- pixel ride (v0.6.0: js/px + js/map) ----------
    Settings → Ride view: Pixel (default) | Classic (the SVG map above, also the automatic fallback). The scripts load on idle
-   ~3 s after boot (pxLoad: one shared Promise of classic <script async=false> tags, so file:// works). startLine stays
+   ~3 s after boot, after the menu set (pxLoad: classic <script async=false> tags shared by both sets, so file:// works). startLine stays
    synchronous (its inp.focus() raises the phone keyboard): the SVG map is always built (hidden under body.px, so fitSeq
    and a fallback work at once); the veil covers RIDE.prepare while S.pxWait (typing ignored, clocks not started). Rides
    Classic instead: no 2D canvas, a script still failing after 2 retries or the map data fails, > 12 s, a throw in any RIDE call
    (for the session), or the frame governor gave up (from the next ride, one toast) — Settings then shows Classic with a note, and
    picking Pixel again retries. Stored locally (ride, pxScale, weather), not cloud-synced. An open line card prefetches only its
    first frame's tiles (RIDE.prefetch; nothing on saveData); the whole ride streams from the Go tap.
-   Pieces: pxLoad (PX_JS in order; ?v=APP_VERSION + MAP.ver over http(s)) · pxAvail / pxOn / pxLive · pxRide (veil → RIDE.prepare →
-   RIDE.start, also a mid-run Classic→Pixel takeover) · pxClock (the 12 s give-up, visible time only) · pxClassic · pxTry (wraps
-   every drawing RIDE call) · pxChrome (PAL → the --px-* chrome) · pxVeil · pxChips / pxSize / pxLab (RIDE.set / prepare inputs) ·
-   paintPxSet (the Settings rows) · pxPre (a line card's prefetch). */
+   Pieces: pxLoad (a set in order; ?v=APP_VERSION + MAP.ver over http(s)) · pxHan (the nickname hanzi face, for cloud.js) · pxAvail /
+   pxOn / pxLive · pxRide (veil → RIDE.prepare → RIDE.start, also a mid-run Classic→Pixel takeover) · pxClock (a give-up clock, visible
+   time only) · pxClassic · pxTry (wraps every drawing RIDE call) · pxChrome (the art px scale + PAL → the --px-* kit tokens) · pxLc (the
+   [data-lc] line colours) · pxDlg (dialogs on whole art px) · pxVeil · pxChips / pxSize / pxLab (RIDE.set / prepare inputs) ·
+   paintPxSet (the Settings rows) · pxPre (a line card's prefetch). The menu's pixel map (OVM) has its own block below. */
 let RIDE_MODE=store.get("ride")==="classic"?"classic":"pixel",PX_SCALE=store.get("pxScale")==="3"?3:2,
   WX_MODE=["auto","clear","rain"].includes(store.get("weather"))?store.get("weather"):"auto";
-let pxP=null,pxDead=false,pxFail=false,pxRun=0,pxSlowTold=false,pxPrep=0,pxMiss=false; // pxPrep: the run whose prepare is in flight · pxMiss: this run's pixel ride failed
-// [script, the global it defines] in load order (a script that threw for want of an earlier one leaves its global unset)
+let pxDead=false,pxFail=false,pxRun=0,pxSlowTold=false,pxPrep=0,pxMiss=false,pxHanP=null; // pxPrep: the run whose prepare is in flight · pxMiss: this run's pixel ride failed
+// [script, the global it defines, optional] in load order (a script that threw for want of an earlier one leaves its global unset).
+// PX_MENU = the menu's pixel map (v0.7.0), a subset in the same order; the ride's end-of-ride view uses it too, but rides without it
 const PX_JS=[["map/lines","MAPLINES"],["map/map","MAP"],["px/pixel","PX"],["px/palette","PAL"],["px/fonts","FONTS"],["px/sprites","SPR"],
   ["px/ann"],["px/geom","GEOM"],["px/src","PX.srcFor"],["px/world","WORLD"],["px/weather","WEATHER"],["px/train","TRAIN"],
-  ["px/traffic","TRAFFIC"],["px/labels","LABELS"],["px/ui","UI"],["px/ride","RIDE"]],pxOk={};
+  ["px/traffic","TRAFFIC"],["px/labels","LABELS"],["px/ui","UI"],["map/ov","MAPOV",1],["px/ovmap","OVM",1],["px/ride","RIDE"]],
+  PX_MENU=[["px/pixel","PX"],["px/palette","PAL"],["px/fonts","FONTS"],["px/sprites","SPR"],["px/geom","GEOM"],["map/ov","MAPOV"],["px/ovmap","OVM"]],
+  PX_FONT=[["px/fonts","FONTS"]], // (no pixel map: the kit's pixel faces all the same)
+  pxOk={},pxIn={},pxPs=new Map(); // pxOk: 1 loaded / 0 failed (absent: in flight) · pxIn: each script's tag promise · pxPs: each set's load
 const PX_CANVAS=(()=>{try{return!!document.createElement("canvas").getContext("2d")}catch(e){return false}})();
-// classic <script async=false> tags (file:// works). A script that failed to load never ran: only those (and any left without their
-// global) are injected again as fresh tags, twice at most (after 0.6 s, then 1.8 s), before the session gives up on the pixel ride.
-// Over http(s) they (and, through MAP.ver, the map tiles) carry ?v=APP_VERSION, so a release never mixes with a cached older set
+// classic <script async=false> tags (file:// works; they run in insertion order across both sets, a script in flight is shared).
+// A script that failed to load never ran: only those (and any left without their global) are injected again as fresh tags, twice at
+// most (after 0.6 s, then 1.8 s), before the set gives up. Over http(s) they (and, through MAP.ver, the map tiles) carry
+// ?v=APP_VERSION, so a release never mixes with a cached older set
 const PX_HTTP=/^https?:$/.test(location.protocol);
-function pxLoad(){if(pxP)return pxP;
-  const got=g=>!g||g.split(".").reduce((o,k)=>o&&o[k],window)!==undefined,miss=()=>PX_JS.filter(([f,g])=>!pxOk[f]||!got(g)),
-    put=(fs,k)=>Promise.all(fs.map(([f])=>new Promise(r=>{const s=document.createElement("script");
-      s.src="js/"+f+".js"+(PX_HTTP?"?v="+APP_VERSION+(k?"&r="+k:""):"");s.async=false; // (a retry skips a cached broken copy)
-      s.onload=()=>{pxOk[f]=1;if(f==="map/map"&&PX_HTTP&&typeof MAP!=="undefined")MAP.ver=APP_VERSION;r()};s.onerror=()=>{pxOk[f]=0;s.remove();r()};document.head.appendChild(s)})));
-  pxP=(async()=>{for(let k=0;;k++){const fs=miss();if(!fs.length)return;
-    if(k>2)throw new Error("pixel ride: "+fs.map(([f])=>"js/"+f+".js").join(" ")+" failed");
-    if(k)await new Promise(r=>setTimeout(r,600*(2*k-1)));await put(fs,k)}})();
-  pxP.catch(()=>{pxDead=pxFail=true;paintPxSet()});return pxP}
+function pxPut(f,k){if(pxIn[f]&&!(f in pxOk))return pxIn[f];delete pxOk[f];
+  return pxIn[f]=new Promise(r=>{const s=document.createElement("script");
+    s.src="js/"+f+".js"+(PX_HTTP?"?v="+APP_VERSION+(k?"&r="+k:""):"");s.async=false; // (a retry skips a cached broken copy)
+    s.onload=()=>{pxOk[f]=1;if(f==="map/map"&&PX_HTTP&&typeof MAP!=="undefined")MAP.ver=APP_VERSION;
+      if(f==="px/palette"&&typeof PAL!=="undefined"){pxLc();pxChrome()}if(f==="px/fonts")wFontsOn();r()};
+    s.onerror=()=>{pxOk[f]=0;s.remove();r()};document.head.appendChild(s)})}
+function pxLoad(set=PX_JS){let p=pxPs.get(set);if(p)return p;
+  const got=g=>!g||g.split(".").reduce((o,k)=>o&&o[k],window)!==undefined,miss=()=>set.filter(([f,g])=>!pxOk[f]||!got(g));
+  p=(async()=>{for(let k=0;;k++){const fs=miss();if(!fs.length||k>2&&fs.every(x=>x[2]))return;
+    if(k>2)throw new Error("pixel: "+fs.map(([f])=>"js/"+f+".js").join(" ")+" failed");
+    if(k)await new Promise(r=>setTimeout(r,600*(2*k-1)));await Promise.all(fs.map(([f])=>pxPut(f,k)))}})();
+  pxPs.set(set,p);if(set===PX_JS)p.catch(()=>{pxDead=pxFail=true;paintPxSet()});return p}
+// FP12's common-hanzi supplement (js/px/fonts-han.js, 83 KB), injected once where a nickname may show (cloud.js) → Promise<bool loaded>
+function pxHan(){return pxHanP||(pxHanP=new Promise(r=>{const s=document.createElement("script");s.src="js/px/fonts-han.js"+(PX_HTTP?"?v="+APP_VERSION:"");
+  s.onload=()=>r(typeof FONTS!=="undefined"&&FONTS.hanReady||false);s.onerror=()=>{pxHanP=null;s.remove();r(false)};document.head.appendChild(s)}))}
 const pxAvail=()=>PX_CANVAS&&!pxDead&&!(typeof RIDE!=="undefined"&&RIDE.giveUp);
 const pxOn=()=>RIDE_MODE==="pixel"&&pxAvail();
 const pxLive=()=>S.px&&!S.pxWait; // RIDE is loaded and drawing this run (S.px alone is also true behind the veil)
@@ -480,33 +494,59 @@ const pxChips=full=>{const f=$("fchips").getBoundingClientRect(),m=full?{top:0,r
 const pxSize=()=>({w:innerWidth,h:parseFloat(document.body.style.getPropertyValue("--vvh"))||innerHeight});
 // the veil's bar: PX_SEG LED segments of 3 art px (css: 2 lit + 1 gap), lit a whole segment at a time
 const PX_SEG=26;
-function pxVeil(p){if(p<0){$("pxVeil").hidden=true;return}
-  $("pxVeil").hidden=false;$("pxBar").style.setProperty("--pxn",Math.round(p*PX_SEG))}
-// pixel chrome (body.px): the chips, toast and veil over the canvas wear its palette (PAL, the theme's night/day and the line's shades)
-// at its art px: --pxk = CSS px per art px (the canvas' K = round(scale × dpr) device px, so pixel fonts stay 1:1 and crisp)
-const PXC={fill:["ui.panel","ui.panel2"],fill2:["ui.panel2","ui.panel"],edge:"ui.edge",hi:"ui.hi",lo:"ui.lo",shadow:"shadow",text:"text",
-  dim:"textDim",accent:"ui.accent",bad:"hud.bad",screen:"led.bg",ground:"land.d1"};
-function pxChrome(){const b=document.body.style,dpr=devicePixelRatio||1;b.setProperty("--pxk",Math.max(1,Math.round(PX_SCALE*dpr))/dpr);
+// (while the START overlay #goFx holds, it has the bar: #goBar)
+function pxVeil(p){if(p<0){$("pxVeil").hidden=true;wGoReady();return}
+  const n=Math.round(p*PX_SEG);if(goHold){$("pxVeil").hidden=true;const b=$("goBar");if(b)b.style.setProperty("--pxn",n);return}
+  $("pxVeil").hidden=false;$("pxBar").style.setProperty("--pxn",n)}
+// the pixel kit (v0.7.0): 1 art px = --pxk CSS px = round(scale × dpr) / dpr (whole device px, so pixel fonts stay 1:1 and crisp).
+// The menu, chips and dialogs follow Settings → Pixel size, but 3× only from 600 CSS px wide (a phone stays 2×; index.html's head
+// script sets the same at first paint); the ride (body.px) follows Settings as is. PXC = each --px-* token's PAL role [night, day]
+// (css/style.css holds the same values as static hexes, so nothing flashes before PAL loads); onaccent / onbad = the better of
+// text / textOutline on accent-sign / bad-sign
+const PXC={page:"bg",ground:"land.d1",fill:["ui.panel","ui.panel2"],fill2:["ui.panel2","ui.panel"],off:"ui.panel2",edge:"ui.edge",hi:"ui.hi",lo:"ui.lo",
+  shadow:"shadow",ink:"ink",text:"text",dim:"ui.dim",outline:"textOutline",accent:"ui.accent","accent-lo":"ui.accentLo","accent-hi":["fire.core","fire.t2"],
+  "accent-tx":"ui.accentTx","accent-sign":"ui.accentSign","bad-sign":"ui.badSign",good:"hud.good",warn:"hud.warn",bad:"hud.bad",paper:"stn.fill",
+  "paper-lo":"stn.lo",screen:"led.bg",led:"led.on","led-off":"led.off","led-glow":"led.glow","fire-t3":"fire.t3","fire-t2":"fire.t2","fire-core":"fire.core",
+  "tag-good":["hud.good","green.d0"],"tag-mid":["ui.accentTx","boat.wood.lo"],"tag-hard":["fire.t1","veh.taxi.face"],"tag-bad":["hud.bad","veh.c3.lo"]};
+const pxMS=()=>PX_SCALE===3&&innerWidth>=600?3:2,pxKof=s=>{const d=devicePixelRatio||1;return Math.max(1,Math.round(s*d))/d};
+function pxChrome(){const r=document.documentElement.style,b=document.body.style;
+  if(typeof pxK==="function")pxK(); // (index.html's head script: also html.nar: a phone, up to 560 CSS px wide)
+  r.setProperty("--pxk",pxKof(pxMS()));r.setProperty("--pxkm",pxKof(pxMS())); // (--pxkm: dialogs over the ride keep the menu's scale)
+  if(document.body.classList.contains("px"))b.setProperty("--pxk",pxKof(PX_SCALE));else b.removeProperty("--pxk"); // (body.px redeclares --pxu)
   document.body.classList.toggle("px3",PX_SCALE===3); // (a phone at 3×: icon-only chips)
+  ovSync();pxDlgs();
   if(typeof PAL==="undefined")return;
   const day=document.documentElement.dataset.theme==="light",P=PAL[day?"day":"night"],col=k=>k.split(".").reduce((o,x)=>o&&o[x],P);
   if(!P)return;
-  for(const k in PXC){const v=col(Array.isArray(PXC[k])?PXC[k][+day]:PXC[k]);if(v)b.setProperty("--px-"+k,v)}
-  const lum=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)).reduce((a,c,i)=>a+c*[.2126,.7152,.0722][i],0),
-    cr=(a,c)=>{const x=lum(a),y=lum(c);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)},bad=col("hud.bad"),on=[col("text"),col("textOutline")].filter(Boolean);
-  if(bad&&on.length)b.setProperty("--px-onbad",on.sort((x,y)=>cr(y,bad)-cr(x,bad))[0]);
+  for(const k in PXC){const v=col(Array.isArray(PXC[k])?PXC[k][+day]:PXC[k]);if(v)r.setProperty("--px-"+k,v)}
+  const on=[col("text"),col("textOutline")],best=c=>on.sort((x,y)=>crOf(y,c)-crOf(x,c))[0];
+  r.setProperty("--px-onaccent",best(col("ui.accentSign")));r.setProperty("--px-onbad",best(col("ui.badSign")));
   const sh=S.line&&P.lsh&&P.lsh[S.line.id];
-  b.setProperty("--px-line",sh?sh.disp:col("ui.accent"));b.setProperty("--px-seg",sh?sh.txt:col("ui.accent"))}
+  r.setProperty("--px-line",sh?sh.disp:col("ui.accent"));r.setProperty("--px-seg",sh?sh.txt:col("ui.accent"))}
+// [data-lc=<id>] → --lc (a fill that carries text: PAL lsh.<id>.sign) / --lc-ink (≥ 4.5:1 on it) / --lc-hi / --lc-lo in both themes;
+// before PAL loads btnBg / txOn stand in (hi = lo = --lc). Boss = the kit's bad sign
+function pxLc(){let el=$("pxLc");if(!el){el=document.createElement("style");el.id="pxLc";document.head.appendChild(el)}
+  const P=typeof PAL!=="undefined"&&PAL.night&&PAL.day,r=(sel,id,c,k,h,l)=>`${sel}[data-lc="${id}"]{--lc:${c};--lc-ink:${k};--lc-hi:${h};--lc-lo:${l}}\n`;
+  let css="";
+  for(const L of LINES)if(P)for(const[th,sel]of[["night",":root "],["day",":root[data-theme=light] "]]){const s=PAL[th].lsh[L.id];if(s)css+=r(sel,L.id,s.sign,s.ink,s.hi,s.lo)}
+    else{const c=btnBg(L.color);css+=r("",L.id,c,txOn(L.color),c,c)}
+  el.textContent=css+"[data-lc=boss]{--lc:var(--px-bad-sign);--lc-ink:var(--px-onbad);--lc-hi:var(--px-fire-t2);--lc-lo:var(--px-tag-bad)}"}
+// a pixel dialog (.pk-dlg) sits on whole art px of its own scale: after showModal, each re-render and resize (cloud.js: #accDlg)
+function pxDlg(d){if(!d||!d.open||!d.classList.contains("pk-dlg"))return;
+  const u=parseFloat(getComputedStyle(d).getPropertyValue("--pxk"))||1,r=d.getBoundingClientRect();
+  d.style.left=Math.max(0,Math.floor((innerWidth-r.width)/2/u)*u)+"px";d.style.top=Math.max(0,Math.floor((innerHeight-r.height)/2/u)*u)+"px"}
+const PX_DLGS=["setDlg","accDlg","quitDlg","lbDlg","aboutDlg"],pxDlgs=()=>{for(const id of PX_DLGS)pxDlg($(id))};
+if(typeof ResizeObserver==="function"){const ro=new ResizeObserver(pxDlgs);for(const id of PX_DLGS)if($(id))ro.observe($(id))} // (late fonts, a note, a re-render)
 // back to the SVG map for this run (a waiting run gets its departure toast now)
 function pxClassic(){const w=S.pxWait;pxRun++;S.px=S.pxWait=false;document.body.classList.remove("px");pxVeil(-1);
   if(typeof RIDE!=="undefined")RIDE.stop();
   if(w&&S.screen==="game")announce(t("depart",S.seq[0].zh))}
 // every game.js → RIDE call (they draw): a throw switches to Classic for the session, the run itself goes on
 function pxTry(f){try{f()}catch(e){console.error("pixel ride → classic:",e);pxDead=true;pxClassic();paintPxSet()}}
-// the 12 s give-up clock of a prepare only runs while the page is visible (a background tab gets no frames to prepare in)
+// a give-up clock (a prepare's 12 s, the menu map's 8 s) runs only while the page is visible (a background tab gets no frames)
 function pxClock(ms){let left=ms,t0=0,tm=0,j=null;
   const tick=()=>{if(document.hidden){if(tm){clearTimeout(tm);tm=0;left-=performance.now()-t0}}
-      else if(!tm){t0=performance.now();tm=setTimeout(()=>{off();j(new Error("pixel ride: not ready after 12 s"))},left)}},
+      else if(!tm){t0=performance.now();tm=setTimeout(()=>{off();j(new Error("pixel: not ready after "+ms/1e3+" s"))},left)}},
     off=()=>{clearTimeout(tm);document.removeEventListener("visibilitychange",tick)};
   return{p:new Promise((_,x)=>{j=x;document.addEventListener("visibilitychange",tick);tick()}),off}}
 async function pxRide(L,rev,live){const run=++pxRun,pct=p=>{if(run===pxRun&&S.pxWait)pxVeil(p)},clk=pxClock(12000); // a dropped prepare never re-shows the veil
@@ -521,6 +561,44 @@ async function pxRide(L,rev,live){const run=++pxRun,pct=p=>{if(run===pxRun&&S.px
     RIDE.start(L,S);
     if(S.pxWait){S.pxWait=false;pxVeil(-1);announce(t("depart",S.seq[0].zh),pxTight())}}
   catch(e){clk.off();if(pxPrep===run)pxPrep=0;if(run!==pxRun)return;console.warn("pixel ride → classic:",e);pxClassic();pxMiss=true;paintPxSet()}} // (Settings: Classic, tap to retry)
+
+/* ---------- pixel menu map (v0.7.0: js/px/ovmap.js OVM over js/map/ov.js; API in its header) ----------
+   OVM draws the world screen's map on its own canvas in #ovHost. The SVG #ovMap (built at boot) shows until OVM's first frame is
+   painted and is the instant fallback for the rest of the session (ovFail): no 2D canvas, the menu set failing 3×, any OVM call
+   throwing (ovTry), or no frame within 8 s of visible time. The menu set (PX_MENU) loads after the page's load + idle, at once on a
+   start / chip click or once #pick shows (saveData: only those); it mounts on the menu (#pick is laid out below the
+   hero, so its first view bakes before the hero folds; its trains run only on screen). The world code frames it (wRefit: OVM.focus / go with the pads of the UI over it) and gives it life (wLife: the island,
+   lively trains, progress badges, the START sign; the gauntlet's marks); the adapters ovHighlight / ovLabels / ovZoom / ovResetView
+   keep the SVG in step while it shows. Off the menu it stays mounted but idle (its IntersectionObserver stops the trains with #menu
+   hidden); a pixel ride on a small device frees its caches (the ride's end-of-ride view bakes its own) and the menu re-paints on
+   return (ovSync). North-up: the SVG's rotation and #ncue return only with the SVG. */
+let ovP=null,ovMt=false,ovOn=false,ovDead=false,ovScale=0,ovTh="",ovClk=null,ovPend=false,ovFreed=false,ovInp=null;
+const ovM=()=>ovMt&&!ovDead,ovLive=()=>ovOn&&ovM(); // mounted · painted (the SVG hidden)
+function ovTry(f){if(!ovM())return;try{return f()}catch(e){ovFail(e)}}
+// which map shows: the SVG (+ its north cue) or the pixel host (kept invisible while OVM bakes its first view, so the SVG gets the input)
+function ovSvg(on){$("ovMap").style.display=on?"":"none";if($("ncue"))$("ncue").style.display=on?"":"none";
+  if($("ovHost"))$("ovHost").style.visibility=on?"hidden":""}
+function ovFail(e){if(ovDead)return;ovDead=true;if(e)console.warn("pixel map → svg:",e);if(ovClk)ovClk.off();
+  try{if(ovInp)ovInp();if(ovMt)OVM.unmount()}catch(x){}
+  const was=ovOn;ovMt=ovOn=false;ovSvg(true);if($("ovHost"))$("ovHost").hidden=true;
+  if(was){ovHighlight(null);wSvgK="";wRefit()}} // (an SVG still showing kept in step, and its free zoom)
+function pxMenu(){if(ovP)return ovP;if(ovDead)return ovP=pxLoad(PX_FONT).catch(()=>{});ovClk=pxClock(8000);ovClk.p.catch(ovFail);
+  return ovP=pxLoad(PX_MENU).then(ovMount,ovFail)}
+// mount (again for a new scale, a theme or freed caches that changed off the menu): the first time lazily (the SVG shows until
+// onReady), after that with a synchronous bake of the view (no blank frame). The island is set before (it is baked into the tiles)
+function ovMount(){const h=$("ovHost");if(ovDead||!h||typeof OVM==="undefined")return;
+  if(S.screen!=="menu"){ovPend=true;if(ovClk&&!ovOn){ovClk.off();ovClk=null}return} // (its 8 s restart with the mount)
+  if(!ovOn&&!ovClk){ovClk=pxClock(8000);ovClk.p.catch(ovFail)}
+  ovPend=ovFreed=false;ovScale=pxMS();ovTh=document.documentElement.dataset.theme;wLast="";
+  try{h.hidden=false;if(typeof OVM.island==="function")OVM.island(true);
+    OVM.focus(wFocus(),{animate:false,pad:wPad()}); // (unmounted: sets the view the first frame shows)
+    ovMt=true;OVM.mount(h,{scale:ovScale,lazy:!ovOn,onReady:ovReady});
+    if(!ovInp)ovInp=OVM.input(h,{dbl:false,onPick:wMapPick,onHover:id=>wHover(id,"map")});
+    wLife();wRefit(true)}
+  catch(e){ovFail(e)}}
+function ovReady(){ovOn=true;if(ovClk){ovClk.off();ovClk=null}ovSvg(false);wRefit(true)}
+function ovSync(){if(ovDead||S.screen!=="menu")return;
+  if(ovPend||ovM()&&(ovFreed||pxMS()!==ovScale||ovTh!==document.documentElement.dataset.theme))ovMount()}
 
 /* ---------- start runs ---------- */
 function resetStats(){Object.assign(S,{idx:0,typed:0,firstT:null,errSt:false,done:false,
@@ -567,6 +645,7 @@ function startLine(L,rev){S.mode="line";S.line=L;S.rev=rev;lastRun={mode:"line",
   setPrompt();movePulse();
   // pixel ride: the canvas takes over once its first frame is ready (the veil covers the wait)
   const px=pxOn();S.px=S.pxWait=px;document.body.classList.toggle("px",px);
+  if(px&&ovM()&&(IS_TOUCH||(navigator.deviceMemory||8)<=4)){ovFreed=true;ovTry(()=>OVM.free())} // (the menu map's caches make room)
   if(px){pxChrome();pxVeil(0);pxRide(L,rev,false)}
   else{pxRun++;if(typeof RIDE!=="undefined")RIDE.stop();
     if(RIDE_MODE==="pixel"&&typeof RIDE!=="undefined"&&RIDE.giveUp&&!pxSlowTold){pxSlowTold=true;announce(t("pxSlow"))}
@@ -659,7 +738,7 @@ inp.addEventListener("beforeinput",e=>{
   if(!e.isComposing&&/^(delete|history)/.test(e.inputType))e.preventDefault()});
 document.addEventListener("keydown",e=>{
   if(S.screen!=="game")return;
-  if(S.paused)return; // quit dialog open — let the dialog own the keys (native Esc closes it)
+  if(S.paused||$("setDlg").open||$("accDlg").open)return; // a dialog is open — let it own the keys (native Esc closes it)
   if(e.key==="Escape"){e.preventDefault();quit();return} // preventDefault so this same Esc doesn't also close the dialog we just opened
   // correct keystrokes lock in — no deleting/retyping (since v0.4.3)
   if(e.key==="Backspace"||e.key==="Delete"){e.preventDefault();return}
@@ -801,11 +880,18 @@ function announce(msg,quiet){if(quiet){$("srToast").textContent=msg;return}
   const t=$("toast");t.textContent=msg;t.classList.add("on");
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),2100)}
 
+// the pixel ride ends on its whole-line view (RIDE.recapMs(), ≈ 3 s incl. the glide out; reduced motion: cuts, same hold) — any key or
+// tap skips to the results at once (capture phase; the tap's own click is swallowed so it can't land on a result button). Classic: 1.2 s
 function finishRun(){S.done=true;S.endT=performance.now();
-  inp.disabled=true;camFollow=false;fitSeq(false);if(pxLive())pxTry(()=>RIDE.finish());
+  inp.disabled=true;camFollow=false;fitSeq(false);
+  let ms=1200;if(pxLive())pxTry(()=>{RIDE.finish();if(typeof RIDE.recapMs==="function")ms=+RIDE.recapMs()||1200});
   gMap.classList.remove("noNames"); // terminus: names return for the zoomed-out recap
   sWin();if(!S.px)confetti();announce(t("terminusReached")); // (the pixel ride: no DOM confetti over the canvas)
-  setTimeout(showResult,1200)}
+  const end=()=>{off();if(S.screen==="game"&&S.done)showResult()},eat=e=>{e.preventDefault();e.stopPropagation();removeEventListener("click",eat,true)},
+    skip=e=>{if(e.repeat)return;e.preventDefault();if(typeof RIDE.skip==="function")pxTry(()=>RIDE.skip());
+      if(e.type==="pointerdown"){addEventListener("click",eat,true);setTimeout(()=>removeEventListener("click",eat,true),1000)}end()},
+    off=()=>{clearTimeout(tm);removeEventListener("keydown",skip,true);removeEventListener("pointerdown",skip,true)},tm=setTimeout(end,ms);
+  if(pxLive()){addEventListener("keydown",skip,true);addEventListener("pointerdown",skip,true)}}
 
 /* ---------- boss flow ---------- */
 function bossComplete(){const{t,perf}=stationPerf();
@@ -880,19 +966,19 @@ function showResult(rerender){show("result");
     hs.appendChild(cell)});
   $("fastslow").innerHTML=(fi>=0?t("fastest",list[fi].zh,S.times[fi].toFixed(1)):"")+
     (si>=0?t("slowest",list[si].zh,S.times[si].toFixed(1)):"");
-  // session best (skip re-scoring when only re-rendering for a language switch)
-  if(!rerender){const key=boss?"boss":S.line.id;
-    S.isBest=!bests[key]||S.score>bests[key].score;
-    if(S.isBest)bests[key]={score:S.score,time:fmtT(total),acc};
+  // session best (skip re-scoring when only re-rendering for a language switch); stars = the session's most, from any finished run
+  if(!rerender){const key=boss?"boss":S.line.id,b=bests[key];
+    S.isBest=!b||S.score>b.score;
+    if(S.isBest)bests[key]={score:S.score,time:fmtT(total),acc,stars:Math.max(stars,b&&b.stars||0)};else b.stars=Math.max(b.stars||0,stars);
     if(typeof cloudOnResult==="function")cloudOnResult({
       key,mode:boss?"boss":"line",score:S.score,wpm,acc,maxCombo:S.maxCombo,
       durS:+(total/1000).toFixed(1),stars,
       cleared:boss?S.bossDone:S.seq.length,total:boss?S.bossList.length:S.seq.length,
       lives:boss?S.lives:3})}
   nb.hidden=!S.isBest;
-  renderCards()}
+  worldProgress()}
 
-/* ---------- menu cards ---------- */
+/* ---------- colours + the SVG map's adapters ---------- */
 const LINE_STS=new Map(LINES.map(L=>[L.id,new Set(L.stations.map(s=>s.zh))]));
 // readable text color for a hex background: dark ink on light colors, white on dark ones
 const lumOf=hex=>{const n=hex.replace("#","");const[r,g,b]=[0,2,4].map(i=>parseInt(n.slice(i,i+2),16)/255).map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return .2126*r+.7152*g+.0722*b};
@@ -911,12 +997,14 @@ const btnBg=hex=>{const tx=lumOf(hex)>.19?"#0a0f1a":"#ffffff";if(crOf(hex,tx)>=B
   for(let i=0;i<12;i++){const m=(lo+hi)/2;if(crOf(mixTo(hex,m,toward),tx)<BTN_MIN)lo=m;else hi=m}
   return mixTo(hex,hi,toward)};
 const REDUCED=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
-function ovHighlight(id){const ov=$("ovMap");
+// adapters (v0.7.0): the pixel map (OVM) takes the hover while mounted; the SVG below keeps them while it shows (its framing: wRefit)
+// ovHighlight(id): the hovered line lit (null: back to the framed one)
+function ovHighlight(id){id=id&&id!=="boss"?id:null;if(ovM())ovTry(()=>OVM.hover(id));if(ovLive())return;const ov=$("ovMap");id=id||wFocus();
   ov.querySelectorAll(".lpath").forEach(p=>p.classList.toggle("dimline",!!id&&p.dataset.line!==id));
   const mine=id&&LINE_STS.get(id);
   ov.querySelectorAll(".stg").forEach(g=>{g.style.opacity=!mine||mine.has(g.dataset.st)?"":".25"})}
-// station-name labels follow the zoom focus (the expanded card's line), never hover
-function ovLabels(id){const mine=id&&LINE_STS.get(id);
+// station-name labels follow the zoom focus (the framed line), never hover
+function ovLabels(id){if(ovLive())return;const mine=id&&LINE_STS.get(id);
   $("ovMap").querySelectorAll(".stg").forEach(g=>g.classList.toggle("lbl",!!mine&&mine.has(g.dataset.st)))}
 // zoom the overview map to one line (null → back to the full network), rotating the
 // map so the line's long axis fills the viewport at maximum size: 1° scan, smallest
@@ -942,11 +1030,11 @@ let FULL_VB=null,ovAnim=0,ovA=0,ovC=null,ovGs=[];
 // OV_BASEZ = depth where map furniture is drawn 1:1; boot raises OV_MAXZ so the
 // shortest line can fill the window, and past OV_BASEZ everything counter-scales
 const OV_BASEZ=5;let freeVB=null,OV_MAXZ=OV_BASEZ,ovK=1;
-const ovFocused=()=>expandedLine(); // an expanded card's line owns the viewBox
+const ovFocused=()=>wFocus(); // the framed line owns the viewBox
 const ovFree=()=>!ovFocused()&&FULL_VB; // pan/zoom only in the default network view
 function ovIsZoomed(){return!!freeVB&&freeVB[2]<FULL_VB[2]-.5}
 function ovApplyVB(vb){const ov=$("ovMap");ov.setAttribute("viewBox",vb.map(n=>n.toFixed(1)).join(" "));
-  const z=ovIsZoomed();ov.classList.toggle("zoomed",z);$("ovReset").classList.toggle("show",z);
+  ov.classList.toggle("zoomed",ovIsZoomed());
   ovShrink(ov,Math.min(1,OV_BASEZ*vb[2]/FULL_VB[2]))}
 // v0.4.11: past OV_BASEZ the map furniture counter-scales (constant on-screen size
 // instead of ballooning): strokes/dots via --zs in CSS, labels via ovLabelXf
@@ -975,8 +1063,7 @@ function ovLabelXf(ov,a,cx,cy,k){
     else g.setAttribute("transform",
       `rotate(${af} ${cxf} ${cyf}) translate(${(px-k*(d.sx-(d.ox||0))).toFixed(1)} ${(py-k*(d.sy-(d.oy||0))).toFixed(1)}) scale(${kf})`)}}
 function ovShrink(ov,k){if(ovFurn(ov,k))ovLabelXf(ov,0,0,0,k)}
-function ovClearFree(){freeVB=null;const ov=$("ovMap");if(ov){ov.classList.remove("zoomed");
-  const r=$("ovReset");r&&r.classList.remove("show")}}
+function ovClearFree(){freeVB=null;$("ovMap").classList.remove("zoomed")}
 // measured label boxes (getBBox sees opacity-hidden text), cached per <g> and per
 // text-anchor since strip mode re-anchors to "start"; webfont arrival re-measures
 let LBB=new WeakMap();
@@ -1002,7 +1089,8 @@ function ovZoomAt(cx,cy,s){if(!ovFree())return;const u=ovUser(cx,cy);if(!u)retur
 function ovPanBy(dxPx,dyPx){if(!ovFree())return;const m=$("ovMap").getScreenCTM();if(!m)return;
   const cur=freeVB||[...FULL_VB];freeVB=ovClampVB([cur[0]-dxPx/m.a,cur[1]-dyPx/m.d,cur[2],cur[3]]);
   ovApplyVB(freeVB)}
-function ovResetView(){if(ovFocused())return;ovZoom(null)} // animates back to the full-network fit
+function ovResetView(){if(ovLive())return ovTry(()=>OVM.reset());
+  if(ovFocused())return;ovZoom(null)} // animates back to the full-network fit
 // v0.4.13: place the focused line's labels and grow the target viewBox to cover
 // every measured label box — the fit zoom is capped so no name leaves the screen.
 // All in the rotate(a,tc) frame bestFit's vb lives in. Strip mode (|a|>20°):
@@ -1011,7 +1099,7 @@ function ovResetView(){if(ovFocused())return;ovZoom(null)} // animates back to t
 // local track stays banned) — and the perpendicular offset is measured so the box
 // clears its station dot. The counter-scale k depends on the viewBox, which
 // depends on the label boxes, so iterate to a fixed point.
-function layoutLabels(ov,LL,a,tc,vb0){
+function layoutLabels(ov,LL,a,tc,vb0,wOf=v=>v[2]){ // (wOf: the width a vb shows at — the world's free rect grows it, ovTarget)
   const strip=Math.abs(a)>20,r=a*Math.PI/180,co=Math.cos(r),si=Math.sin(r),
     rot=st=>[tc[0]+(st.x-tc[0])*co-(st.y-tc[1])*si,tc[1]+(st.x-tc[0])*si+(st.y-tc[1])*co],
     G=zh=>{const g=ov.querySelector(`.stg[data-st="${zh}"]`);return g&&g.lastElementChild},
@@ -1022,7 +1110,7 @@ function layoutLabels(ov,LL,a,tc,vb0){
       if(t>=90)t-=180;if(t<-90)t+=180;return t});
   let vb=vb0,k=1;
   for(let it=0;it<3;it++){
-    k=FULL_VB?clamp(OV_BASEZ*vb[2]/FULL_VB[2],.05,1):1;
+    k=FULL_VB?clamp(OV_BASEZ*wOf(vb)/FULL_VB[2],.05,1):1;
     let x0=vb0[0],y0=vb0[1],x1=vb0[0]+vb0[2],y1=vb0[1]+vb0[3];
     const grow=(xa,xb,ya,yb)=>{x0=Math.min(x0,xa-6);x1=Math.max(x1,xb+6);
       y0=Math.min(y0,ya-6);y1=Math.max(y1,yb+6)};
@@ -1134,16 +1222,20 @@ function layoutLabels(ov,LL,a,tc,vb0){
       lay.set(st.zh,{m:"u",ox,oy})}
     vb=[x0,y0,x1-x0,y1-y0]}
   return{vb,lay,k}}
-function ovTarget(id){const ov=$("ovMap");
+// a line is fitted into the free rect (pad: CSS px of the UI over the map, the world's wPad) and that view grown to the whole box
+function ovTarget(id,pad){const ov=$("ovMap"),W=ov.clientWidth||760,H=ov.clientHeight||580,p=pad||{},
+    l=p.left||0,t=p.top||0,fw=Math.max(80,W-l-(p.right||0)),fh=Math.max(80,H-t-(p.bottom||0)),
+    grow=v=>{const s=Math.min(fw/v[2],fh/v[3]),cx=v[0]+v[2]/2,cy=v[1]+v[3]/2;return[cx-(l+fw/2)/s,cy-(t+fh/2)/s,W/s,H/s]};
   let tgt=FULL_VB,ta=0,tc=ovC,LL=null,lay=null,tk=1;
   if(id){LL=LINES.find(l=>l.id===id);
-    if(LL){const f=bestFit(LL,ov.clientWidth||760,ov.clientHeight||580);
+    if(LL){const f=bestFit(LL,fw,fh);
       ta=f.a;tc=[f.cx,f.cy];
-      const r=layoutLabels(ov,LL,ta,tc,f.vb);
-      tgt=r.vb;lay=r.lay;tk=r.k}}
+      const r=layoutLabels(ov,LL,ta,tc,f.vb,v=>grow(v)[2]);
+      tgt=grow(r.vb);lay=r.lay;tk=r.k}}
   return{tgt,ta,tc,LL,lay,tk}}
-function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
-  let{tgt,ta,tc,lay,tk}=ovTarget(id);
+function ovZoom(id,pad){if(ovLive())return; // (the SVG only: OVM is framed by wRefit)
+  const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue");
+  let{tgt,ta,tc,lay,tk}=ovTarget(id,pad);
   if(!tgt)return;
   ovClearFree(); // any focus change (or reset) supersedes a free pan/zoom
   cancelAnimationFrame(ovAnim);
@@ -1183,162 +1275,278 @@ function ovZoom(id){const ov=$("ovMap"),mr=ov.querySelector(".mrot"),nc=$("ncue"
     setVb(v.slice(0,4));setRot(v[4],v[5],v[6],kOf(v));
     if(p<1)ovAnim=requestAnimationFrame(step);else land()};
   ovAnim=requestAnimationFrame(step)}
-// accordion state: which card is open ("l1"… or "boss"); survives re-renders
-let expandedId=null;
-// card ordering (session-only): sort key + direction, re-tap flips asc/desc
-let cardSort="num",cardAsc=true;
-// FLIP: capture card rects keyed by line id, run the reorder/reflow, then glide
-// each card (incl. the resized one's width) from its old box to the new one;
-// onLayout fires after the mutation with final layout but before any animation
-// starts — the only moment final geometry is measurable (the width tween and the
-// cbody 0fr→1fr transition both lie about it afterwards)
-function flipCards(mutate,onLayout){const wrap=$("cards");
-  if(REDUCED()){mutate();onLayout&&onLayout();return}
-  const old=new Map([...wrap.children].map(c=>[c.dataset.line,c.getBoundingClientRect()]));
-  mutate();
-  onLayout&&onLayout();
-  [...wrap.children].forEach(c=>{const a=old.get(c.dataset.line);if(!a)return;
-    const b=c.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top,dw=Math.abs(a.width-b.width)>.5;
-    if(!dx&&!dy&&!dw)return;
-    const kf=[{transform:`translate(${dx}px,${dy}px)`},{transform:"none"}];
-    if(dw){kf[0].width=a.width+"px";kf[1].width=b.width+"px"}
-    c.animate(kf,{duration:360,easing:"cubic-bezier(.2,0,0,1)"})})}
-const expandedLine=()=>expandedId&&expandedId!=="boss"?expandedId:null;
-const absTop=el=>{let y=0;for(;el;el=el.offsetParent)y+=el.offsetTop;return y};
-function toggleCard(id,stay){expandedId=expandedId===id?null:id;
-  flipCards(()=>{document.querySelectorAll("#cards .card").forEach(c=>{const on=c.dataset.line===expandedId;
-    c.classList.toggle("open",on);c.querySelector(".chead").setAttribute("aria-expanded",on)});
-    // part of the mutation: on the stacked mobile layout the legend sits between
-    // map and cards, so the scroll math below must see it already hidden
-    $("legend").classList.toggle("off",!!expandedId)},
-    ()=>{if(!expandedId)return;
-      const c=document.querySelector(`#cards .card[data-line="${expandedId}"]`),PAD=14;
-      // fit whole map + whole card when they can share the screen (map top at the
-      // viewport top); otherwise pin the card's bottom to the viewport bottom.
-      // Map clicks (stay) hold the page still instead, scrolling only if the
-      // card's bottom — the start button — would sink below the fold.
-      // Final card height is predicted (header + body content) — the cbody
-      // track transition still reports the collapsed height at this point
-      const finalH=c.querySelector(".chead").offsetHeight+c.querySelector(".cinner").scrollHeight;
-      // stacked (column) mapcard: the svg's height follows its viewBox aspect,
-      // which ovZoom is about to retarget — predict the shift for all below
-      const mc=document.querySelector(".mapcard"),ov=$("ovMap"),cv=ov.viewBox.baseVal,
-        tg=ovTarget(expandedLine()).tgt,
-        dSvg=tg&&cv.width&&getComputedStyle(mc).flexDirection==="column"
-          ?ov.getBoundingClientRect().width*(tg[3]/tg[2]-cv.height/cv.width):0;
-      const bot=absTop(c)+dSvg+finalH+PAD-innerHeight;
-      const top=stay?Math.max(scrollY,bot):Math.max(absTop(mc)-PAD,bot);
-      scrollTo({top:Math.max(0,top),behavior:REDUCED()?"auto":"smooth"})});
-  ovHighlight(expandedLine());ovZoom(expandedLine());ovLabels(expandedLine());
-  pxPre()}
-// pixel ride: the open card's first frame (its direction) — P0 tiles only, never on saveData; another card / closing drops the
-// rest. After the card's 360 ms unfold (planning the frame costs 10–55 ms of main thread; a card skimmed past costs nothing)
+// pixel ride: the open card's first frame (its direction) — P0 tiles only, never on saveData; another line / closing drops the
+// rest. 400 ms after it opens / swaps / reverses (planning the frame costs 10–55 ms of main thread; a line skimmed past costs nothing)
 let pxPreT=0;
 function pxPre(){clearTimeout(pxPreT);if(typeof RIDE!=="undefined")RIDE.prefetch(null);
   const id=expandedLine(),c=navigator.connection;if(!id||!pxOn()||(c&&c.saveData))return;
   pxPreT=setTimeout(()=>pxLoad().then(()=>{if(expandedLine()!==id||S.screen!=="menu")return;
     RIDE.set({scale:PX_SCALE,kb:false,...pxChips()});return RIDE.prefetch(LINES.find(l=>l.id===id),!!dirState[id],pxSize())}).catch(()=>{}),400)}
-const legendLeave=()=>ovHighlight(expandedLine());
-function renderLegend(){
-  $("legend").innerHTML=LINES.map(L=>`<span class="lg" data-line="${L.id}" role="button" tabindex="0"><i style="background:${L.color}"></i>${t("lineName",L)}</span>`).join("")+
-    `<span class="lg"><i style="background:var(--map-inter);outline:1px solid var(--map-inter-ring)"></i>${t("interchange")}</span>`;
-  $("legend").addEventListener("mouseleave",legendLeave); // no per-pill mouseleave: highlight sticks across the gaps
-  $("legend").querySelectorAll(".lg[data-line]").forEach(el=>{
-    const id=el.dataset.line,on=()=>ovHighlight(id);
-    el.addEventListener("mouseenter",on);el.addEventListener("focus",on);
-    el.addEventListener("blur",legendLeave);
-    // v0.4.15: a legend pill opens the line's card — the exact gesture a map
-    // line click performs, so every way of selecting a line frames identically;
-    // the legend hides with the open card, so hand focus to the card header
-    el.addEventListener("click",()=>{toggleCard(id,true);
-      const ch=document.querySelector(`#cards .card[data-line="${id}"] .chead`);
-      if(expandedId===id&&ch)ch.focus({preventScroll:true})});
-    el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click()}})})}
-const SORT_LB={num:"sortNum",stops:"sortStops",diff:"sortDiff"};
-function renderSortBar(){const bar=$("sortBar");
-  bar.innerHTML=`<span class="slb">${t("sortBy")}</span>`+Object.keys(SORT_LB).map(k=>{const on=k===cardSort;
-    return `<button class="schip${on?" on":""}" data-k="${k}" aria-pressed="${on}">${t(SORT_LB[k])}${on?`<i>${cardAsc?"↑":"↓"}</i>`:""}</button>`}).join("");
-  bar.querySelectorAll(".schip").forEach(b=>b.onclick=()=>{
-    if(b.dataset.k===cardSort)cardAsc=!cardAsc;else{cardSort=b.dataset.k;cardAsc=true}
-    flipCards(renderCards)})}
-function renderCards(){const wrap=$("cards");wrap.innerHTML="";
-  const DIFF=[["easy","diffEasy"],["mid","diffMedium"],["hard","diffHard"]];
-  const cap=(cls,key)=>`<span class="dcap ${cls}" aria-label="${t("diffAria",t(key))}">${t(key)}</span>`;
-  const tile=(v,u,lb)=>`<div class="lstat"><b>${v}${u?`<i>${u}</i>`:""}</b><span>${lb}</span></div>`;
-  const chev=`<span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  renderSortBar();
-  // difficulty caption by tercile of the diff ranking (independent of display order)
-  const rank=new Map([...LINES].sort((a,b)=>a.diff-b.diff).map((L,i)=>[L.id,i]));
-  const ord=[...LINES];
-  if(cardSort==="stops")ord.sort((a,b)=>a.stations.length-b.stations.length);
-  else if(cardSort==="diff")ord.sort((a,b)=>a.diff-b.diff);
-  if(!cardAsc)ord.reverse();
-  ord.forEach(L=>{const[dcls,dkey]=DIFF[Math.floor(rank.get(L.id)*DIFF.length/LINES.length)];
-    const a=L.stations[0].zh,b=L.stations[L.stations.length-1].zh;
-    const tt=()=>dirState[L.id]?`${b} → ${a}`:`${a} → ${b}`;
-    const best=bests[L.id];
-    const card=document.createElement("div");card.className="card";card.dataset.line=L.id;
-    card.style.setProperty("--cc",btnBg(L.color));card.style.setProperty("--cc-tx",txOn(L.color));
-    card.innerHTML=`
-      <button class="chead" aria-expanded="false" aria-controls="cb-${L.id}">
-        <span class="crow">
-          ${cap(dcls,dkey)}
-          <span class="lnum${L.num.length>2?" wide":""}">${L.num}</span>
-          <span class="lname">${t("lineName",L)}<small>${LANG==="zh"?L.en:L.zh}</small></span>${chev}
-        </span>
-        <span class="crow">
-          <span class="tt">${tt()}</span>
-          <span class="stct">${t("stops",L.stations.length)}</span>
-        </span>
-      </button>
-      <div class="cbody" id="cb-${L.id}"><div class="cinner">
-        <p class="fact">${descOf(L)}</p>
-        <div class="lstats">
-          ${tile("≈"+Math.round(L.km),"km",t("statKm"))}
-          ${tile(L.letters,t("uLetters"),t("statLetters"))}
-          ${tile(L.avgLen.toFixed(1),t("uPerStop"),t("statAvg"))}
-        </div>
-        ${best?`<div class="best">${t("best",best)}</div>`:""}
-        <div class="cacts">
-          <button class="rev" title="${t("revTitle")}">⇄ ${t("revBtn")}</button>
-          <button class="go">${t("go")}</button>
-        </div>
-      </div></div>`;
-    card.querySelector(".chead").onclick=()=>toggleCard(L.id);
-    card.querySelector(".rev").onclick=()=>{dirState[L.id]=!dirState[L.id];
-      card.querySelector(".tt").textContent=tt();if(expandedId===L.id)pxPre()};
-    card.querySelector(".go").onclick=()=>startLine(L,!!dirState[L.id]);
-    wrap.appendChild(card)});
-  // boss card
-  const bb=bests["boss"];
-  const bc=document.createElement("div");bc.className="card boss";bc.dataset.line="boss";
-  bc.innerHTML=`
-    <button class="chead" aria-expanded="false" aria-controls="cb-boss">
-      <span class="crow">
-        ${cap("imp","diffImp")}
-        <span class="lnum">★</span>
-        <span class="lname">${t("bossTitle")}<small>${LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"}</small></span>${chev}
-      </span>
-      <span class="crow">
-        <span class="tt">${BOSS[BOSS.length-1].zh} → ${BOSS[0].zh}</span>
-        <span class="stct">${t("bossCount",BOSS.length)}</span>
-      </span>
-    </button>
-    <div class="cbody" id="cb-boss"><div class="cinner">
-      <p class="fact">${t("bossFact")}</p>
-      <div class="lstats">
-        ${tile(BOSS.length,t("uWords"),t("bossWords"))}
-        ${tile(BOSS[0].key.length,t("uLetters"),t("bossLongest"))}
-        ${tile("♥×3","",t("bossLives"))}
-      </div>
-      ${bb?`<div class="best">${t("best",bb)}</div>`:""}
-      <div class="cacts"><button class="go">${t("challenge")}</button></div>
-    </div></div>`;
-  bc.querySelector(".chead").onclick=()=>toggleCard("boss");
-  bc.querySelector(".go").onclick=startBoss;
-  wrap.appendChild(bc);
-  if(expandedId){const c=wrap.querySelector(`.card[data-line="${expandedId}"]`);
-    if(c){c.classList.add("open");c.querySelector(".chead").setAttribute("aria-expanded","true")}}}
+
+/* ---------- the world map (v0.7.0: the level select, mockups/pixel-world/SPEC.md; replaced layout B) ----------
+   #pick is one full-screen game screen over the living OVM map (block above): the progress plate (★ n/19 + a lamp per line), the chips
+   (#fchips: leaderboard · settings · account · about), the banner + key hint, the dock (19 medallions + the gauntlet plate, stars under
+   them, the cursor on the picked one), the stub (the picked ticket folded: the one action) or the level card (a ticket: a side panel or
+   a bottom sheet by the Auto rule, wPlace). State: one picked id wSel (a line id or "boss", always set), wOpen (the card shows), wMapOn
+   (the map frames wSel; false = the whole network); hover (wHov: a node, the stub, a line on the map) never picks. START runs
+   startLine / startBoss inside the tap / key (its inp.focus() raises the phone keyboard), then #goFx dithers in the line colour over
+   the ride's preparation (it takes over #pxVeil's job until the ride is ready; Classic / boss: a short form). Stars: bests[key].stars
+   (session-only) merged with cloud.js cloudStars() (a Promise of {mode: n}); worldProgress() repaints them (cloud.js, each result).
+   Keys (window, capture) only while the world shows (wOn), no dialog is open and no field has focus. Blips: square waves on the
+   game's AudioContext once a gesture made it run, never with Sound off. The SVG map stands in for OVM (picks then come from the dock). */
+const WIDS=[...LINES.map(L=>L.id),"boss"],LBY=new Map(LINES.map(L=>[L.id,L])),W_DIFF=["diffEasy","diffMedium","diffHard","diffImp"];
+[...LINES].sort((a,b)=>a.diff-b.diff).forEach((L,i)=>{L.lvl=1+Math.floor(i*4/LINES.length)}); // difficulty 1–4: the quartile of L.diff (boss 4)
+let wSel=null,wOpen=false,wMapOn=false,wHov=null,wHovSrc=null,wTouched=false,wFontsOk=false,wLast="",wSvgK="",wSwiped=false,wSwT=0,wRsT=0,
+  wBlipT=0,wMC=null,wBossBB,goRun=0,goT=0,goHold=false;
+const wOn=()=>S.screen==="menu"&&$("menu").classList.contains("pk"); // the world screen shows (the hero folded): keys
+// (#pick is laid out on the menu anyway — below the hero until then — so layout and the map's framing run whenever S.screen is "menu")
+const wNar=()=>innerWidth<=560,wU=()=>pxKof(pxMS()); // a phone · 1 art px in CSS px
+// the safe-area insets, CSS px (css #pick --sit/--sir/--sib/--sil: registered lengths on whole art px; 0 without @property)
+const wSafe=()=>{const s=getComputedStyle($("pick")),v=k=>parseFloat(s.getPropertyValue(k))||0;return{t:v("--sit"),r:v("--sir"),b:v("--sib"),l:v("--sil")}};
+// the card's placement (Auto): phones a bottom sheet; else the side panel when landscape or under 380 art px tall, else a sheet
+const wPlace=()=>wNar()?"bottom":innerHeight/wU()<380||innerWidth>innerHeight*1.15?"side":"bottom";
+const wFocus=()=>wMapOn&&wSel!=="boss"?wSel:null; // the line the map frames
+const expandedLine=()=>wOpen&&wSel!=="boss"?wSel:null; // the open card's line (pxPre)
+let wCS={};const wCloud=()=>wCS; // the signed-in player's stars per mode: cloud.js cloudStars() (a Promise), kept once it resolves
+function wStars(id,c=wCloud()){const b=bests[id],v=c[id],n=v&&typeof v==="object"?v.stars:v;return Math.min(3,Math.max(b&&b.stars||0,+n||0)|0)}
+function wBest(id,c=wCloud()){const b=bests[id],v=c[id];return Math.max(b?b.score:0,v&&typeof v==="object"?+(v.score||v.best)||0:0)}
+const wHome=()=>{const c=wCloud(),all=LINES.every(L=>wStars(L.id,c));return(LINES.find(L=>all?wStars(L.id,c)<3:!wStars(L.id,c))||LINES[0]).id};
+const ICON=n=>`<svg class="pki" aria-hidden="true"><use href="#${/^p[wk]-/.test(n)?n:"pki-"+n}"/></svg>`; // index.html's sprite: pki-<n>, pw-*, pk-*
+const wEsc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const wMedal=(id,n)=>{const w=n.length>2;return`<span class="pw-rd${w?" w":""}" data-lc="${id}" aria-hidden="true"><svg viewBox="0 0 ${w?33:23} 23"><use href="#pw-rd${w?"w":""}"/></svg><b${n.length>1?' class="n12"':""}>${wEsc(n)}</b></span>`};
+const wStarsSvg=(n,w,h,k)=>[0,1,2].map(i=>`<svg viewBox="0 0 ${w} ${h}"${i<n?"":' class="e"'} aria-hidden="true"><use href="#${k}${i<n?"":"e"}"/></svg>`).join("");
+const W_PLAY='<svg viewBox="0 0 7 11" aria-hidden="true"><use href="#pw-play"/></svg>';
+const wNum=id=>id==="boss"?"★":LBY.get(id).num,wName=id=>id==="boss"?t("wBossName"):t("lineName",LBY.get(id));
+const wSub=id=>id==="boss"?(LANG==="zh"?"LONG-NAME GAUNTLET":"长站名挑战"):LANG==="zh"?LBY.get(id).en.toUpperCase():LBY.get(id).zh; // (the other language)
+const wEnds=id=>{if(id==="boss")return[BOSS[BOSS.length-1].zh,BOSS[0].zh];const s=LBY.get(id).stations,a=s[0].zh,b=s[s.length-1].zh;return dirState[id]?[b,a]:[a,b]};
+const wNode=id=>{const p=$("path");return p&&p.querySelector(`.pw-node[data-id="${id}"]`)};
+const W_CUR=document.createElement("span");W_CUR.className="pw-cur";W_CUR.setAttribute("aria-hidden","true");
+W_CUR.innerHTML='<i><svg viewBox="0 0 8 8"><use href="#pw-cor"/></svg></i>'.repeat(4);
+
+/* text on whole art px: pixel-font advances (a canvas, 1 font px = 1 art px, after FONTS.ready) and the fact's 2-line clamp (whole
+   words by Intl.Segmenter, else a hanzi / a space-separated word; then back to a clause end keeping ≥ 40 %) */
+function wFontsOn(){if(wFontsOk||typeof FONTS==="undefined"||!FONTS.ready)return;
+  FONTS.ready.then(()=>{if(wFontsOk)return;wFontsOk=true;for(const id of["path","stub","hudTitle"])wFitMedals($(id));wFitCard();wBanner();wRefit(true)},()=>{})}
+const wCtx=()=>wMC||(wMC=PX_CANVAS?document.createElement("canvas").getContext("2d"):wDomM()); // (no 2D canvas: the same fonts measured in a hidden span)
+function wDomM(){const e=document.createElement("span");e.setAttribute("aria-hidden","true");
+  e.style.cssText="position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;white-space:pre;letter-spacing:0;font-kerning:none";document.body.appendChild(e);
+  return{font:"",measureText(t){e.style.font=this.font;e.textContent=t;return{width:e.getBoundingClientRect().width}}}}
+const wAdv=(s,f)=>{const g=wCtx();if(!g)return 0;g.font=f;return Math.round(g.measureText(s).width)};
+function wFitMedals(root){if(!wFontsOk||!root||!wCtx())return; // numerals centred: --nx = floor((w − advance + 1) / 2)
+  for(const b of root.querySelectorAll(".pw-rd>b")){const w=b.parentNode.classList.contains("w")?33:23,a=wAdv(b.textContent,b.classList.contains("n12")?"12px FP12":"16px FP16");
+    b.style.setProperty("--nx",`calc(${Math.floor((w-a+1)/2)}*var(--pxu))`)}}
+const W_SEG={};
+const wWords=s=>{const L=LANG==="zh"?"zh":"en";try{if(Intl.Segmenter){const g=W_SEG[L]||(W_SEG[L]=new Intl.Segmenter(L,{granularity:"word"}));return[...g.segment(s)].map(x=>x.segment)}}catch(e){}
+  return s.match(/[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]|[^\s\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]+\s*|\s+/g)||[]};
+function wClamp(txt,font,w,max){const g=wCtx();if(!wFontsOk||!g||w<=0)return txt;
+  g.font=font;const M=s=>g.measureText(s).width,lines=[[]];let cut=false;
+  for(const k of wWords(txt)){const L=lines[lines.length-1];
+    if(!L.length||M((L.join("")+k).trimEnd())<=w){L.push(k);continue}
+    if(lines.length===max){cut=true;break}
+    lines.push(k.trim()?[k]:[])}
+  if(!cut)return txt;
+  const last=lines[lines.length-1];while(last.length>1&&M(last.join("").trimEnd()+"…")>w)last.pop();
+  const out=lines.map(l=>l.join("")).join("").trimEnd();let p=-1,full=false;
+  for(const m of out.matchAll(/[，。；、：—]|[,.;:](?=\s)/g))if(m.index>=out.length*.4){p=m.index;full=m[0]==="。"||m[0]==="."}
+  if(p>=0)return full?out.slice(0,p+1):out.slice(0,p).replace(/[\s—]+$/,"")+"…";
+  return out.replace(/[\s，、。；：（(—,.;:-]+$/,"")+"…"}
+
+/* the screen's parts (markup: SPEC §4) */
+function wTop(){const p=$("prog");if(!p)return;const c=wCloud(),n=LINES.filter(L=>wStars(L.id,c)).length,N=LINES.length,all=n===N,lb=t(all?"wAllClear":"wCleared");
+  p.className="pk-panel pw-prog"+(all?" all":"");p.setAttribute("role","img");p.setAttribute("aria-label",`★ ${n}/${N} ${lb}`);
+  p.innerHTML=`${ICON(all?"crown":"star")}<b class="f12">${n}/${N}</b><span class="lbl f10">${wEsc(lb)}</span>`+
+    `<span class="pk-inset pw-meter" aria-hidden="true">${LINES.map(L=>`<i data-lc="${L.id}"${wStars(L.id,c)?' class="on"':""}></i>`).join("")}</span>`;
+  const b=$("lbBtn"),a=$("aboutBtn");if(b)b.setAttribute("aria-label",t("lbTitle"));
+  if(a){a.setAttribute("aria-label",t("about"));a.title=t("about")+" · v"+APP_VERSION}}
+function wPath(){const p=$("path");if(!p)return;const c=wCloud(),e=wEsc,st=id=>`<span class="pw-st">${wStarsSvg(wStars(id,c),7,6,"pw-s7")}</span>`;
+  p.setAttribute("aria-label",t("wPathAria"));
+  p.innerHTML=LINES.map(L=>`<button class="pw-node${L.num.length>2?" wide":""}" type="button" data-id="${L.id}" tabindex="-1" aria-label="${e(t("lineName",L))} · ${e(t("wStarsAria",wStars(L.id,c)))}">${wMedal(L.id,L.num)}${st(L.id)}</button>`).join("")+
+    `<button class="pw-node boss" type="button" data-id="boss" tabindex="-1" aria-label="${e(t("wBossName"))} · ${e(t("wStarsAria",wStars("boss",c)))}"><span class="pw-boss" data-lc="boss">${ICON("crown")}<span>${e(t("wBossPlate"))}</span></span>${st("boss")}</button>`;
+  wFitMedals(p);wPaintSel()}
+// the picked node: .sel, the only tab stop (roving), aria-current, the cursor's corners; a line hovered on the map marks its node .hov
+function wPaintSel(){const p=$("path");if(!p)return;
+  for(const b of p.children){const on=b.dataset.id===wSel;b.classList.toggle("sel",on);b.classList.toggle("hov",b.dataset.id===wHov&&wHovSrc==="map");
+    b.tabIndex=on?0:-1;on?b.setAttribute("aria-current","true"):b.removeAttribute("aria-current")}
+  const n=wNode(wSel);if(n&&W_CUR.parentNode!==n)n.appendChild(W_CUR)}
+function wCardHTML(id){const boss=id==="boss",L=boss?null:LBY.get(id),c=wCloud(),st=wStars(id,c),best=wBest(id,c),lvl=boss?4:L.lvl,lw=t(W_DIFF[lvl-1]),
+    fact=boss?t("bossFact"):descOf(L),e=wEsc,go=t(boss?"challenge":"go");
+  return`<div class="pw-head">${wMedal(id,wNum(id))}<h2 class="pw-name" id="cardH"><span class="f16">${e(wName(id))}</span><span class="f10">${e(wSub(id))}</span></h2>`+
+    `<button class="pk-chip pk-ico pw-x" type="button" data-act="close" aria-label="${e(t("accClose"))}" title="${e(t("accClose"))} (Esc)">${ICON("close")}</button></div>`+
+    `<div class="pw-perf" aria-hidden="true"></div><div class="pw-body"><div class="pw-route"><span class="pw-tt f12">${e(wEnds(id).join(" → "))}</span>`+
+    (boss?"":`<button class="pk-btn pw-rev" type="button" data-act="rev" aria-pressed="${!!dirState[id]}" title="${e(t("revTitle"))}" aria-label="${e(t("revTitle"))}">⇄<span> ${e(t("revBtn"))}</span></button>`)+"</div>"+
+    `<div class="pw-meta"><span class="pw-s15" role="img" aria-label="${e(t("wStarsAria",st))}">${wStarsSvg(st,15,14,"pw-s15")}</span>`+
+    (best?`<span class="pw-best f12" aria-label="${e(t("wBest",best))}">${ICON("crown")}<span class="long">${e(t("wBestW"))}</span><span>${best}</span><span>${e(t("wBestU"))}</span></span>`
+      :`<span class="pw-best none f10">${e(t("wNoBest"))}</span>`)+"</div>"+
+    `<div class="pw-info"><span class="pw-diff d${lvl}" role="img" aria-label="${e(t("wDiffAria",lvl))} · ${e(lw)}"><span class="f10">${e(lw)}</span>`+
+      `<span class="pw-pips">${[1,2,3,4].map(i=>`<i${i<=lvl?' class="on"':""}></i>`).join("")}</span></span>`+
+      `<span class="pw-stops f10">${ICON("stn")}${boss?`<span>${e(t("bossCount",BOSS.length))}</span><span>♥×3</span>`
+        :`<span>${e(t("stops",L.stations.length))}</span><span class="km">${ICON("line")}<span>~${Math.round(L.km)} km</span></span>`}</span></div>`+
+    `<p class="pw-fact ${LANG==="zh"?"f12":"f10"}" data-full="${e(fact)}">${e(fact)}</p>`+
+    `<button class="pk-btn pri pw-gobtn" type="button" data-act="go"><span>${e(go)}</span>${W_PLAY}</button></div>`}
+// fx: "wipe" (the card opens: it rises under a --lc dither) · "swap" (another line while open: the dither only); focus stays on its control
+function wCard(fx){const c=$("card");if(!c)return;const a=document.activeElement,act=a&&c.contains(a)?a.dataset.act||"go":null;
+  c.dataset.lc=wSel;c.innerHTML=wCardHTML(wSel);c.hidden=false;wFitCard();
+  if(fx&&!REDUCED()){c.classList.remove("wipe","swap");void c.offsetWidth;c.classList.add(fx)}
+  if(act){const f=c.querySelector(`[data-act="${act}"]`)||c.querySelector("[data-act=go]");if(f)f.focus({preventScroll:true})}}
+function wFitCard(){const c=$("card");if(!c||c.hidden)return;const u=wU();wFitMedals(c);
+  const p=c.querySelector(".pw-fact");if(p&&!wNar()){const f12=p.classList.contains("f12");
+    p.textContent=wClamp(p.dataset.full,f12?"12px FP12":"10px FP10",Math.floor(p.clientWidth/u)-(f12?12:4),2)}
+  const g=c.querySelector(".pw-gobtn");if(g&&wFontsOk&&wCtx()){const bw=Math.round(g.getBoundingClientRect().width/u)-2,cw=wAdv(g.firstChild.textContent,"16px FP16")+13;
+    g.style.setProperty("--gpl",`calc(${Math.max(4,Math.floor((bw-cw)/2))}*var(--pxu))`)}}
+function wStub(){const b=$("stub");if(!b)return;const id=wSel,[a,z]=wEnds(id),go=t(id==="boss"?"challenge":"go"),e=wEsc;
+  b.dataset.lc=id;b.hidden=wOpen;b.setAttribute("aria-label",`${go} · ${wName(id)} · ${a} → ${z}`);
+  b.innerHTML=`<span class="pw-sl">${wMedal(id,wNum(id))}</span><span class="pw-sm"><b class="f12">${e(wName(id))}</b><i class="f10">${e(a)} →<span class="to"> ${e(z)}</span></i></span>`+
+    `<span class="pw-sg"><span>${e(go)}</span>${W_PLAY}</span>`;wFitMedals(b)}
+// the banner: the hovered line, else the picked one (no card, the map on it), else the screen title; then the layout
+function wBanner(){const b=$("hudTitle");if(!b)return;const id=wHov||(!wOpen&&wMapOn?wSel:null),k=(id||"")+LANG+wFontsOk;
+  if(b.dataset.k!==k){b.dataset.k=k;b.innerHTML=id?wMedal(id,wNum(id))+`<span class="f16">${wEsc(wName(id))}</span><span class="f10">${wEsc(wSub(id))}</span>`
+    :`<span class="f16">${wEsc(t("wTitle"))}</span>`;if(id)wFitMedals(b)}
+  wLayout()}
+// the banner + key hint centred on whole art px between the plate and the chips (and a side card), hidden where they do not fit and on
+// phones; the path centred in the dock when it fits (else it scrolls); the stub centred
+function wLayout(){if(S.screen!=="menu"||!$("prog")||!$("path"))return;const u=wU(),W=innerWidth,nar=wNar(),c=$("card"),b=$("hudTitle"),k=$("keys"),p=$("path"),s=$("strip"),st=$("stub"),
+    lo=$("prog").getBoundingClientRect().right+8*u;let hi=$("fchips").getBoundingClientRect().left-8*u;
+  if(wOpen&&c&&!c.hidden&&wPlace()==="side")hi=Math.min(hi,c.getBoundingClientRect().left-8*u);
+  if(k)k.textContent=IS_TOUCH?t("wKeysTouch"):t(wOpen?wSel==="boss"?"wKeysBoss":"wKeysOpen":"wKeys");
+  for(const el of[b,k])if(el){el.hidden=false;const w=el.getBoundingClientRect().width;let x=(W-w)/2;if(x<lo)x=lo;if(x+w>hi)x=hi-w;
+    el.hidden=nar||x<lo-.5||w>hi-lo;el.style.left=Math.floor(x/u)*u+"px"}
+  if(k&&b)k.style.top=`calc(var(--gut) + var(--sit) + ${b.querySelector(".pw-rd")?30:20}*var(--pxu))`;
+  if(!nar&&s){p.style.marginLeft="0px";const pw=p.getBoundingClientRect().width,sw=s.getBoundingClientRect().width;p.style.marginLeft=pw<sw?Math.floor((sw-pw)/2/u)*u+"px":"0px"}
+  else p.style.marginLeft="";
+  if(st)st.style.left=!st.hidden&&!nar?Math.max(0,Math.floor((W-st.getBoundingClientRect().width)/2/u)*u)+"px":""}
+function wPlaceCls(){const p=$("pick"),v=wPlace();document.documentElement.classList.toggle("nar",wNar());
+  if(p){p.classList.toggle("pl-side",v==="side");p.classList.toggle("pl-bottom",v!=="side")}}
+function wAbout(){const v=$("aboutVer");if(v)v.textContent="v"+APP_VERSION;pxDlg($("aboutDlg"))} // (its text: data-i18n, setLang)
+// everything (boot, a language change, back from a run); worldProgress: only what the stars change
+function renderWorld(){const h=$("ovHost");if(h)h.setAttribute("aria-label",t("wMapAria"));if(!wSel)wSel=wHome();
+  wTop();wPath();const c=$("card");if(c){if(wOpen)wCard();else c.hidden=true}
+  wStub();wAbout();wCursor();wBanner();if(S.screen==="menu")requestAnimationFrame(()=>{wLayout();wScrollTo(wSel);wRefit(true)})}
+function worldProgress(){wPaintProg();
+  if(typeof cloudStars==="function")try{Promise.resolve(cloudStars()).then(o=>{o={...o||{}};if(JSON.stringify(o)!==JSON.stringify(wCS)){wCS=o;wPaintProg()}},()=>{})}catch(e){}}
+function wPaintProg(){wTop();wPath();if(wOpen)wCard();else wStub();if(ovM()&&typeof OVM.progress==="function")ovTry(()=>OVM.progress(wProg()));wLayout()}
+// the world shows (the hero folded, back from a run): the placement, the map mounted, laid out on the next frame; focus: the picked node
+function wEnter(focus){wChips(true);wPlaceCls();ovSync();wStub();wBanner();
+  requestAnimationFrame(()=>{if(S.screen!=="menu")return;wLayout();wFitCard();wScrollTo(wSel);wBanner();wRefit(true)});
+  if(focus){const n=wNode(wSel);if(n)n.focus({preventScroll:true})}}
+// #fchips (outside #menu: the ride needs it) joins the world screen right after the map while it shows, so Tab runs map → chips →
+// card → stub → the picked node (SPEC §3); show() puts it back for a run / the results (fixed either way; focus kept)
+function wChips(on){const f=$("fchips"),h=$("ovHost"),m=$("menu"),a=document.activeElement;if(!f||!h||!m)return;
+  if(on?f.previousElementSibling===h:f.nextElementSibling===m)return;
+  if(on)h.after(f);else m.before(f);if(a&&f.contains(a)&&document.activeElement!==a)a.focus({preventScroll:true})}
+function wResize(){wPlaceCls();if(S.screen!=="menu")return;wFitCard();wBanner();wScrollTo(wSel);wRefit()}
+function wTouch(){if(wTouched)return;wTouched=true;document.documentElement.classList.remove("idle")} // (the hint blinks until then)
+
+/* selection: pick (the cursor jumps, the map frames it; o.open opens the card, an open card swaps to it) · open · close · home */
+function wOpenCard(o={}){if(!wOpen){wOpen=true;wCard("wipe");blip("open")}else wCard();
+  const s=$("stub");if(s)s.hidden=true;wMapOn=true;wBanner();wRefit();pxPre();
+  if(o.focus!==false){const g=$("card").querySelector("[data-act=go]");if(g)g.focus({preventScroll:true})}}
+function wCloseCard(o={}){if(!wOpen)return;wOpen=false;const c=$("card");c.hidden=true;c.classList.remove("wipe","swap");blip("close");
+  wStub();wBanner();wRefit();pxPre();if(o.focus!==false){const n=wNode(wSel);if(n)n.focus({preventScroll:true})}}
+function wRest(){wMapOn=false;wBanner();wRefit();blip("close")}
+function wSelect(id,o={}){if(!WIDS.includes(id))return;wTouch();
+  const moved=id!==wSel,opening=o.open&&!wOpen,a=document.activeElement;wSel=id;wPaintSel();wScrollTo(id);
+  if(opening)wOpenCard({focus:o.focusCard});
+  else if(wOpen){if(moved)wCard("swap");wMapOn=true;wBanner();wRefit();pxPre()}
+  else{wStub();wMapOn=true;wBanner();wRefit()}
+  wCursor();
+  if(o.focusNode||(a&&a.classList&&a.classList.contains("pw-node"))){const n=wNode(id);if(n)n.focus({preventScroll:true})}
+  if(moved&&!opening)blip("move")} // (wOpenCard blips "open")
+function wRev(){if(wSel==="boss")return;wTouch();dirState[wSel]=!dirState[wSel];if(wOpen)wCard();else wStub();wCursor();wLayout();blip("rev");pxPre()}
+function wStep(d){const c=$("card");wSelect(WIDS[(WIDS.indexOf(wSel)+d+WIDS.length)%WIDS.length],{focusNode:!(c&&c.contains(document.activeElement))})}
+function wHover(id,src){if(id===wHov)return;wHov=id;wHovSrc=id?src:null;wPaintSel();
+  if(src!=="map")ovHighlight(id);else{const h=$("ovHost");if(h)h.style.cursor=id?"pointer":""}
+  if(id)blip("hover");wBanner()}
+// the map: a line picks + opens at once; the START sign / ring starts its open card (else opens it); blank closes the card, then goes home
+function wMapPick(id,h){if(S.screen!=="menu")return;wTouch();
+  if(h&&h.cursor){if(wOpen&&id===wSel){wStart();wKeepFocus()}else wSelect(id,{open:true});return}
+  if(id)wSelect(id,{open:true});else if(wOpen)wCloseCard({focus:false});else if(wMapOn)wRest()}
+// a START from the map fires in OVM's pointerup: a tap's compatibility mousedown follows it and would blur #pyin (the phone keyboard
+// just raised) — its default is kept off for that one mousedown (a mouse's came before the pointerup: the guard just expires)
+function wKeepFocus(){const md=e=>{e.preventDefault();off()},off=()=>{clearTimeout(tm);removeEventListener("mousedown",md,true)},tm=setTimeout(off,800);
+  addEventListener("mousedown",md,true)}
+// the dock scrolls to centre a node (whole art px); a touch swipe then picks the node it settles on (never a programmatic scroll)
+function wScrollTo(id){wSwiped=false;const n=wNode(id),s=$("strip");if(!n||!s||s.scrollWidth<=s.clientWidth+1)return;
+  const u=wU(),r=n.getBoundingClientRect(),q=s.getBoundingClientRect(),dx=r.left+r.width/2-(q.left+q.width/2);
+  if(Math.abs(dx)>1)s.scrollTo({left:Math.round((s.scrollLeft+dx)/u)*u,behavior:REDUCED()?"auto":"smooth"})}
+function wSwipeEnd(){if(!wSwiped||S.screen!=="menu")return;wSwiped=false;const s=$("strip").getBoundingClientRect(),cx=s.left+s.width/2;let best=null,bd=1e9;
+  for(const b of $("path").children){const r=b.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-cx);if(d<bd){bd=d;best=b}}
+  if(best&&best.dataset.id!==wSel)wSelect(best.dataset.id)}
+
+/* the map's framing + life. Pads (CSS px of the canvas) keep the UI clear: the top bar / banner / hint and the stub; a side card on the
+   right, a bottom sheet below (+ pad.attr: the attribution in the canvas's own corner when the sheet leaves room); the safe-area side
+   insets always (the top one at home: wSafe); home = the whole
+   network as large as it fits, between the top bar and the stub when that costs no step. The gauntlet frames + marks its stations */
+function wRestFit(pad){const st=OVM.stats(),f=(devicePixelRatio||1)/st.K,n=MAPOV.net,w=st.W-Math.round(pad.left*f)-Math.round(pad.right*f),h=st.H-Math.round(pad.top*f)-Math.round(pad.bottom*f);
+  for(const s of[...OVM.STEPS].reverse())if((n[2]-n[0])/s+12<=w&&(n[3]-n[1])/s+12<=h)return s;return OVM.STEPS[0]}
+function wPad(){const u=wU(),h=$(ovLive()?"ovHost":"ovMap").getBoundingClientRect(),st=$("stub"),c=$("card"), // (the SVG: inside the insets, the host may be hidden)
+    s=wSafe(),sl=Math.max(0,s.l-h.left),sr=Math.max(0,h.right-innerWidth+s.r),// (the safe-area bands over this box: the canvas is full-bleed)
+    hud=[document.querySelector(".pw-top"),$("fchips"),$("hudTitle"),$("keys")].filter(e=>e&&!e.hidden).map(e=>e.getBoundingClientRect().bottom),
+    sb=!st||st.hidden?0:Math.max(0,h.bottom-st.getBoundingClientRect().top)+4*u,pad={top:Math.max(0,Math.max(0,...hud)-h.top)+4*u,right:sr,bottom:Math.max(4*u,sb),left:sl};
+  if(!wMapOn){const r={top:Math.max(0,s.t-h.top),right:sr,bottom:2*u,left:sl};
+    if(ovM()&&typeof MAPOV!=="undefined"){const s0=wRestFit(r),b=Math.max(r.bottom,sb);for(const r2 of[{...r,top:pad.top,bottom:b},{...r,bottom:b}])if(wRestFit(r2)===s0)return r2}
+    return r}
+  if(wOpen&&c&&!c.hidden){const q=c.getBoundingClientRect();
+    if(wPlace()==="side")pad.right=Math.max(0,h.right-q.left)+6*u;
+    else{pad.bottom=Math.max(0,h.bottom-q.top)+6*u;
+      if(q.left-h.left-sl>=(wFontsOk&&typeof PX!=="undefined"?PX.measure("© OpenStreetMap contributors","fp8")+10:170)*u)pad.attr={left:sl,bottom:2*u}}}
+  return pad}
+function wBossBox(){if(wBossBB!==undefined)return wBossBB;if(typeof MAPOV==="undefined")return null;const pts=[];
+  for(const s of BOSS)for(const L of LINES){const i=L.stations.findIndex(q=>q.zh===s.zh),M=MAPOV.lines[L.id];if(i>=0&&M&&M.st[i]!=null){pts.push(M.pts[M.st[i]]);break}}
+  return wBossBB=pts.length?pts.reduce((b,p)=>[Math.min(b[0],p[0]),Math.min(b[1],p[1]),Math.max(b[2],p[0]),Math.max(b[3],p[1])],[1e9,1e9,-1e9,-1e9]):null}
+// the finest step fitting a bbox (metres) × mult + px art px into the free rect (never coarser than rest), centred in it (an OVM.go view)
+function wViewFor(b,pad,mult,px){const st=OVM.stats(),u=st.K/(devicePixelRatio||1),P={t:Math.round(pad.top/u),r:Math.round(pad.right/u),b:Math.round(pad.bottom/u),l:Math.round(pad.left/u)};
+  let s=OVM.STEPS[0];for(const x of[...OVM.STEPS].reverse())if((b[2]-b[0])*mult/x+px<=st.W-P.l-P.r&&(b[3]-b[1])*mult/x+px<=st.H-P.t-P.b){s=x;break}
+  s=Math.min(s,st.rest);return{m:s,x:(b[0]+b[2])/2-Math.round((P.l-P.r)/2)*s,y:(b[1]+b[3])/2+Math.round((P.t-P.b)/2)*s}}
+function wRefit(force){const id=wFocus(),boss=wMapOn&&wSel==="boss";
+  if(!ovLive()){const p=id&&S.screen==="menu"?wPad():null,k="svg"+id+(p?JSON.stringify(p)+innerWidth+"x"+innerHeight:""); // (the SVG shows)
+    if(k!==wSvgK){wSvgK=k;ovZoom(id,p);ovLabels(id);ovHighlight(wHovSrc&&wHovSrc!=="map"?wHov:null)}}
+  if(!ovM()||S.screen!=="menu")return;
+  const pad=wPad(),st=OVM.stats(),key=(boss?"boss":id)+JSON.stringify(pad)+st.W+"x"+st.H;
+  if(typeof OVM.marks==="function")ovTry(()=>OVM.marks(boss?BOSS.map(s=>s.zh):null));
+  if(!force&&key===wLast)return;wLast=key;const an=!REDUCED();
+  ovTry(()=>{OVM.focus(id,{animate:an,pad});const b=boss&&wBossBox();if(b)OVM.go(wViewFor(b,pad,1,16),{animate:an,dur:420})})}
+function wProg(){const c=wCloud(),o={};for(const L of LINES){const s=wStars(L.id,c);if(s)o[L.id]=s}return Object.keys(o).length?o:null}
+function wCursor(){if(ovM()&&typeof OVM.cursor==="function")ovTry(()=>OVM.cursor(wSel==="boss"?null:wSel,{rev:!!dirState[wSel],label:t("wStart")}))}
+function wLife(){if(!ovM())return;ovTry(()=>{if(typeof OVM.trains==="function")OVM.trains("lively");if(typeof OVM.progress==="function")OVM.progress(wProg())});wCursor()}
+
+/* blips: square waves (3 ms attack, 6 ms release, notes in sequence), only while the AudioContext runs (a capture-phase pointerdown /
+   keydown on the menu creates / resumes it, never a hover), never with Sound off; a hover ≥ 70 ms after the last blip */
+const W_SEQ={hover:[[1568,.018,.018]],move:[[1175,.03]],open:[[784,.04],[1175,.06]],close:[[988,.04],[659,.06]],rev:[[740,.03],[988,.04]],
+  start:[[523,.07],[659,.07],[784,.07],[1047,.18]],dlg:[[1047,.03],[1319,.05]]};
+function blip(k){if(muted||!AC||AC.state!=="running"||!W_SEQ[k])return;const n=performance.now();if(k==="hover"&&n-wBlipT<70)return;wBlipT=n;
+  try{let at=AC.currentTime+.005;
+    for(const[f,d,v=.045]of W_SEQ[k]){const o=AC.createOscillator(),g=AC.createGain();o.type="square";o.frequency.setValueAtTime(f,at);
+      g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(v,at+.003);g.gain.setValueAtTime(v,at+d-.006);g.gain.linearRampToValueAtTime(0,at+d);
+      o.connect(g);g.connect(AC.destination);o.start(at);o.stop(at+d+.01);at+=d}}catch(e){}}
+
+/* START: startLine / startBoss at once (inside the tap / key: the phone keyboard), then #goFx (outside #menu, pointer-events none) over
+   the game screen. A pixel ride: .in (the dither in, then held solid with the message and the veil's bar #goBar) until the ride is ready
+   (pxVeil(-1): S.pxWait false, or the Classic fallback) and at least ~1.07 s (the mockup's 82 % mark), then .out (the dither out);
+   #pxVeil stays hidden meanwhile. Classic / boss: .short (in and out, no message, 0.4 s). Reduced motion: pixel = a solid cut held
+   the same way (≥ 0.9 s), cut out; Classic / boss none */
+function wStart(){wTouch();blip("start");const id=wSel;if(id==="boss")startBoss();else startLine(LBY.get(id),!!dirState[id]);wGo(id)}
+function wGo(id){const fx=$("goFx"),m=$("goMsg");if(!fx||!m||S.screen!=="game")return;const px=S.px,rm=REDUCED();
+  if(!px&&rm)return;
+  const run=++goRun;clearTimeout(goT);goT=0;goHold=px;fx.dataset.lc=id;fx.classList.remove("run","in","out","short");m.innerHTML="";fx.hidden=false;
+  if(!px){void fx.offsetWidth;fx.classList.add("short");goT=setTimeout(()=>wGoEnd(run),420);return}
+  m.innerHTML=wMedal(id,wNum(id))+`<span><b class="f16">${wEsc(t("wStarting",wName(id)))}</b><i class="f12">${wEsc(wEnds(id).join(" → "))}</i></span>`;
+  $("pxVeil").hidden=true;const b=$("goBar");if(b)b.style.setProperty("--pxn",0);wFitMedals(m);
+  const u=parseFloat(getComputedStyle(fx).getPropertyValue("--pxk"))||wU(); // (body.px: the ride's art px)
+  fx.style.setProperty("--gx",Math.floor((innerWidth-m.offsetWidth)/2/u)*u+"px");fx.style.setProperty("--gy",Math.floor((innerHeight-m.offsetHeight)/2/u)*u+"px");
+  void fx.offsetWidth;fx.classList.add("in");
+  goT=setTimeout(()=>{goT=0;if(!goHold)wGoOut(run)},rm?900:1070)}
+function wGoReady(){if(!goHold)return;goHold=false;if(!goT)wGoOut(goRun)} // (the minimum hold still running: its timer goes out)
+function wGoOut(run){const fx=$("goFx");if(run!==goRun||!fx||fx.hidden)return;fx.classList.remove("in");
+  if(REDUCED())return wGoEnd(run);fx.classList.add("out");goT=setTimeout(()=>wGoEnd(run),260)}
+function wGoEnd(run){if(run!=null&&run!==goRun)return;clearTimeout(goT);goT=0;goHold=false;const fx=$("goFx");
+  if(fx&&!fx.hidden){fx.hidden=true;fx.classList.remove("run","in","out","short")}}
+
+/* dialogs: the leaderboard (cloud.js fills #lbTabs / #lbBody: cloudLbOpen(mode) loads the picked mode then) · About (index.html) */
+function wDlg(id){const d=$(id);if(!d)return;wTouch();
+  if(id==="lbDlg"&&typeof cloudLbOpen==="function")try{cloudLbOpen(wSel)}catch(e){console.warn(e)}
+  if(id==="aboutDlg")wAbout();
+  if(!d.open)d.showModal();pxDlg(d);blip("dlg");
+  const f=d.querySelector("[autofocus]")||d.querySelector('[aria-selected="true"]')||d.querySelector("button");if(f)f.focus()}
 
 /* ---------- gauge ---------- */
 let gaugeCap=80;
@@ -1430,17 +1638,18 @@ function tick(now){const dt=Math.min(.05,(now-lastF)/1000);lastF=now;
 requestAnimationFrame(tick);
 
 /* ---------- quit / nav ---------- */
-// back from a run → land on the line-selection area, not the opening page
-// one-way home (v0.5.0): pk(true) collapses the hero out of the document flow, so #pick is the
-// page top and scrolling can never wander back up — only the #backTop fab restores the hero.
-// snap commits the state without the min-height transition (off-screen valve, post-run returns).
+// back from a run → land on the world screen (the ridden line picked, its card closed), not the opening page
+// one-way home (v0.5.0): pk(true) folds the hero away and shows the world screen (#pick) — there is no way back to the title but a
+// reload (v0.7.0). snap commits the state without the min-height transition (off-screen valve, post-run returns).
 function pk(on,snap){const h=document.querySelector("#menu .hero");
   if(snap)h.style.transition="none";
-  $("menu").classList.toggle("pk",on);$("backTop").classList.toggle("on",on);
-  if(snap){void h.offsetHeight;h.style.transition=""}}
+  $("menu").classList.toggle("pk",on);h.inert=on; // (the folded hero's #startBtn leaves the tab order)
+  if(snap){void h.offsetHeight;h.style.transition=""}
+  if(on&&S.screen==="menu")wEnter()}
 function toPick(){pk(true,true);scrollTo(0,0)}
 function leaveRun(){try{if(history.state&&history.state.run)history.back()}catch(e){}
-  show("menu");renderCards();toPick()}
+  if(lastRun){wSel=lastRun.mode==="boss"?"boss":lastRun.L.id;wOpen=false;wMapOn=true}
+  show("menu");renderWorld();toPick();const n=wNode(wSel);if(n)n.focus({preventScroll:true})}
 // mid-run quit confirms via an in-game dialog (settings-style). The run pauses while it's
 // open — train, timer, and boss countdown all freeze (tick() skips on S.paused) — and any
 // dismiss that isn't Quit resumes and shifts the clock forward so the pause costs nothing.
@@ -1448,7 +1657,7 @@ function leaveRun(){try{if(history.state&&history.state.run)history.back()}catch
 function quit(){if(S.screen!=="game")return;
   if(S.done){leaveRun();return}
   if($("quitDlg").open)return;
-  S.paused=true;S.pauseAt=performance.now();$("quitDlg").showModal();$("quitStayBtn").focus()}
+  S.paused=true;S.pauseAt=performance.now();$("quitDlg").showModal();pxDlg($("quitDlg"));$("quitStayBtn").focus()}
 $("homeBtn").onclick=quit;
 $("quitGoBtn").onclick=()=>{S.paused=false;$("quitDlg").close();leaveRun()};
 $("quitStayBtn").onclick=()=>$("quitDlg").close();
@@ -1468,38 +1677,40 @@ addEventListener("popstate",()=>{
 // reload / tab-close with a run in progress asks first (pull-to-refresh casualties)
 addEventListener("beforeunload",e=>{
   if(S.screen==="game"&&!S.done&&S.t0!==null){e.preventDefault();e.returnValue=""}});
-$("startBtn").onclick=()=>{pk(true);scrollTo(0,0)}; // hero folds up, picker rises into place
-$("backTop").onclick=()=>{scrollTo(0,0);pk(false)}; // jump home first, then the hero unfolds from the top
+$("startBtn").onclick=()=>{pk(true);scrollTo(0,0);const n=wNode(wSel);if(n)n.focus({preventScroll:true})}; // hero folds up, the world shows (Enter then opens the card)
 // the valve: scrolling the hero fully off-screen collapses it in place — scroll position is
 // compensated in the same frame so nothing visibly moves, but there is no longer anything above
-// #pick to scroll back to
+// #pick to scroll back to. (The furthest scroll leaves the hero's bottom edge on the viewport's top, which still
+// counts as intersecting: the root's top is pulled in 2 px)
 new IntersectionObserver(es=>{const h=document.querySelector("#menu .hero");
   if(S.screen!=="menu"||$("menu").classList.contains("pk")||es[es.length-1].isIntersecting)return;
   const y=scrollY-h.offsetHeight;pk(true,true);scrollTo(0,Math.max(0,y))},
-  {threshold:0}).observe(document.querySelector("#menu .hero"));
+  {threshold:0,rootMargin:"-2px 0px 0px 0px"}).observe(document.querySelector("#menu .hero"));
 
 /* ---------- settings dialog + boot splash ---------- */
-$("setBtn").onclick=()=>{paintPxSet();$("setDlg").showModal()};
+$("setBtn").onclick=()=>{paintPxSet();$("setDlg").showModal();pxDlg($("setDlg"));if(S.screen==="menu")blip("dlg")};
 // ride view rows (v0.6.0): stored locally, applied live — Classic mid-run swaps to the SVG map at once; Pixel mid-run
 // prepares in the background and takes over when ready. Pixel unavailable (scripts failed, a throw, the governor gave up, no
-// canvas): the row reads Classic with a note, and a tap on it tries Pixel again; Pixel size / Weather are aria-disabled in Classic
+// canvas): the row reads Classic with a note, and a tap on it tries Pixel again; Weather is aria-disabled in Classic (Pixel size
+// also sizes the pixel menu and dialogs since v0.7.0, so it stays live)
 const WX_ORDER=["auto","clear","rain"],WX_KEY={auto:"wxAuto",clear:"wxClear",rain:"wxRain"};
 function paintPxSet(){const px=RIDE_MODE==="pixel"&&pxAvail()&&!pxMiss,note=!PX_CANVAS?t("pxNoCv"):RIDE_MODE==="pixel"&&!px?t("pxOff"):"",
     b=(id,k,v,off)=>{const e=$(id);e.textContent=v;e.setAttribute("aria-label",t(k)+" · "+v);
       off?e.setAttribute("aria-disabled","true"):e.removeAttribute("aria-disabled")};
-  b("rideBtn","setRide",t(px?"ridePixel":"rideClassic"),!PX_CANVAS);b("pxScaleBtn","setPxScale",PX_SCALE+"×",!px);
+  b("rideBtn","setRide",t(px?"ridePixel":"rideClassic"),!PX_CANVAS);b("pxScaleBtn","setPxScale",PX_SCALE+"×",false);
   b("wxBtn","setWeather",t(WX_KEY[WX_MODE]),!px);
-  const n=$("rideNote");n.textContent=note;n.hidden=!note;$("rideBtn").title=note}
+  const n=$("rideNote");n.textContent=note;n.hidden=!note;$("rideBtn").title=note;pxDlg($("setDlg"))}
 const pxOff=id=>$(id).getAttribute("aria-disabled")==="true";
 $("rideBtn").onclick=()=>{if(pxOff("rideBtn"))return;
   if(RIDE_MODE==="pixel"&&(!pxAvail()||pxMiss)){ // shown as Classic: picking Pixel again gives it another go (a failed load reloads what is missing)
-    if(typeof RIDE!=="undefined")RIDE.giveUp=false;if(pxFail)pxP=null;pxDead=pxFail=pxSlowTold=pxMiss=false}
+    if(typeof RIDE!=="undefined")RIDE.giveUp=false;if(pxFail)pxPs.delete(PX_JS);pxDead=pxFail=pxSlowTold=pxMiss=false}
   else RIDE_MODE=RIDE_MODE==="pixel"?"classic":"pixel";
   if(RIDE_MODE==="pixel"&&typeof RIDE!=="undefined"&&RIDE.giveUp){RIDE.giveUp=false;pxSlowTold=false}
   store.set("ride",RIDE_MODE);paintPxSet();
   if(S.screen!=="game"||S.mode!=="line"||S.done)return;
   if(RIDE_MODE==="classic"){if(S.px||pxPrep===pxRun&&pxPrep)pxClassic()}else if(!S.px&&pxOn())pxRide(S.line,S.rev,true)}; // (also drops a takeover's prepare in flight)
 $("pxScaleBtn").onclick=()=>{if(pxOff("pxScaleBtn"))return;PX_SCALE=PX_SCALE===2?3:2;store.set("pxScale",String(PX_SCALE));paintPxSet();pxChrome();
+  if(S.screen==="menu")wResize(); // (the world screen's art px changed: its banner, dock and card lay out again)
   if(typeof RIDE!=="undefined")pxTry(()=>RIDE.set({scale:PX_SCALE,...(S.px?pxChips():{})}))};
 $("wxBtn").onclick=()=>{if(pxOff("wxBtn"))return;WX_MODE=WX_ORDER[(WX_ORDER.indexOf(WX_MODE)+1)%WX_ORDER.length];store.set("weather",WX_MODE);paintPxSet();
   if(typeof RIDE!=="undefined")pxTry(()=>RIDE.set({weather:WX_MODE}))};
@@ -1520,9 +1731,10 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
   tm=setTimeout(play,1900); // ≈ bar fill length — keep in sync with pFill in style.css
   addEventListener("pointerdown",skip);addEventListener("keydown",skip)})();
 
-/* ---------- overview map + legend + boot ---------- */
+/* ---------- the SVG map + the world screen's wiring + boot ---------- */
 (function boot(){
   const ov=$("ovMap");buildMap(ov,{bounds:true});
+  pxUp=true;pxLc();ovDead=!PX_CANVAS||!$("ovHost");ovSvg(true);if(ovDead&&$("ovHost"))$("ovHost").hidden=true;
   let ovDrag=false; // set true by a pan/pinch so the trailing click doesn't select a line
   requestAnimationFrame(()=>{try{const nb=NETBB,
     // The network is portrait and spans almost the whole N–S height of both cities, so the
@@ -1545,9 +1757,7 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
     OV_MAXZ=Math.max(OV_MAXZ,1.15*FW/need)});
   ov.addEventListener("click",e=>{if(ovDrag){ovDrag=false;return} // a pan just ended, not a tap
     if(e.target.closest(".stg"))return; // station dots: neither a line nor blank
-    const p=e.target.closest(".lpath");
-    if(p)toggleCard(p.dataset.line,true); // re-click of the open line collapses it
-    else if(expandedLine())toggleCard(expandedLine(),true)}); // blank map dismisses
+    const p=e.target.closest(".lpath");wMapPick(p?p.dataset.line:null)}); // (as the pixel map's taps)
   // free pan/zoom (v0.4.7) — scroll / pinch to zoom, drag to pan; only when no line is focused
   const pts=new Map();let panLast=null,pinch=null,moved=0,downT=0,lastTap=0;
   ov.addEventListener("wheel",e=>{if(!ovFree())return;e.preventDefault();
@@ -1576,15 +1786,62 @@ $("setDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)e.current
       panLast=null}
     else if(pts.size===1){const v=[...pts.values()][0];panLast={x:v.x,y:v.y}}};
   ov.addEventListener("pointerup",ovUp);ov.addEventListener("pointercancel",ovUp);
-  $("ovReset").addEventListener("click",e=>{e.stopPropagation();ovResetView()});
-  setLang(LANG); // renders all i18n text + legend + cards
+  // the world screen: dock (click picks + opens, or closes the picked one's card; mouse hover; a touch swipe picks where it settles;
+  // a vertical wheel scrolls an overflowing strip sideways) · stub · card · chips · dialogs · keys · the gesture that starts audio
+  const on=(id,ev,f,o)=>{const e=$(id);if(e)e.addEventListener(ev,f,o)},mouse=f=>e=>{if(e.pointerType==="mouse")f(e)};
+  on("path","click",e=>{const b=e.target.closest(".pw-node");if(!b)return;const id=b.dataset.id;
+    if(id===wSel&&wOpen)wCloseCard();else wSelect(id,{open:true,focusCard:false})});
+  // (hover follows the mouse's own moves only: a strip scrolling under a still mouse — a node scrolled to the centre — hovers nothing)
+  let wPX=NaN,wPY=NaN;
+  on("path","pointermove",mouse(e=>{if(e.clientX===wPX&&e.clientY===wPY)return;wPX=e.clientX;wPY=e.clientY;
+    const b=e.target.closest(".pw-node");if(b)wHover(b.dataset.id,"strip")}));
+  on("strip","pointerleave",mouse(()=>wHover(null,"strip")));
+  on("strip","touchstart",()=>{wSwiped=true},{passive:true});
+  if("onscrollend"in window)on("strip","scrollend",wSwipeEnd);else on("strip","scroll",()=>{clearTimeout(wSwT);wSwT=setTimeout(wSwipeEnd,160)},{passive:true});
+  on("strip","wheel",e=>{const s=e.currentTarget;if(s.scrollWidth<=s.clientWidth+1||Math.abs(e.deltaX)>=Math.abs(e.deltaY))return;
+    e.preventDefault();s.scrollLeft+=e.deltaY*(e.deltaMode===1?16:1)},{passive:false});
+  on("stub","click",()=>{wTouch();wOpenCard()});
+  on("stub","pointerenter",mouse(()=>wHover(wSel,"stub")));on("stub","pointerleave",mouse(()=>wHover(null,"stub")));
+  on("card","click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+    if(a==="close")wCloseCard();else if(a==="go")wStart();else if(a==="rev")wRev()});
+  if($("lbBtn"))$("lbBtn").onclick=()=>wDlg("lbDlg");
+  if($("aboutBtn"))$("aboutBtn").onclick=()=>wDlg("aboutDlg");
+  on("accBtn","click",()=>{if(S.screen==="menu")blip("dlg")});
+  on("aboutClose","click",()=>$("aboutDlg").close()); // (the leaderboard's close, backdrop and tab blips: cloud.js)
+  on("aboutDlg","click",e=>{const d=e.currentTarget,r=d.getBoundingClientRect(); // (the backdrop, not the dialog's own padding)
+    if(e.target===d&&(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom))d.close()});
+  on("setDlg","click",e=>{const b=e.target.closest("button");if(b&&b.id!=="setClose"&&S.screen==="menu"&&b.getAttribute("aria-disabled")!=="true")blip("move")}); // (a setting changed)
+  for(const id of["lbDlg","aboutDlg","setDlg","accDlg"])on(id,"close",()=>{if(S.screen==="menu")blip("close")});
+  addEventListener("pointerdown",()=>{if(S.screen==="menu")ac()},true);
+  // keys: ←/→ pick (wrapping), Home/End, Enter/Space open the card / start (a button keeps its own), R reverse, Esc close / home
+  addEventListener("keydown",e=>{if(S.screen!=="menu")return;ac();
+    if(!wOn()||e.altKey||e.ctrlKey||e.metaKey||e.isComposing||document.querySelector("dialog[open]"))return;
+    const tg=e.target,k=e.key,in_=s=>tg.closest&&tg.closest(s);if(in_("input,textarea,select,[contenteditable]"))return;
+    const node=in_(".pw-node"),btn=!node&&in_("button,[role=button],a[href]");
+    if(k==="ArrowLeft"||k==="ArrowRight"){e.preventDefault();e.stopPropagation();wStep(k==="ArrowRight"?1:-1)}
+    else if(k==="Home"||k==="End"){e.preventDefault();wSelect(k==="Home"?WIDS[0]:"boss",{focusNode:!!node})}
+    else if((k==="Enter"||k===" ")&&!btn){e.preventDefault();e.stopPropagation();if(e.repeat)return;wTouch();if(!wOpen)wOpenCard();else wStart()}
+    else if((k==="r"||k==="R")&&!e.repeat){e.preventDefault();wRev()}
+    else if(k==="Escape"){if(wOpen){e.preventDefault();wCloseCard()}else if(wMapOn){e.preventDefault();wRest()}}},true);
+  document.documentElement.classList.add("idle");wPlaceCls();
+  setLang(LANG); // renders all i18n text + the world screen
   window.addEventListener("resize",()=>{if(S.screen==="game"&&!camFollow)fitAll(true);pxChrome(); // (a zoom changes the dpr)
-    if(S.px&&typeof RIDE!=="undefined")pxTry(()=>RIDE.set(pxChips()))});
+    if(S.px&&typeof RIDE!=="undefined")pxTry(()=>RIDE.set(pxChips()));clearTimeout(wRsT);wRsT=setTimeout(wResize,120)});
+  if(typeof ResizeObserver==="function")new ResizeObserver(()=>{if(S.screen==="menu")wLayout()}).observe($("fchips")); // (a nickname, its late hanzi face: the banner's room)
   setTimeout(()=>{ // idle-prefetch the other theme's hero pair so the toggle swaps without a blank
     const n=document.documentElement.dataset.theme==="light"?"-night":"";
     ["assets/guangzhou-tower-v2"+n+".jpg","assets/guangzhou-tower-v2"+n+"-tower-only.png"]
       .forEach(u=>{(new Image).src=u});
-    // …and the pixel ride's scripts + map index, on idle (never before: the menu's first paint stays as it was)
+    // …and the pixel ride's scripts + map index, on idle after the menu set (never before: the menu's first paint stays as it was)
     const c=navigator.connection;
-    if(pxOn()&&!(c&&c.saveData))(window.requestIdleCallback||setTimeout)(()=>pxLoad().catch(e=>console.warn(e)))},3000);
+    if(pxOn()&&!(c&&c.saveData))(window.requestIdleCallback||setTimeout)(()=>{pxMenu();
+      pxLoad(PX_MENU).catch(()=>{}).then(()=>pxLoad()).catch(e=>console.warn(e))})},3000);
+  // the menu set (pixel map; without one, the kit's fonts): after the page's load + idle; at once on a start / chip (leaderboard,
+  // settings, account, about) click or once #pick shows (saveData: only those) — the hero covers the first screen, so it loads out of sight
+  {const go=()=>{pxMenu()},c=navigator.connection;
+    for(const id of["startBtn","setBtn","accBtn","lbBtn","aboutBtn"])if($(id))$(id).addEventListener("click",go);
+    const io=new IntersectionObserver(es=>{if(es.some(e=>e.intersectionRect.height>0)){io.disconnect();go()}},{threshold:[0,.001,.01]});
+    io.observe($("pick"));
+    if(!(c&&c.saveData)){const idle=()=>window.requestIdleCallback?requestIdleCallback(go,{timeout:1000}):setTimeout(go,200);
+      document.readyState==="complete"?idle():addEventListener("load",idle,{once:true})}}
 })();

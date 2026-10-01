@@ -57,7 +57,6 @@
   --brd-dot:rgba(23,32,48,.06); --brd-sheen:rgba(255,255,255,.6);
   --input-bg:#e9edf3;
 }
-:root[data-theme="light"] .accdlg{--input-bg:#e9edf3}
 :root[data-theme="light"] #zhTxt{text-shadow:none}
 :root[data-theme="light"] #py .c.done{text-shadow:none}
 /* line color used as text: darkened in light theme for contrast */
@@ -72,70 +71,12 @@ button{font-family:inherit;cursor:pointer}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--amber-tx);outline-offset:2px}
 
-/* decorative organic blur shapes (menu + result only) */
+/* decorative organic blur shapes (result only; the pixel menu dropped them in v0.7.0) */
 .blobs{position:absolute;inset:0;pointer-events:none}
 .blobs i{position:absolute;border-radius:50%;opacity:var(--blob-op);
   background:radial-gradient(closest-side,var(--bc),transparent 70%)}
-#menu .b1{--bc:var(--amber);width:520px;height:520px;right:-60px;top:-80px}
-#menu .b2{--bc:var(--l2);width:460px;height:460px;left:-80px;top:32%}
-#menu .b3{--bc:var(--l3);width:420px;height:420px;right:6%;bottom:-80px}
 #result .b1{--bc:var(--lc,var(--amber));width:420px;height:420px;left:-70px;top:-70px}
 #result .b2{--bc:var(--l2);width:360px;height:360px;right:-60px;bottom:-60px}
-
-/* ---------- floating top chips (replaces the old header since v0.1.6) ---------- */
-.hbtn{background:var(--panel);border:none;color:var(--paper);border-radius:var(--r-full);
-  padding:9px 18px;font-size:14px;box-shadow:var(--sh1);
-  transition:background .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
-.hbtn:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel));box-shadow:var(--sh2)}
-.hbtn:active{transform:scale(.96)}
-.hbtn.on{background:var(--amber);color:#221302;font-weight:700}
-.hbtn.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
-#fchips{position:fixed;top:14px;right:14px;z-index:60;display:flex;gap:8px}
-#fchips .hbtn{background:color-mix(in srgb,var(--panel) 70%,transparent);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--sh2)}
-#fchips .hbtn:hover{background:color-mix(in srgb,var(--amber) 14%,color-mix(in srgb,var(--panel) 76%,transparent))}
-#setBtn,#homeBtn{display:inline-flex;align-items:center;gap:6px}
-/* exit chip: red-tinted glass that goes solid red on hover/focus (destructive action) */
-#fchips #homeBtn{background:color-mix(in srgb,var(--bad) 18%,color-mix(in srgb,var(--panel) 70%,transparent));color:var(--bad)}
-#fchips #homeBtn:hover,#fchips #homeBtn:focus-visible{background:var(--bad);color:#fff;box-shadow:var(--sh2)}
-#setBtn svg,#homeBtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-/* settings dialog rows */
-#setDlg h3{font-size:22px}
-.srow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px}
-.srow>span{font-size:13px;letter-spacing:.12em;color:var(--mut);font-family:var(--mono);white-space:nowrap}
-.srow .hbtn{min-width:118px;text-align:center;background:var(--panel2)}
-.srow .hbtn[aria-disabled="true"]{opacity:.45;cursor:default;box-shadow:none;transform:none}
-.snote{margin:5px 0 0;font-size:11.5px;line-height:1.35;color:var(--mut);text-align:right}
-/* keep the amber .on state visible where later/stronger rules reset the background */
-#fchips .hbtn.on,.srow .hbtn.on{background:var(--amber)}
-#fchips .hbtn.on:hover,.srow .hbtn.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
-/* sound switch — MD3-style toggle (track + sliding thumb) */
-.swi{position:relative;flex:none;width:48px;height:28px;padding:0;border:none;cursor:pointer;
-  border-radius:var(--r-full);background:var(--panel2);box-shadow:var(--sh1);
-  transition:background .2s var(--ease)}
-.swi::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;
-  background:var(--paper);box-shadow:var(--sh1);
-  transition:transform .2s var(--ease),background .2s var(--ease)}
-.swi:hover{background:color-mix(in srgb,var(--amber) 14%,var(--panel2))}
-.swi.on{background:var(--amber)}
-.swi.on:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
-.swi.on::after{transform:translateX(20px);background:#221302}
-.swi:active::after{transform:scale(.9)}
-.swi.on:active::after{transform:translateX(20px) scale(.9)}
-/* language stepper — arrows flank the current language (ready for more languages) */
-.langsel{display:flex;align-items:center;gap:8px}
-.langsel .hbtn{min-width:92px}
-.arrow{flex:none;display:grid;place-items:center;width:34px;height:34px;padding:0;
-  font-size:20px;line-height:1;border:none;cursor:pointer;color:var(--paper);
-  background:var(--panel2);border-radius:var(--r-full);box-shadow:var(--sh1);
-  transition:background .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
-.arrow:hover{background:color-mix(in srgb,var(--amber) 14%,var(--panel2));box-shadow:var(--sh2)}
-.arrow:active{transform:scale(.9)}
-@media(max-width:560px){
-  .hbtn{padding:7px 13px;font-size:13px}
-  .langsel{gap:6px}
-  .langsel .hbtn{min-width:76px}
-  .arrow{width:30px;height:30px;font-size:18px}}
 
 /* ---------- menu ---------- */
 /* overflow:clip (not hidden) so scrollIntoView can never scroll #menu itself and strand the hero */
@@ -148,8 +89,8 @@ button{font-family:inherit;cursor:pointer}
    the active pair downloads; the head script preloads it, game.js idle-prefetches the other pair. */
 .hero{position:relative;overflow:hidden;min-height:100svh;background:var(--panel2);
   transition:min-height .7s var(--ease);--hmask:rgba(0,0,0,.25)}
-/* one-way home (v0.5.0): entering the picker collapses the hero out of the flow — #pick becomes
-   the document top so scrolling can never wander back up; only #backTop restores it (pk() in game.js) */
+/* one-way home (v0.5.0): entering the picker collapses the hero out of the flow — #pick (the world
+   map screen since v0.7.0) becomes the whole page, and nothing brings the hero back but a reload */
 #menu.pk .hero{min-height:0}
 :root[data-theme="light"] .hero{--hmask:rgba(255,255,255,.48)}
 .hbg,.hfg{position:absolute;inset:0;background-size:cover;background-position:30% 62%;
@@ -191,6 +132,7 @@ button{font-family:inherit;cursor:pointer}
   color:var(--paper);text-shadow:0 1px 8px color-mix(in srgb,var(--ink) 60%,transparent);
   font-size:24px;line-height:1;pointer-events:none;animation:bnc 1.8s ease-in-out infinite}
 @keyframes bnc{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+.scue .pki{display:block;width:calc(9*var(--pxu));height:calc(9*var(--pxu));filter:drop-shadow(0 1px 4px color-mix(in srgb,var(--ink) 60%,transparent))}
 /* bottom-anchored wipe (v0.5.1): the scene layers pin to the hero's bottom edge at full viewport
    height, so the collapsing box clips them from the top — the scene slides up and away like real
    scrolling instead of squashing. The .train (intro-sized) and .scue (edge-riding) stay as they are. */
@@ -233,24 +175,13 @@ button{font-family:inherit;cursor:pointer}
 .hero.play .scue{opacity:0;animation:fadein .55s var(--ease) 1.8s both}
 @keyframes fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fadein{to{opacity:1}}
-#pick{max-width:1080px;margin:0 auto;padding:24px 20px 64px;position:relative;scroll-margin-top:14px}
-.fab{position:fixed;right:18px;bottom:18px;z-index:40;background:var(--panel);border:none;color:var(--paper);
-  border-radius:var(--r-full);padding:13px 20px;font-size:14.5px;font-weight:700;box-shadow:var(--sh3);
-  opacity:0;visibility:hidden;transform:translateY(10px);
-  transition:opacity .25s var(--ease),transform .25s var(--ease),visibility .25s,background .2s var(--ease)}
-.fab.on{opacity:1;visibility:visible;transform:none}
-.fab:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel))}
-.fab.on:active{transform:scale(.94)}
 @media(max-width:760px){
   .hbg,.hfg{background-position:37% 64%}  /* tower hugs the left edge, clear of the logo */
   .logo{font-size:clamp(46px,14vw,76px)}
   .latin{font-size:10.5px;letter-spacing:.3em;margin-right:-.3em}
   .train{top:42%;width:64vw}}
-.mapcard{margin:16px 0 8px;background:radial-gradient(1100px 520px at 62% 36%,var(--map1),var(--map2));
-  border-radius:var(--r-xl);overflow:hidden;position:relative;box-shadow:var(--sh1);
-  display:flex;align-items:stretch}
-.mapcard svg{flex:1;min-width:0;width:100%;height:clamp(440px,72vh,680px);display:block}
-/* v0.4.7: free pan/zoom on the unfocused map. Default view keeps native page
+/* #ovMap: the SVG overview map — since v0.7.0 the world map's fallback (world map section below).
+   v0.4.7: free pan/zoom on the unfocused map. Default view keeps native page
    scroll on a one-finger drag (only 2-finger pinch zooms); once zoomed in, the
    map owns every gesture (.zoomed) so a one-finger drag pans */
 #ovMap{touch-action:pan-x pan-y}
@@ -260,188 +191,20 @@ button{font-family:inherit;cursor:pointer}
   display:grid;place-items:center;background:var(--pill-bg);border:1px solid var(--edge);color:var(--mut);
   opacity:0;transition:opacity .3s var(--ease);pointer-events:none}
 .ncue svg{width:22px;height:22px;display:block}
-.ovreset{position:absolute;bottom:12px;left:12px;display:flex;align-items:center;gap:6px;
-  padding:6px 12px 6px 9px;border:1px solid var(--edge);border-radius:var(--r-full);
-  background:var(--pill-bg);color:var(--mut);font-size:12.5px;font-weight:600;font-family:inherit;
-  box-shadow:var(--sh1);opacity:0;transform:translateY(6px) scale(.96);pointer-events:none;
-  transition:opacity .25s var(--ease),transform .25s var(--ease),border-color .2s var(--ease),color .2s var(--ease)}
-.ovreset svg{width:16px;height:16px;display:block}
-.ovreset.show{opacity:1;transform:none;pointer-events:auto}
-.ovreset:hover,.ovreset:focus-visible{border-color:var(--edge2);color:var(--paper)}
-.ovreset:active{transform:scale(.95)}
-.legend{display:grid;grid-template-columns:repeat(2,minmax(0,auto));align-content:center;
-  gap:6px 8px;padding:14px 16px 14px 4px} /* 2-col grid: 20 line pills beside the map */
-.lg{display:flex;align-items:center;gap:7px;background:var(--pill-bg);border:1px solid var(--edge);
-  border-radius:var(--r-full);padding:4px 10px;font-size:12.5px;color:var(--mut);white-space:nowrap;
-  transition:border-color .2s var(--ease),color .2s var(--ease)}
-.lg[data-line]{position:relative;cursor:pointer}
-.lg[data-line]::after{content:"";position:absolute;inset:-5px -6px} /* invisible hit zone bridging the 10px gaps */
-.lg[data-line]:hover,.lg[data-line]:focus-visible{border-color:var(--edge2);color:var(--paper)}
-.legend.off{display:none}
-.lg i{width:14px;height:5px;border-radius:3px;display:block}
-@media(max-width:700px){
-  .mapcard{flex-direction:column}
-  /* column layout: flex:1 would collapse the svg's height, so pin it explicitly */
-  .mapcard svg{flex:none;height:min(60vh,480px)}
-  .legend{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;padding:0 12px 12px}}
-.sortbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:18px}
-.sortbar .slb{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--mut)}
-.schip{display:flex;align-items:center;gap:5px;background:var(--pill-bg);border:1px solid var(--edge);
-  color:var(--mut);border-radius:var(--r-full);padding:7px 14px;font-size:13px;font-weight:600;font-family:inherit;
-  transition:border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease),transform .2s var(--ease)}
-.schip:hover,.schip:focus-visible{border-color:var(--edge2);color:var(--paper)}
-.schip:active{transform:scale(.95)}
-.schip.on{background:color-mix(in srgb,var(--amber) 14%,var(--pill-bg));border-color:var(--edge2);color:var(--paper)}
-.schip i{font-style:normal;font-size:12px;color:var(--amber)}
-.cards{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px;align-items:start}
-@media(min-width:861px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.card{background:var(--panel);border-radius:var(--r-lg);position:relative;overflow:hidden;
-  --cct:var(--cc,var(--amber));container-type:inline-size;
-  box-shadow:var(--sh1);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
-:root[data-theme="light"] .card{--cct:color-mix(in srgb,var(--cc,var(--amber)) 72%,#15243c)}
-.card:hover{background:color-mix(in srgb,var(--cc,var(--amber)) 6%,var(--panel));box-shadow:var(--sh2)}
-.chead{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;background:none;border:none;
-  color:var(--paper);text-align:left;padding:16px 20px;font-family:inherit}
-.crow{display:flex;align-items:center;gap:14px;min-width:0}
-.dcap{width:92px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:800;letter-spacing:.03em;
-  border-radius:var(--r-full);color:#0a0f1a;background:var(--dc,var(--mut))}
-:lang(zh-Hans) .dcap{font-size:15px;letter-spacing:.12em}
-:root[data-theme="light"] .dcap{color:#fff}
-.dcap.easy{--dc:var(--good)} .dcap.mid{--dc:var(--mid)} .dcap.hard{--dc:var(--hard)} .dcap.imp{--dc:var(--bad)}
-.lnum{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:18px;color:var(--cc-tx,#0a0f1a);background:var(--cc);flex:none}
-.lnum.wide{font-size:12.5px;letter-spacing:0} /* "APM" */
-.lname{font-size:20px;font-weight:700;flex:1;min-width:0}
-.lname small{display:block;font-size:12.5px;color:var(--mut);font-weight:600;letter-spacing:.06em}
-.tt{font-size:15px;flex:1;min-width:0}
-.tt::before,.tt::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
-  background:var(--cct);margin-right:7px;vertical-align:1px}
-.tt::after{margin:0 0 0 7px}
-.stct{font-family:var(--mono);font-size:13.5px;color:var(--mut);flex:none;white-space:nowrap}
-.chev{width:40px;height:40px;flex:none;border-radius:50%;border:2px solid var(--cct);color:var(--cct);
-  display:flex;align-items:center;justify-content:center;transition:transform .3s var(--ease)}
-.chev svg{width:26px;height:26px;display:block}
-.card.open .chev{transform:rotate(180deg)}
-/* the open card is promoted to the top of the grid, full width, right under the map */
-.card.open{grid-column:1/-1;order:-1}
-.cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
-.card.open .cbody{grid-template-rows:1fr}
-.cinner{overflow:hidden;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 20px}
-.card.open .cinner{padding-bottom:20px}
-.fact{color:var(--dim);font-size:14px;line-height:1.6;max-width:70ch}
-.best{font-size:13.5px;color:var(--good);font-family:var(--mono)}
-.lstats{display:flex;flex-wrap:wrap;gap:10px}
-.lstat{flex:1;min-width:110px;text-align:center;padding:12px 8px;border-radius:var(--r-md);
-  background:color-mix(in srgb,var(--cc,var(--amber)) 10%,var(--panel2))}
-.lstat b{display:block;font-family:var(--mono);font-size:22px;font-weight:700;color:var(--cct);line-height:1.15}
-.lstat b i{font-style:normal;font-size:12px;font-weight:600;margin-left:4px;opacity:.85}
-.lstat span{display:block;margin-top:4px;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--mut)}
-.cacts{display:flex;gap:12px;margin-top:8px}
-.cacts .rev{flex:1;max-width:38%;background:var(--panel2);border:none;color:var(--paper);border-radius:var(--r-full);
-  padding:14px 24px;font-size:14px;font-weight:600;white-space:nowrap;
-  transition:background .2s var(--ease),transform .2s var(--ease)}
-.cacts .rev:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel2))}
-.cacts .rev:active{transform:scale(.95)}
-.go{flex:2;background:var(--cc,var(--amber));color:var(--cc-tx,#0a0f1a);font-weight:700;border:none;
+/* MD3 filled button: the title screen's #startBtn and the result's (the menu's .go are kit .pk-btn) */
+.go:where(#startBtn,#result .go){flex:2;background:var(--cc,var(--amber));color:var(--cc-tx,#0a0f1a);font-weight:700;border:none;
   border-radius:var(--r-full);padding:14px;font-size:16px;letter-spacing:.06em;
   transition:background .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
-.go:hover{background:color-mix(in srgb,#fff 10%,var(--cc,var(--amber)));box-shadow:var(--sh1)}
-.go:active{transform:scale(.97)}
-.card.boss{--cc:var(--bad)}
-.card.boss .lnum{background:linear-gradient(135deg,var(--bad),var(--amber));color:#fff;font-size:17px}
-.card.boss .go{background:var(--bad);color:#0a0f1a}
-:root[data-theme="light"] .card.boss .go{color:#fff}
-.card.boss .go:hover{background:color-mix(in srgb,#fff 10%,var(--bad))}
-@media(max-width:560px){
-  .dcap{width:76px;font-size:12px;letter-spacing:.01em}
-  .lname{font-size:18px}
-  .cacts .rev{padding:14px 16px}}
-/* same compact header when the CARD is narrow (2-col grid cell), not just the viewport */
-@container (max-width:540px){
-  .dcap{width:76px;font-size:12px;letter-spacing:.01em}
-  .lname{font-size:18px}
-  .cacts .rev{padding:14px 16px}}
-.footnote{color:var(--dim);font-size:12.5px;margin-top:24px;line-height:1.6}
+.go:where(#startBtn,#result .go):hover{background:color-mix(in srgb,#fff 10%,var(--cc,var(--amber)));box-shadow:var(--sh1)}
+.go:where(#startBtn,#result .go):active{transform:scale(.97)}
 
-/* ---------- leaderboard (menu) ---------- */
-.lbcard{background:var(--panel);border-radius:var(--r-lg);padding:22px;margin-top:20px;box-shadow:var(--sh1)}
-.lbhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.lbhead h3{font-size:14px;letter-spacing:.18em;font-family:var(--mono);color:var(--mut);font-weight:600;flex:1}
-.lbtabs{display:flex;gap:6px;flex-wrap:wrap}
-.lbtab{background:var(--panel2);border:none;color:var(--mut);border-radius:var(--r-full);
-  padding:6px 15px;font-size:13.5px;font-weight:600;
-  transition:background .2s var(--ease),color .2s var(--ease),transform .2s var(--ease)}
-.lbtab:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel2));color:var(--paper)}
-.lbtab:active{transform:scale(.95)}
-.lbtab.on{background:var(--cc,var(--amber));color:var(--cc-tx,#0a0f1a)}
-.lbtab.num{min-width:37px;padding:6px 8px;text-align:center;font-family:var(--mono)}
-.lbtab.on[data-m="boss"]{color:#0a0f1a}
-:root[data-theme="light"] .lbtab.on[data-m="boss"]{color:#fff}
-.lbbody{display:flex;flex-direction:column;gap:6px}
-.lbrow{display:grid;grid-template-columns:2em minmax(0,1fr) auto auto minmax(4.5em,auto);gap:10px;
-  align-items:center;background:var(--panel2);border-radius:var(--r-md);padding:10px 16px;font-size:14.5px}
-.lbrow.me{outline:1.5px solid var(--amber)}
-.lbrank{font-family:var(--mono);color:var(--dim);font-weight:600}
-.lbrow:nth-child(1) .lbrank,.lbrow:nth-child(2) .lbrank,.lbrow:nth-child(3) .lbrank{color:var(--amber-tx)}
-.lbnick{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lbsub{font-family:var(--mono);font-size:12.5px;color:var(--mut);white-space:nowrap}
-.lbscore{font-family:var(--mono);font-size:15.5px;text-align:right}
-.lbmsg{color:var(--dim);font-size:13.5px;padding:6px 2px}
-@media(max-width:520px){.lbrow .lbsub:nth-child(4){display:none}}
-
-/* badge chips (result + account dialog) */
-.bdgs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+/* new-badge chips (result; the account dialog's are the kit's .pk-badge) — the pixel badge icon at 18 CSS px */
+#newBadges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
 .bdgchip{background:var(--panel2);border-radius:var(--r-full);padding:5px 12px;
   font-size:12px;font-weight:600;white-space:nowrap}
-.bdgchip.off{opacity:.35}
 .bdgchip.new{background:var(--amber);color:#221302}
-.bdgchip .bdot{width:12px;height:12px;border-radius:50%;display:inline-block;vertical-align:-1px}
+.bdgchip .pki{width:18px;height:18px;margin-right:2px;vertical-align:-4px}
 .cloudnote{color:var(--mut);font-size:12.5px;font-family:var(--mono);margin-top:8px}
-
-/* ---------- account dialog ---------- */
-.accdlg{margin:auto;width:min(92vw,380px);max-height:calc(100dvh - 32px);overflow:auto;
-  background:var(--panel);color:var(--paper);
-  border:none;border-radius:var(--r-xl);box-shadow:var(--sh3);padding:24px}
-.accdlg::backdrop{background:rgba(4,7,13,.55)}
-.accdlg h3{font-size:20px;font-weight:700;margin-bottom:4px}
-.qmsg{color:var(--mut);font-size:14px;line-height:1.5;margin-top:6px}
-.accdlg h4{font-size:11px;letter-spacing:.18em;font-family:var(--mono);color:var(--mut);
-  font-weight:600;margin-top:16px}
-.dmut{color:var(--mut);font-size:12.5px;line-height:1.6;margin-top:4px}
-.fld{display:block;margin-top:14px;font-size:11px;letter-spacing:.14em;color:var(--mut);font-family:var(--mono)}
-.fld input{display:block;width:100%;margin-top:5px;background:var(--input-bg);border:none;
-  border-bottom:2px solid var(--edge2);border-radius:var(--r-sm) var(--r-sm) 0 0;color:var(--paper);
-  font-family:inherit;font-size:15px;padding:11px 13px;
-  transition:border-color .2s var(--ease),background .2s var(--ease)}
-.fld input:focus,.fld input:focus-visible{outline:none;border-color:var(--amber);
-  background:color-mix(in srgb,var(--amber) 6%,var(--input-bg))}
-.derr{color:var(--bad);font-size:12px;min-height:1.2em;margin-top:10px}
-.dbtns{display:flex;gap:10px;margin-top:14px}
-.dbtn{flex:1;background:var(--amber);color:#221302;font-weight:700;border:none;
-  border-radius:var(--r-full);padding:11px;font-size:14px;
-  transition:background .2s var(--ease),transform .2s var(--ease)}
-.dbtn:hover{background:color-mix(in srgb,#fff 10%,var(--amber))}
-.dbtn:active{transform:scale(.97)}
-.dbtn.alt{background:var(--panel2);color:var(--paper);font-weight:600}
-.dbtn.alt:hover{background:color-mix(in srgb,var(--amber) 10%,var(--panel2))}
-/* destructive secondary (quit dialog): tonal red, subordinate to the amber "keep playing" */
-.dbtn.danger{background:var(--panel2);color:var(--bad);font-weight:700}
-.dbtn.danger:hover{background:color-mix(in srgb,var(--bad) 14%,var(--panel2))}
-.dbtn:disabled{opacity:.55;cursor:default;transform:none}
-.dlink{display:block;margin:14px auto 0;background:none;border:none;color:var(--mut);
-  font-size:12.5px;text-decoration:underline;text-underline-offset:3px}
-.dlink:hover{color:var(--paper)}
-
-/* personal records (account dialog) — reuses the leaderboard row/tab classes, denser */
-.rectabs{margin-top:10px}
-.rectabs .lbtab{padding:5px 12px;font-size:12.5px}
-.recbody{display:flex;flex-direction:column;gap:5px;margin-top:10px}
-.recbody .lbrow{grid-template-columns:1.2em minmax(0,1fr) auto auto auto;gap:8px;
-  padding:8px 10px;font-size:13.5px}
-.recbody .lbscore{font-size:14px}
-.recwhen{font-size:12px;color:var(--mut);font-weight:600}
-.recwhen i{font-style:normal;color:var(--amber-tx);margin-left:6px;font-size:10.5px;letter-spacing:.06em}
 
 /* ---------- game ---------- */
 #game{height:100dvh;display:grid;gap:10px;padding:10px 12px;
@@ -616,48 +379,561 @@ body.px #toast{bottom:var(--pxbb,120px);left:var(--pxtl,50%);max-width:var(--pxt
 body.px #mapWrap.pxTight #toast{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-left:calc(5*var(--pxu));padding-right:calc(3*var(--pxu))} /* (≤ 2 lines: the column is short; one line cut "Please switch to a…") */
 #pxCv{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;
   --sat:env(safe-area-inset-top,0px);--sar:env(safe-area-inset-right,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px)}
-/* pixel chrome (body.px): the DOM over the canvas — the floating chips, the toast, the "preparing map" veil (only ever shown in
-   pixel mode) — built like the canvas' hardware (ui.js frame: square, 1 art px ui.edge outline, lit top-left / shaded bottom-right
-   bevel, 1 art px drop shadow), in fonts.js's FP12 at its native 12 px × the art px (--pxu = --pxk CSS px, set by game.js pxChrome
-   from the canvas' K: 1 font px = 1 art px, never smoothed) and in palette colours only (--px-*: pxChrome copies them from PAL for the
-   theme and the line; the MD3 tokens only stand in until js/px has loaded). Classic and the menu keep the rounded look */
+/* ==========================================================================================================================
+   PIXEL UI KIT (v0.7.0; frozen reference mockups/pixel-menu/SPEC.md §3) — the DOM twin of js/px/ui.js's canvas hardware: square
+   frames, a 1 art px ui.edge outline, lit top-left / shaded bottom-right bevel, a 1 art px drop shadow; recessed screens invert it.
+   · 1 art px = --pxu = --pxk CSS px = round(s × dpr) / dpr (index.html's head script pxK(); the ride's body.px sets its own --pxk and
+     redeclares --pxu). Every size, border, offset and line-height is a whole multiple of --pxu; fluid sizes go through round(…, --pxu).
+     Verify fractional dpr with a real scale factor (--force-device-scale-factor), never DevTools / Playwright DSF emulation.
+   · Palette only: --px-* tokens (static PAL hexes for both themes below, kept equal to PAL by game.js pxChrome() and checked by
+     tools/px/check-kit.js) and a line's --lc / --lc-ink / --lc-hi / --lc-lo ([data-lc=<id>]: lsh.<id>.sign / .ink / .hi / .lo, written
+     by game.js pxLc(); the gauntlet's [data-lc=boss] = bad-sign / onbad / fire-t2 / tag-bad).
+     Text colours: text, dim, accent-tx, tag-*, onaccent on accent-sign, onbad on bad-sign, --lc-ink on --lc (all ≥ 4.5:1).
+   · Pixel fonts at native sizes only (.f8 .f10 .f12 .f16 = FP8…FP16 at N × --pxu); user text (nicknames) is always FP12.
+   · Never: border-radius, blur, backdrop-filter, opacity fades, soft shadows, transitions, gradients other than hard-stop 1 art px
+     checkers (= the dither). Dims are dithers or darker palette steps, never alpha. Lint: node tools/px/check-kit.js.
+   · Components (classes only; .is-hover .is-focus .is-active .is-off mirror states): .pk-btn (.pri .danger .pk-ico) · .pk-chip (.on
+     .danger .pk-ico) · .pk-tab ([aria-selected=true] / .on) · .pk-fab · .pk-panel · .pk-inset (.dots) · .pk-field (+ .pk-msg) ·
+     .pk-switch · .pk-cycle · .pk-row (.me; cells .grow .dim .acc) · .pk-badge (.off) · .pk-dlg (h3 title, .pk-hr, ::backdrop dither,
+     .pk-scrim) · .pk-pill (.on .dim .x) · .pk-roundel (.sm .w) · .pk-tag (.good .mid .hard .bad .fill) · .pk-toast · .pki (9×9 icons,
+     the <symbol> sprite in index.html). States: hover = fill2 · focus-visible = 1 art px accent outline · active = pressed 1 art px,
+     bevel inverted · disabled / aria-disabled = off fill, dim text. Text-bearing components trim their line box to the cap box
+     (text-box: trim-both cap alphabetic) and are odd heights (21 buttons, 19 chips / tabs / pills / badges, 13 roundels / tags).
+   ========================================================================================================================== */
+:root,[data-theme=dark]{
+  --px-page:#0d1024;--px-ground:#11162a;--px-fill:#141935;--px-fill2:#1c2244;--px-off:#1c2244;
+  --px-edge:#070816;--px-hi:#323b68;--px-lo:#0d1024;--px-shadow:#070816;--px-ink:#070816;
+  --px-text:#f1f1ff;--px-dim:#7d89bc;--px-outline:#070816;
+  --px-accent:#ffb445;--px-accent-lo:#9c4a2c;--px-accent-hi:#ffe29a;--px-accent-tx:#ffb445;--px-accent-sign:#ffb445;--px-onaccent:#070816;
+  --px-good:#5fd38c;--px-warn:#ffb445;--px-bad:#ff5a64;--px-bad-sign:#ff5a64;--px-onbad:#070816;--px-paper:#f1f1ff;--px-paper-lo:#a6aed8;
+  --px-screen:#0d1024;--px-led:#ffb445;--px-led-off:#2a1e26;--px-led-glow:#5a3030;
+  --px-fire-t3:#ff5a64;--px-fire-t2:#ffb445;--px-fire-core:#ffe29a;
+  --px-tag-good:#5fd38c;--px-tag-mid:#ffb445;--px-tag-hard:#e0802c;--px-tag-bad:#ff5a64}
+:root[data-theme=light],[data-theme=light]{
+  --px-page:#cfcacd;--px-ground:#d8d1bf;--px-fill:#ebe6de;--px-fill2:#f4f0e6;--px-off:#ebe6de;
+  --px-edge:#776f7f;--px-hi:#fbf8f0;--px-lo:#cfcacd;--px-shadow:#9f98a2;--px-ink:#3a3348;
+  --px-text:#3a3348;--px-dim:#5b5365;--px-outline:#fbf8f0;
+  --px-accent:#d98a1c;--px-accent-lo:#a8621a;--px-accent-hi:#f0b440;--px-accent-tx:#7d4b00;--px-accent-sign:#dc8d20;--px-onaccent:#3a3348;
+  --px-good:#3f9a63;--px-warn:#d98a1c;--px-bad:#d9434d;--px-bad-sign:#d03b46;--px-onbad:#fbf8f0;--px-paper:#fbf8f0;--px-paper-lo:#cfcacd;
+  --px-screen:#f4f0e6;--px-led:#d98a1c;--px-led-off:#dfdad6;--px-led-glow:#e2c4ac;
+  --px-fire-t3:#d9434d;--px-fire-t2:#f0b440;--px-fire-core:#fbe7a6;
+  --px-tag-good:#46634a;--px-tag-mid:#80603e;--px-tag-hard:#7a3418;--px-tag-bad:#9a2c3c}
+:root{--pxu:calc(var(--pxk,2)*1px);--gut:calc(8*var(--pxu))}
+
+/* ---------- type: FPn at n art px, never smoothed / synthesised; components trim their line box to the cap box, flowing text does not
+   (.pk-trim opts a block in) ---------- */
+.f8,.f10,.f12,.f16,.pk-btn,.pk-chip,.pk-tab,.pk-fab,.pk-panel,.pk-inset,.pk-row,.pk-badge,.pk-dlg,.pk-pill,.pk-roundel,.pk-tag,.pk-toast,.pk-field,#pick,
+body.px #toast,#pxVeil{
+  font-weight:400;font-style:normal;letter-spacing:0;word-spacing:0;text-transform:none;font-kerning:none;font-synthesis:none;
+  font-variant-ligatures:none;-webkit-font-smoothing:none;font-smooth:never;text-rendering:optimizeSpeed}
+.pk-trim,.pk-btn,.pk-chip,.pk-tab,.pk-fab,.pk-panel,.pk-inset,.pk-row>*,.pk-badge,.pk-dlg,.pk-dlg :is(h3,.pk-title),.pk-pill,.pk-roundel>b,.pk-tag,
+.pk-toast,.pk-msg,.pk-field>span{text-box:trim-both cap alphabetic}
+.f8{font-family:FP8,var(--mono,monospace);font-size:calc(8*var(--pxu));line-height:calc(10*var(--pxu))}
+.f10,.pk-badge,.pk-tag,.pk-msg,.pk-field>span{font-family:FP10,var(--mono,monospace);font-size:calc(10*var(--pxu));line-height:calc(12*var(--pxu))}
+.f12,.pk-btn,.pk-chip,.pk-tab,.pk-fab,.pk-panel,.pk-inset,.pk-row,.pk-dlg,.pk-pill,.pk-toast,#pick{
+  font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(16*var(--pxu))}
+.f16,.pk-dlg h3,.pk-dlg .pk-title{font-family:FP16,var(--mono,monospace);font-size:calc(16*var(--pxu));line-height:calc(20*var(--pxu))}
+.pki{flex:none;display:inline-block;width:calc(9*var(--pxu));height:calc(9*var(--pxu));fill:currentColor;shape-rendering:crispEdges;vertical-align:baseline;overflow:hidden}
+
+/* ---------- raised frame (ui.js frame): the local --pk-* set is the recipe, variants only swap it ---------- */
+.pk-btn,.pk-chip,.pk-tab,.pk-fab,.pk-panel,.pk-dlg,.pk-badge,.pk-toast{
+  --pk-f:var(--px-fill);--pk-f2:var(--px-fill2);--pk-e:var(--px-edge);--pk-h:var(--px-hi);--pk-l:var(--px-lo);--pk-c:var(--px-text);
+  color:var(--pk-c);background:var(--pk-f);border:var(--pxu) solid var(--pk-e);border-radius:0;
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--pk-h),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--pk-l),var(--pxu) var(--pxu) 0 var(--px-shadow)}
+/* controls: icon + <span>label</span> (no whitespace between) on one cap box */
+.pk-btn,.pk-chip,.pk-tab,.pk-fab{display:inline-block;box-sizing:border-box;margin:0;white-space:nowrap;text-align:left;text-decoration:none;
+  cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;transition:none}
+:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab)>.pki:not(:last-child){margin-right:calc(4*var(--pxu))}
+.pk-btn,.pk-fab{padding:calc(5*var(--pxu)) calc(7*var(--pxu))}      /* 21 art px tall */
+.pk-chip{padding:calc(4*var(--pxu)) calc(5*var(--pxu))}             /* 19 */
+.pk-tab{padding:calc(4*var(--pxu)) calc(4*var(--pxu));--pk-c:var(--px-dim)}   /* 19 */
+.pk-btn.pk-ico{padding:calc(5*var(--pxu))}                           /* 21 × 21 */
+.pk-chip.pk-ico{padding:calc(4*var(--pxu))}                          /* 19 × 19 */
+.pk-panel{display:block;padding:calc(6*var(--pxu))}
+.pk-fab>.pki{color:var(--px-accent-tx)}
+.pk-btn.pri,.pk-fab.pri{--pk-f:var(--px-accent-sign);--pk-f2:var(--px-accent-hi);--pk-h:var(--px-accent-hi);--pk-l:var(--px-accent-lo);--pk-c:var(--px-onaccent)}
+.pk-fab.pri>.pki{color:var(--px-onaccent)}
+.pk-btn.danger,.pk-chip.danger{--pk-c:var(--px-tag-bad)}
+:is(.pk-btn,.pk-chip).danger:not(:disabled,[aria-disabled=true],.is-off):is(:hover,:focus-visible,.is-hover,.is-focus){--pk-f:var(--px-bad-sign);--pk-f2:var(--px-bad-sign);--pk-c:var(--px-onbad)}
+.pk-chip.on{--pk-c:var(--px-accent-tx)}
+.pk-tab:is(:hover,.is-hover){--pk-c:var(--px-text)}
+.pk-tab:is([aria-selected=true],.on){--pk-f:var(--lc,var(--px-accent-sign));--pk-f2:var(--pk-f);--pk-c:var(--lc-ink,var(--px-onaccent));
+  --pk-h:var(--lc-hi,var(--px-accent-hi));--pk-l:var(--lc-lo,var(--px-accent-lo))}
+:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab):is(:hover,.is-hover){background:var(--pk-f2)}
+:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab,.pk-switch,.pk-pill):is(:focus-visible,.is-focus){outline:var(--pxu) solid var(--px-accent);outline-offset:var(--pxu)}
+:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab):is(:active,.is-active),.pk-tab:is([aria-selected=true],.on){transform:translate(var(--pxu),var(--pxu));
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--pk-l),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--pk-h)}
+:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab):is(:disabled,[aria-disabled=true],.is-off){--pk-f:var(--px-off);--pk-f2:var(--px-off);--pk-c:var(--px-dim);
+  box-shadow:none;transform:none;cursor:default}
+:is(.pk-btn,.pk-chip,.pk-fab):is(:disabled,[aria-disabled=true],.is-off)>.pki{color:var(--px-dim)}
+
+/* ---------- recessed screen (ui.js inset: dark top-left lip, lit bottom-right lip); .dots = the LED lattice (pitch 2) ---------- */
+.pk-inset{display:block;padding:calc(4*var(--pxu)) calc(5*var(--pxu));color:var(--px-text);background-color:var(--px-screen);
+  border:0;border-radius:0;box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-edge),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi)}
+.pk-inset.dots{background-image:conic-gradient(from 270deg,var(--px-led-off) 0 25%,transparent 0);
+  background-size:calc(2*var(--pxu)) calc(2*var(--pxu));background-position:0 0}
+
+/* ---------- text field: <label class="pk-field"><span>caption</span><input></label>, the input a recessed screen 21 art px tall (an input
+   cannot trim its line box: 3 art px on top centre FP12's caps under Chrome's current metrics — ascent 12, synthesised descent 6) ---------- */
+.pk-field{display:grid;gap:calc(4*var(--pxu));color:var(--px-dim)}
+.pk-field :is(input,textarea){display:block;box-sizing:border-box;width:100%;min-width:0;height:calc(21*var(--pxu));margin:0;padding:calc(3*var(--pxu)) calc(5*var(--pxu)) 0;
+  font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(12*var(--pxu));font-weight:400;letter-spacing:0;
+  font-kerning:none;font-synthesis:none;-webkit-font-smoothing:none;font-smooth:never;color:var(--px-text);caret-color:var(--px-accent);
+  background:var(--px-screen);border:0;border-radius:0;outline:0;-webkit-appearance:none;appearance:none;
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-edge),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi)}
+.pk-field :is(input,textarea)::placeholder{color:var(--px-dim);opacity:1}
+.pk-field :is(input,textarea)::selection{color:var(--px-onaccent);background:var(--px-accent-sign)}
+.pk-field :is(input,textarea):is(:focus,.is-focus){outline:var(--pxu) solid var(--px-accent);outline-offset:var(--pxu)}
+.pk-field :is(input,textarea):-webkit-autofill{-webkit-text-fill-color:var(--px-text);
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-edge),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi),inset 0 0 0 100vmax var(--px-screen)}
+.pk-field.err :is(input,textarea),.pk-field :is(input,textarea)[aria-invalid=true]{
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-bad),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-bad)}
+.pk-field.err :is(input,textarea):is(:focus,.is-focus),.pk-field :is(input,textarea)[aria-invalid=true]:is(:focus,.is-focus){outline-color:var(--px-bad)}
+.pk-field :is(input,textarea):disabled{color:var(--px-dim);background:var(--px-off)}
+.pk-msg{color:var(--px-tag-bad)}
+
+/* ---------- switch (28 × 13): a recessed slot, a raised 11 art px knob, an LED lamp in the free end (off: led.off · on: led.on in a
+   1 art px led.glow ring) ---------- */
+.pk-switch{position:relative;display:inline-block;flex:none;box-sizing:border-box;width:calc(28*var(--pxu));height:calc(13*var(--pxu));margin:0;padding:0;
+  vertical-align:top;border:0;border-radius:0;background:var(--px-screen);cursor:pointer;-webkit-appearance:none;appearance:none;
+  -webkit-tap-highlight-color:transparent;transition:none;
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-edge),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi)}
+.pk-switch::before{content:"";position:absolute;top:var(--pxu);left:var(--pxu);box-sizing:border-box;width:calc(11*var(--pxu));height:calc(11*var(--pxu));
+  background:var(--px-fill);border:var(--pxu) solid var(--px-edge);
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo)}
+.pk-switch::after{content:"";position:absolute;top:calc(5*var(--pxu));left:calc(18*var(--pxu));width:calc(3*var(--pxu));height:calc(3*var(--pxu));background:var(--px-led-off)}
+.pk-switch:is([aria-checked=true],.on)::before{left:calc(16*var(--pxu))}
+.pk-switch:is([aria-checked=true],.on)::after{left:calc(7*var(--pxu));background:var(--px-led);box-shadow:0 0 0 var(--pxu) var(--px-led-glow)}
+.pk-switch:is(:hover,.is-hover)::before{background:var(--px-fill2)}
+.pk-switch:is(:active,.is-active)::before{box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-lo),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi)}
+.pk-switch:is(:disabled,[aria-disabled=true]){cursor:default}
+.pk-switch:is(:disabled,[aria-disabled=true])::before{background:var(--px-off);box-shadow:none}
+
+/* ---------- ‹ value › selector: arrow .pk-ico · value .pk-btn · arrow ---------- */
+.pk-cycle{display:inline-flex;align-items:flex-start;gap:calc(2*var(--pxu))}
+.pk-cycle>.pk-btn:not(.pk-ico){min-width:calc(44*var(--pxu))}
+
+/* ---------- list row (leaderboard, records): cells on one cap box, a 1 art px lo divider; .me = fill2 + a 1 art px accent ring ---------- */
+.pk-row{display:flex;align-items:flex-start;gap:calc(6*var(--pxu));padding:calc(4*var(--pxu)) calc(4*var(--pxu)) calc(5*var(--pxu));color:var(--px-text);
+  box-shadow:inset 0 calc(-1*var(--pxu)) 0 var(--px-lo)}                                       /* 18 art px */
+.pk-row.me{background:var(--px-fill2);box-shadow:inset 0 0 0 var(--pxu) var(--px-accent)}
+.pk-row>*{flex:none;white-space:nowrap}
+.pk-row>.grow{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;   /* (the clip box reaches the hanzi / descender rows) */
+  padding:calc(2*var(--pxu)) 0 calc(3*var(--pxu));margin:calc(-2*var(--pxu)) 0 calc(-3*var(--pxu))}
+.pk-row .dim{color:var(--px-dim)}
+.pk-row .acc{color:var(--px-accent-tx)}
+
+/* ---------- badge: earned = a raised chip (FP10 name + its icon) · .off = flat, dim, the icon a carved silhouette ---------- */
+.pk-badge{display:inline-block;padding:calc(5*var(--pxu)) calc(4*var(--pxu)) calc(5*var(--pxu)) calc(3*var(--pxu));white-space:nowrap}   /* 19 */
+.pk-badge>.pki{margin-right:calc(3*var(--pxu));vertical-align:calc(-1*var(--pxu))}
+.pk-badge.off{--pk-f:var(--px-off);--pk-c:var(--px-dim);box-shadow:none}
+.pk-badge.off>.pki{color:var(--px-dim);--pki-d:var(--px-dim);--pki-A:var(--px-dim);--pki-b:var(--px-dim);--pki-o:var(--px-dim);--pki-r:var(--px-dim);
+  --pki-a:var(--px-lo);--pki-h:var(--px-lo);--pki-w:var(--px-lo);--pki-W:var(--px-lo);--pki-y:var(--px-lo);--pki-c:var(--px-lo);
+  --lc:var(--px-lo);--lc-hi:var(--px-lo);--lc-lo:var(--px-dim)}
+
+/* ---------- dialog (native <dialog class="pk-dlg">, placed on whole art px by game.js pxDlg()); the veil is a
+   1 art px checker of `shadow` (a dither, never alpha; literal fallbacks where ::backdrop does not inherit custom properties) ---------- */
+.pk-dlg{box-sizing:border-box;max-width:calc(100vw - 16*var(--pxu));max-height:calc(100vh - 16*var(--pxu));overflow:auto;padding:calc(8*var(--pxu));margin:auto}
+.pk-dlg:focus{outline:0}
+.pk-dlg h3,.pk-dlg .pk-title{margin:0 0 calc(8*var(--pxu));padding:0 0 calc(6*var(--pxu));font-weight:400;color:var(--px-text);
+  border-bottom:var(--pxu) solid var(--px-lo);box-shadow:0 var(--pxu) 0 var(--px-hi)}
+.pk-hr{height:var(--pxu);margin:calc(5*var(--pxu)) 0 calc(6*var(--pxu));border:0;background:var(--px-lo);box-shadow:0 var(--pxu) 0 var(--px-hi)}
+.pk-dlg::backdrop{background:repeating-conic-gradient(var(--px-shadow,#070816) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu,2px)) calc(2*var(--pxu,2px))}
+:root[data-theme=light] .pk-dlg::backdrop{background-image:repeating-conic-gradient(var(--px-shadow,#9f98a2) 0 25%,transparent 0 50%)}
+.pk-scrim{background-image:repeating-conic-gradient(var(--px-shadow) 0 25%,transparent 0 50%);background-size:calc(2*var(--pxu)) calc(2*var(--pxu))}
+
+/* ---------- legend pill (ui.js pill: 1 art px outline, corners notched) with a --lc track swatch; .dim = swatch dithered into the fill ---------- */
+.pk-pill{display:inline-block;margin:var(--pxu);padding:calc(4*var(--pxu)) calc(5*var(--pxu)) calc(4*var(--pxu)) calc(4*var(--pxu));white-space:nowrap;   /* 19 */
+  color:var(--px-text);background:var(--px-fill);border:0;border-radius:0;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 calc(-1*var(--pxu)) 0 var(--px-edge),0 var(--pxu) 0 var(--px-edge),calc(-1*var(--pxu)) 0 0 var(--px-edge),var(--pxu) 0 0 var(--px-edge)}
+.pk-pill::before{content:"";display:inline-block;width:calc(9*var(--pxu));height:calc(5*var(--pxu));margin-right:calc(4*var(--pxu));vertical-align:calc(2*var(--pxu));
+  background:var(--lc,var(--px-accent));box-shadow:inset 0 var(--pxu) 0 var(--lc-hi,var(--px-accent-hi)),0 0 0 var(--pxu) var(--lc-lo,var(--px-accent-lo))}
+.pk-pill:is(:hover,:focus-visible,.is-hover,.is-focus,.on){background:var(--px-fill2)}
+.pk-pill:is(:focus-visible,.is-focus){outline-offset:calc(2*var(--pxu))}
+.pk-pill.dim{color:var(--px-dim)}
+.pk-pill.dim::before{box-shadow:none;background:repeating-conic-gradient(var(--lc,var(--px-accent)) 0 25%,var(--px-fill) 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+.pk-pill.x{cursor:default}
+.pk-pill.x::before{display:none}
+.pk-pill>.pki{margin-right:calc(4*var(--pxu))}
+
+/* ---------- line roundel (ui.js roundel, r = 6): the disc is the sprite's pk-rd / pk-rdw; the numeral's caps sit on rows 3–9 ---------- */
+.pk-roundel{position:relative;display:inline-block;flex:none;vertical-align:top;width:calc(13*var(--pxu));height:calc(13*var(--pxu));color:var(--lc-ink,var(--px-onaccent))}
+.pk-roundel.w{width:calc(19*var(--pxu))}
+.pk-roundel>svg{position:absolute;left:0;top:0;width:100%;height:100%;shape-rendering:crispEdges}
+.pk-roundel>b{position:absolute;left:0;right:0;top:calc(3*var(--pxu));text-align:center;font-weight:400;font-family:FP10,var(--mono,monospace);font-size:calc(10*var(--pxu));line-height:calc(10*var(--pxu))}
+.pk-roundel.sm>b{left:var(--pxu);font-family:FP8,var(--mono,monospace);font-size:calc(8*var(--pxu));line-height:calc(8*var(--pxu))}
+
+/* ---------- difficulty tag (the ride board's pill: 13 art px, FP10 汉字 + an FP8 English word); .fill = inverted ---------- */
+.pk-tag{--pk-t:var(--px-tag-mid);display:inline-block;margin:var(--pxu);padding:calc(2*var(--pxu)) var(--pxu) calc(2*var(--pxu)) calc(2*var(--pxu));white-space:nowrap;
+  color:var(--pk-t);background:transparent;
+  box-shadow:0 calc(-1*var(--pxu)) 0 var(--pk-t),0 var(--pxu) 0 var(--pk-t),calc(-1*var(--pxu)) 0 0 var(--pk-t),var(--pxu) 0 0 var(--pk-t)}
+.pk-tag>i{margin-left:calc(3*var(--pxu));font-style:normal;font-family:FP8,var(--mono,monospace);font-size:calc(8*var(--pxu));line-height:0;vertical-align:var(--pxu)}
+.pk-tag.good{--pk-t:var(--px-tag-good)} .pk-tag.mid{--pk-t:var(--px-tag-mid)} .pk-tag.hard{--pk-t:var(--px-tag-hard)} .pk-tag.bad{--pk-t:var(--px-tag-bad)}
+.pk-tag.fill{color:var(--px-outline);background:var(--pk-t)}
+
+/* ---------- toast (a --lc bar on the left) ---------- */
+.pk-toast{display:inline-block;padding:calc(4*var(--pxu)) calc(6*var(--pxu)) calc(4*var(--pxu)) calc(8*var(--pxu));
+  box-shadow:inset calc(2*var(--pxu)) 0 0 var(--lc,var(--px-accent)),inset var(--pxu) var(--pxu) 0 var(--pk-h),
+    inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--pk-l),var(--pxu) var(--pxu) 0 var(--px-shadow)}
+
+/* ==========================================================================================================================
+   WORLD MAP (v0.7.0; frozen reference mockups/pixel-world/SPEC.md, replacing layout B): #pick is one full screen under the MD3 hero
+   (#startBtn folds the hero away, game.js pk()): the living OVM map down to the dock (#ovHost.pw-map; the #ovMap SVG + #ncue until
+   OVM's first frame, and as the fallback) · the progress plate top left (the chips are #fchips, fixed top right) · the banner + key
+   hint (outlined pixel text over the map, placed on whole art px by game.js) · the level card (a ticket: line-colour stub, perforation,
+   route + Reverse, stars + best, difficulty + pips, stops · km, fact, START) as a side panel (#pick.pl-side) or a bottom sheet
+   (.pl-bottom; game.js place()), or while it is closed its folded stub · the dock: a metro-line path of 19 medallions and the gauntlet
+   plate, the cursor on the picked node. Phones (html.nar: ≤ 560 CSS px, index.html pxK()) are always 2×. Motion: steps(1,end) keyframes
+   on whole art px or visibility, none under prefers-reduced-motion. #goFx (outside #menu) = the START overlay. Z: map 0 · banner 9 ·
+   top, dock 10 · stub 15 · card 20 (inside #menu) · #goFx 59 · #fchips 60 · dialogs (top layer).
+   ========================================================================================================================== */
+html.nar{--gut:calc(6*var(--pxu))}
+:root{--pw-ghost:var(--px-hi)}                                                   /* empty stars, unlit pips */
+:root[data-theme=light]{--pw-ghost:var(--px-lo)}
+/* safe areas (viewport-fit=cover): #pick's --sit / --sir / --sib / --sil = env(safe-area-inset-*) rounded up to whole art px (registered
+   lengths: game.js wPad reads them for OVM's pads; 0 outside #pick). The map canvas and the dock's fill stay full-bleed, the UI clears them */
+@property --sit{syntax:"<length>";inherits:true;initial-value:0px}
+@property --sir{syntax:"<length>";inherits:true;initial-value:0px}
+@property --sib{syntax:"<length>";inherits:true;initial-value:0px}
+@property --sil{syntax:"<length>";inherits:true;initial-value:0px}
+#fchips{position:fixed;z-index:60;top:calc(var(--gut) + var(--sit,0px));right:calc(var(--gut) + var(--sir,0px));display:flex;gap:calc(4*var(--pxu))}
+/* leaderboard + about belong to the world screen (game.js show() hides them too); phones on the menu: icon-only (aria-labels name them) */
+body:has(>#menu[hidden]) #fchips :is(#lbBtn,#aboutBtn){display:none}
+.nar body:has(>#menu:not([hidden])) #fchips{gap:calc(3*var(--pxu))}
+.nar body:has(>#menu:not([hidden])) #fchips .pk-chip{padding:calc(4*var(--pxu))}
+.nar body:has(>#menu:not([hidden])) #fchips .pk-chip>span{display:none}
+.nar body:has(>#menu:not([hidden])) #fchips .pk-chip>.pki{margin-right:0}
+#pick{position:relative;height:100vh;height:100dvh;overflow:hidden;color:var(--px-text);background:var(--px-ground);
+  --sit:env(safe-area-inset-top,0px);--sir:env(safe-area-inset-right,0px);--sib:env(safe-area-inset-bottom,0px);--sil:env(safe-area-inset-left,0px);
+  --dock:calc(41*var(--pxu) + var(--sib))}
+@supports (width:round(down,1px,1px)){
+  #pick{--sit:round(up,env(safe-area-inset-top,0px),var(--pxu));--sir:round(up,env(safe-area-inset-right,0px),var(--pxu));
+    --sib:round(up,env(safe-area-inset-bottom,0px),var(--pxu));--sil:round(up,env(safe-area-inset-left,0px),var(--pxu))}}
+#pick button{-webkit-tap-highlight-color:transparent}
+:where(#pick,#fchips,.pk-dlg) :focus-visible{outline:var(--pxu) solid var(--px-accent);outline-offset:var(--pxu)}
+.pw-prog>b,.pw-prog>.lbl,.pw-title>span,.pw-keys,.pw-name>*,.pw-tt,.pw-diff>span,.pw-stops span,.pw-best,.pw-boss>span,.pw-sg>span,.pw-about p,
+.srow>span,.dmut,.pk-dlg h4,.dlink,.qmsg,.snote{text-box:trim-both cap alphabetic}
+
+/* ---------- the map: OVM's canvas shows once baked (ovmap.js clears its visibility:hidden); until then, and whenever OVM is not mounted,
+   the SVG is the map and the empty host lets it take every pointer ---------- */
+.pw-map{position:absolute;left:0;top:0;right:0;bottom:var(--dock);outline:0}
+.pw-map:focus-visible::after{content:"";position:absolute;left:calc(var(--sil) + var(--pxu));top:calc(var(--sit) + var(--pxu));
+  right:calc(var(--sir) + var(--pxu));bottom:var(--pxu);border:var(--pxu) solid var(--px-accent);pointer-events:none}   /* (the ring clears the insets) */
+#pick>#ovMap{position:absolute;left:var(--sil);top:var(--sit);display:block;width:calc(100% - var(--sil) - var(--sir));height:calc(100% - var(--dock) - var(--sit))}
+#pick>.ncue{top:calc(var(--gut) + var(--sit) + 36*var(--pxu));left:calc(var(--gut) + var(--sil))}
+#ovHost:not(:has(>canvas)),#ovHost:has(>canvas[style*=hidden]){visibility:hidden;pointer-events:none}
+#pick:has(>#ovHost>canvas:not([style*=hidden])) :is(#ovMap,#ncue){visibility:hidden}
+
+/* ---------- top: the progress plate (★ n/19 + a lamp per line in its colour; 19/19: a crown on amber), floating over the map ---------- */
+.pw-top{position:absolute;z-index:10;left:calc(var(--gut) + var(--sil));right:calc(var(--gut) + var(--sir));top:calc(var(--gut) + var(--sit));display:flex;justify-content:space-between;align-items:flex-start;
+  gap:calc(4*var(--pxu));pointer-events:none}
+.pw-top>*{pointer-events:auto}
+.pw-prog{display:flex;flex-wrap:wrap;align-items:center;gap:calc(4*var(--pxu));padding:calc(4*var(--pxu)) calc(6*var(--pxu)) calc(4*var(--pxu)) calc(5*var(--pxu))}
+.pw-prog:empty{display:none}
+.pw-prog>b{font-weight:400}
+.pw-prog>.lbl{color:var(--px-dim)}
+.pw-meter{display:flex;gap:var(--pxu);padding:var(--pxu);margin-left:calc(2*var(--pxu))}
+.pw-meter>i{display:block;width:calc(2*var(--pxu));height:calc(5*var(--pxu));background:var(--px-led-off)}
+.pw-meter>i.on{background:var(--lc);box-shadow:inset 0 var(--pxu) 0 var(--lc-hi)}
+.pw-prog.all{--pk-f:var(--px-accent-sign);--pk-h:var(--px-accent-hi);--pk-l:var(--px-accent-lo);--pk-c:var(--px-onaccent)}
+.pw-prog.all>.lbl{color:var(--px-onaccent)}
+.pw-prog.all>.pki{--pki-a:var(--px-onaccent);--pki-A:var(--px-ink);--pki-h:var(--px-paper);--pki-b:var(--px-bad-sign)}   /* the crown: ink on the amber */
+.pw-prog.all .pw-meter{box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-accent-lo),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-accent-hi)}
+
+/* the banner ("select line", or the hovered / picked line's medallion + name) + key hint: outlined pixel text (the canvas labels' look) */
+.pw-ol{text-shadow:calc(-1*var(--pxu)) 0 0 var(--px-outline),var(--pxu) 0 0 var(--px-outline),0 calc(-1*var(--pxu)) 0 var(--px-outline),0 var(--pxu) 0 var(--px-outline),
+  calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-outline),var(--pxu) calc(-1*var(--pxu)) 0 var(--px-outline),calc(-1*var(--pxu)) var(--pxu) 0 var(--px-outline),
+  var(--pxu) var(--pxu) 0 var(--px-outline)}
+.pw-title,.pw-keys{position:absolute;z-index:9;margin:0;white-space:nowrap;pointer-events:none;font-weight:400}
+.pw-title{top:calc(var(--gut) + var(--sit) + 3*var(--pxu));display:flex;align-items:center;gap:calc(5*var(--pxu));color:var(--px-text)}
+.pw-title>.f10{color:var(--px-dim)}
+.pw-keys{top:calc(var(--gut) + var(--sit) + 20*var(--pxu));color:var(--px-dim)}
+.idle .pw-keys{animation:pwBlink 1.4s steps(1,end) infinite}                   /* (html.idle until the first input) */
+
+/* ---------- dock: the world path — 29 × 40 nodes (the APM 39), the medallion (23 × 23; APM 33) on the rail, 3 stars 5 under it ---------- */
+.pw-dock{position:absolute;z-index:10;left:0;right:0;bottom:0;height:var(--dock);box-sizing:border-box;display:flex;background:var(--px-fill);
+  border-top:var(--pxu) solid var(--px-edge);box-shadow:inset 0 var(--pxu) 0 var(--px-hi);padding:0 var(--sir) var(--sib) var(--sil)} /* (the path in its 41) */
+.pw-strip{position:relative;flex:1 1 auto;min-width:0;display:flex;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  overscroll-behavior-x:contain}
+.pw-strip::-webkit-scrollbar{display:none}
+.pw-path{position:relative;flex:none;display:flex;align-items:flex-start;padding:0 calc(8*var(--pxu))}
+.pw-node{position:relative;flex:none;box-sizing:border-box;width:calc(29*var(--pxu));height:calc(40*var(--pxu));margin:0;padding:calc(4*var(--pxu)) calc(3*var(--pxu)) 0;
+  display:flex;flex-direction:column;align-items:center;gap:calc(5*var(--pxu));border:0;border-radius:0;background:none;color:var(--px-text);font:inherit;
+  cursor:pointer;-webkit-appearance:none;appearance:none;outline:0;scroll-snap-align:center}
+.pw-node.wide{width:calc(39*var(--pxu))}
+/* the rail (edge / hi / edge) runs through every node, from the first node's centre into the gauntlet plate */
+.pw-node::before{content:"";position:absolute;left:0;right:0;top:calc(14*var(--pxu));height:calc(3*var(--pxu));background:var(--px-hi);
+  box-shadow:inset 0 var(--pxu) 0 var(--px-edge),inset 0 calc(-1*var(--pxu)) 0 var(--px-edge)}
+.pw-node:first-child::before{left:calc(14*var(--pxu))}
+.pw-node.boss::before{right:auto;width:calc(12*var(--pxu))}
+/* hovered (the mouse here, or its line under the mouse on the map: .hov) = up 1 art px, the paper ring / the plate's edge accent;
+   picked (.sel) = the medallion bobs, the cursor round it */
+.pw-node:hover>:is(.pw-rd,.pw-boss),.pw-node.hov>:is(.pw-rd,.pw-boss){transform:translateY(calc(-1*var(--pxu)))}
+.pw-node.sel>:is(.pw-rd,.pw-boss){animation:pwBob .9s steps(1,end) infinite}
+.pw-node:hover>.pw-rd,.pw-node.hov>.pw-rd{--pki-w:var(--px-accent)}
+.pw-node:hover>.pw-boss,.pw-node.hov>.pw-boss{border-color:var(--px-accent)}
+.pw-node:focus-visible{outline:var(--pxu) solid var(--px-accent);outline-offset:calc(-1*var(--pxu))}
+.pw-st{display:flex;gap:var(--pxu)}
+.pw-st>svg,.pw-s15>svg{display:block;flex:none;shape-rendering:crispEdges}
+.pw-st>svg{width:calc(7*var(--pxu));height:calc(6*var(--pxu))}
+.pw-st>svg.e,.pw-s15>svg.e{--pki-o:var(--pw-ghost)}
+/* the gauntlet: a red plate at the end of the line (the "castle") */
+.pw-node.boss{width:auto;padding:calc(4*var(--pxu)) calc(3*var(--pxu)) 0 calc(6*var(--pxu));align-items:flex-start}
+.pw-node.boss>.pw-st{margin-left:calc(2*var(--pxu))}
+.pw-boss{position:relative;display:flex;align-items:center;gap:calc(4*var(--pxu));padding:calc(6*var(--pxu)) calc(6*var(--pxu)) calc(6*var(--pxu)) calc(5*var(--pxu));
+  color:var(--lc-ink);background:var(--lc);border:var(--pxu) solid var(--px-edge);
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--lc-hi),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--lc-lo),var(--pxu) var(--pxu) 0 var(--px-shadow)}
+.pw-boss>span{font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(16*var(--pxu))}
+/* the cursor: four chunky corners (8 × 8, #pw-cor mirrored) round the medallion (not its stars), breathing 1 art px */
+.pw-cur{position:absolute;left:0;right:0;top:0;height:calc(31*var(--pxu));z-index:2;pointer-events:none}
+.pw-cur>i{position:absolute;width:calc(8*var(--pxu));height:calc(8*var(--pxu));animation:pwCur .9s steps(1,end) infinite}
+.pw-cur>i>svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
+.pw-cur>i:nth-child(1){left:calc(-2*var(--pxu));top:0;--pw-dx:calc(-1*var(--pxu));--pw-dy:calc(-1*var(--pxu))}
+.pw-cur>i:nth-child(2){right:calc(-2*var(--pxu));top:0;--pw-dx:var(--pxu);--pw-dy:calc(-1*var(--pxu))}
+.pw-cur>i:nth-child(3){left:calc(-2*var(--pxu));bottom:0;--pw-dx:calc(-1*var(--pxu));--pw-dy:var(--pxu)}
+.pw-cur>i:nth-child(4){right:calc(-2*var(--pxu));bottom:0;--pw-dx:var(--pxu);--pw-dy:var(--pxu)}
+.pw-cur>i:nth-child(2)>svg{transform:scaleX(-1)}
+.pw-cur>i:nth-child(3)>svg{transform:scaleY(-1)}
+.pw-cur>i:nth-child(4)>svg{transform:scale(-1,-1)}
+.boss>.pw-cur>i:nth-child(1),.boss>.pw-cur>i:nth-child(3){left:calc(2*var(--pxu))}
+.boss>.pw-cur>i:nth-child(2),.boss>.pw-cur>i:nth-child(4){right:calc(-1*var(--pxu))}
+
+/* ---------- the medallion (dock nodes, stub, card, banner, START overlay, About): ink / paper / ink rings round the roundel face in the
+   line's --lc; the numeral FP16 (1 character) or FP12 .n12 (2–3), at --nx = game.js's whole-art-px centring ---------- */
+.pw-rd{position:relative;flex:none;width:calc(23*var(--pxu));height:calc(23*var(--pxu));color:var(--lc-ink)}
+.pw-rd.w{width:calc(33*var(--pxu))}
+.pw-rd>svg{position:absolute;left:0;top:0;width:100%;height:100%;shape-rendering:crispEdges}
+.pw-rd>b{position:absolute;top:calc(6*var(--pxu));left:var(--nx,calc(7*var(--pxu)));font-weight:400;font-family:FP16,var(--mono,monospace);font-size:calc(16*var(--pxu));
+  line-height:calc(20*var(--pxu));white-space:nowrap;text-box:trim-both cap alphabetic}
+.pw-rd>b.n12{top:calc(7*var(--pxu));font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(16*var(--pxu))}
+
+/* ---------- the level card: a ticket (line-colour stub · perforation · body); side panel 204 wide, or a bottom sheet ≤ 296 ---------- */
+.pw-card{position:absolute;z-index:20;box-sizing:border-box;padding:0}
+.pl-bottom .pw-card{width:min(100% - 2*var(--gut) - var(--sil) - var(--sir),296*var(--pxu));
+  left:calc(var(--sil) + (100% - var(--sil) - var(--sir) - min(100% - 2*var(--gut) - var(--sil) - var(--sir),296*var(--pxu)))/2);bottom:calc(var(--dock) + 8*var(--pxu))}
+.pl-side .pw-card{width:calc(204*var(--pxu));right:calc(var(--gut) + var(--sir));top:calc(var(--gut) + var(--sit) + 25*var(--pxu));
+  max-height:calc(100% - var(--dock) - var(--gut) - var(--sit) - 33*var(--pxu));overflow-x:hidden;overflow-y:auto;scrollbar-width:none}
+.pl-side .pw-card::-webkit-scrollbar{display:none}
+@supports (width:round(down,1px,1px)){
+  .pl-bottom .pw-card{--pw-w:round(down,min(100% - 2*var(--gut) - var(--sil) - var(--sir),296*var(--pxu)),var(--pxu));width:var(--pw-w);
+    left:round(down,var(--sil) + (100% - var(--sil) - var(--sir) - var(--pw-w))/2,var(--pxu))}}
+.pw-head{position:relative;display:flex;align-items:center;gap:calc(6*var(--pxu));padding:calc(5*var(--pxu)) calc(5*var(--pxu)) calc(6*var(--pxu)) calc(6*var(--pxu));
+  color:var(--lc-ink);background:var(--lc);box-shadow:inset var(--pxu) var(--pxu) 0 var(--lc-hi),inset calc(-1*var(--pxu)) 0 0 var(--lc-lo)}
+.pw-name{display:grid;justify-items:start;gap:calc(5*var(--pxu));margin:0;min-width:0;font-weight:400}
+/* (a clipped line on its cap box would cut the hanzi, which reach a row above the cap line and below the baseline: 3 art px of room, given back) */
+.pw-name>*{max-width:100%;white-space:nowrap;overflow:hidden;padding-block:calc(3*var(--pxu));margin-block:calc(-3*var(--pxu))}
+.pw-head>.pw-x{margin-left:auto;align-self:flex-start}
+.pw-perf{position:relative;height:var(--pxu);margin:calc(4*var(--pxu)) calc(4*var(--pxu)) 0;
+  background:repeating-conic-gradient(var(--px-dim) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+.pw-perf::before,.pw-perf::after{content:"";position:absolute;top:calc(-2*var(--pxu));width:calc(4*var(--pxu));height:calc(5*var(--pxu));background:var(--px-shadow)}
+.pw-perf::before{left:calc(-5*var(--pxu));box-shadow:inset calc(-1*var(--pxu)) 0 0 var(--px-edge),inset 0 var(--pxu) 0 var(--px-edge),inset 0 calc(-1*var(--pxu)) 0 var(--px-edge)}
+.pw-perf::after{right:calc(-5*var(--pxu));box-shadow:inset var(--pxu) 0 0 var(--px-edge),inset 0 var(--pxu) 0 var(--px-edge),inset 0 calc(-1*var(--pxu)) 0 var(--px-edge)}
+.pw-body{padding:calc(6*var(--pxu)) calc(7*var(--pxu)) calc(8*var(--pxu))}
+.pw-route{display:flex;align-items:center;gap:calc(6*var(--pxu))}
+.pw-tt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:calc(2*var(--pxu)) 0 calc(3*var(--pxu));margin:calc(-2*var(--pxu)) 0 calc(-3*var(--pxu))}
+.pw-rev{flex:none}
+.pw-rev[aria-pressed=true]{--pk-c:var(--px-accent-tx);transform:translate(var(--pxu),var(--pxu));
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--pk-l),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--pk-h)}
+/* the headline: 3 big stars (15 × 14, empty ones ghosts) + the best; then the difficulty word in its colour + pips, stops · km */
+.pw-meta{display:flex;flex-wrap:wrap;align-items:center;gap:calc(6*var(--pxu)) calc(10*var(--pxu));margin-top:calc(8*var(--pxu))}
+.pw-s15{display:flex;gap:calc(2*var(--pxu))}
+.pw-s15>svg{width:calc(15*var(--pxu));height:calc(14*var(--pxu))}
+.pw-best{display:flex;align-items:center;gap:calc(4*var(--pxu));min-width:0;color:var(--px-accent-tx);white-space:nowrap}
+.pw-best.none{color:var(--px-dim)}
+.pw-info{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:calc(6*var(--pxu)) calc(10*var(--pxu));margin-top:calc(9*var(--pxu))}
+.pw-diff{display:flex;align-items:center;gap:calc(4*var(--pxu))}
+.pw-diff>span{color:var(--pw-dt)}
+.pw-diff.d1{--pw-pip:var(--px-good);--pw-dt:var(--px-tag-good)} .pw-diff.d2{--pw-pip:var(--px-warn);--pw-dt:var(--px-tag-mid)}
+.pw-diff.d3{--pw-pip:var(--px-tag-hard);--pw-dt:var(--px-tag-hard)} .pw-diff.d4{--pw-pip:var(--px-bad);--pw-dt:var(--px-tag-bad)}
+.pw-pips{display:flex;gap:var(--pxu)}
+.pw-pips>i{display:block;width:calc(4*var(--pxu));height:calc(7*var(--pxu));background:var(--pw-ghost)}
+.pw-pips>i.on{background:var(--pw-pip);box-shadow:inset 0 calc(-1*var(--pxu)) 0 var(--px-edge)}
+.pw-stops{display:flex;align-items:center;gap:calc(4*var(--pxu));margin:0;color:var(--px-dim);white-space:nowrap}
+.pw-stops>.km{display:flex;align-items:center;gap:calc(3*var(--pxu));margin-left:calc(4*var(--pxu))}
+.pw-fact{margin:calc(8*var(--pxu)) 0 0;color:var(--px-dim);overflow:hidden}
+.pw-fact.f12{max-height:calc(32*var(--pxu))}
+.pw-fact.f10{max-height:calc(24*var(--pxu))}
+/* START: the one big action, the ticket's full width (its label centred on whole art px by game.js: --gpl) */
+.pw-gobtn{display:block;width:100%;margin-top:calc(10*var(--pxu));font-family:FP16,var(--mono,monospace);font-size:calc(16*var(--pxu));line-height:calc(20*var(--pxu));
+  padding:calc(8*var(--pxu)) 0 calc(8*var(--pxu)) var(--gpl,calc(11*var(--pxu)))}
+.pw-gobtn>svg{display:inline-block;width:calc(7*var(--pxu));height:calc(11*var(--pxu));margin-left:calc(6*var(--pxu));vertical-align:baseline;fill:currentColor;
+  shape-rendering:crispEdges;animation:pwBlink 1s steps(1,end) infinite}
+/* opening: .wipe rises 8 → 4 → 1 → 0 art px under a --lc dither; another line while open: .swap (the dither only) */
+.pw-card.wipe{animation:pwRise .15s steps(1,end)}
+.pw-card.wipe::after,.pw-card.swap::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;animation:pwWipe .2s steps(1,end) forwards}
+.pw-card.swap::after{animation:pwWipe .16s steps(1,end) forwards}
+
+/* ---------- the stub: the picked line's ticket folded (medallion on --lc · name / route · amber START ▶), above the dock while no card is
+   open; centred on whole art px by game.js (phones: the gutters' width) ---------- */
+.pk-btn.pw-stub{position:absolute;z-index:15;bottom:calc(var(--dock) + 8*var(--pxu));display:flex;align-items:stretch;
+  max-width:calc(100% - 2*var(--gut) - var(--sil) - var(--sir));padding:0;cursor:pointer}
+.pw-sl{flex:none;display:flex;align-items:center;padding:calc(3*var(--pxu)) calc(5*var(--pxu)) calc(3*var(--pxu)) calc(4*var(--pxu));background:var(--lc);
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--lc-hi),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--lc-lo)}
+.pw-sm{display:grid;align-content:center;justify-items:start;gap:calc(5*var(--pxu));min-width:0;padding:0 calc(10*var(--pxu)) 0 calc(7*var(--pxu))}
+.pw-sm>*{max-width:100%;font-weight:400;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-box:trim-both cap alphabetic;
+  padding-block:calc(3*var(--pxu));margin-block:calc(-3*var(--pxu))}
+.pw-sm>i{color:var(--px-dim)}
+.pw-sg{flex:none;display:flex;align-items:center;gap:calc(6*var(--pxu));padding:0 calc(10*var(--pxu)) 0 calc(11*var(--pxu));color:var(--px-onaccent);
+  background:var(--px-accent-sign);font-family:FP16,var(--mono,monospace);font-size:calc(16*var(--pxu));line-height:calc(20*var(--pxu));
+  box-shadow:inset var(--pxu) 0 0 var(--px-edge),inset calc(2*var(--pxu)) var(--pxu) 0 var(--px-accent-hi),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-accent-lo)}
+.pw-sg>svg{display:block;flex:none;width:calc(7*var(--pxu));height:calc(11*var(--pxu));fill:currentColor;shape-rendering:crispEdges;animation:pwBlink 1s steps(1,end) infinite}
+.pw-stub:is(:hover,:focus-visible)>.pw-sg{background:var(--px-accent-hi)}
+
+/* ---------- START overlay #goFx (fixed, under the chips): the screen dithers into the line colour (25 % → 50 % → solid), the message
+   (--gx / --gy: game.js, whole art px) and for a pixel ride the LED bar (#goBar --pxn of game.js PX_SEG); back out 50 % → 25 % → none.
+   .run = the mockup's 1.3 s in one go · .in = in (0.21 s), then held solid with the message + bar · .out = out (0.24 s) · .short = in and out,
+   no message (Classic / boss, 0.4 s). Reduced motion: .run / .in solid at once, .out none, no .short ---------- */
+.pw-go{position:fixed;inset:0;z-index:59;pointer-events:none}
+.pw-go>p{position:absolute;left:var(--gx,0);top:var(--gy,0);display:flex;align-items:center;gap:calc(8*var(--pxu));margin:0;white-space:nowrap;
+  color:var(--lc-ink);visibility:hidden}
+.pw-go>p>span{display:grid;justify-items:start;gap:calc(5*var(--pxu))}
+.pw-go>p>span>*{font-weight:400;font-style:normal;text-box:trim-both cap alphabetic}
+.pw-gobar{position:absolute;left:calc(50% - 41*var(--pxu));top:var(--by,calc(var(--gy,50%) + 32*var(--pxu)));display:block;box-sizing:content-box;
+  width:calc(78*var(--pxu));height:calc(3*var(--pxu));padding:var(--pxu) 0 var(--pxu) var(--pxu);border:var(--pxu) solid;
+  border-color:var(--px-edge) var(--px-hi) var(--px-hi) var(--px-edge);background:var(--px-screen);visibility:hidden}
+@supports (width:round(down,1px,1px)){.pw-gobar{left:round(down,50% - 41*var(--pxu),var(--pxu))}}
+.pw-gobar>b{display:block;height:100%;width:calc(var(--pxn,0)*3*var(--pxu));
+  background:repeating-linear-gradient(90deg,var(--px-seg,var(--px-accent)) 0 calc(2*var(--pxu)),transparent 0 calc(3*var(--pxu)))}
+.pw-go.run{animation:pwGoBg 1.3s steps(1,end) forwards}
+.pw-go.run>p{animation:pwGoTx 1.3s steps(1,end) forwards}
+.pw-go.in{animation:pwGoIn .21s steps(1,end) forwards}
+.pw-go.in>:is(p,.pw-gobar){animation:pwGoTxIn .21s steps(1,end) forwards}
+.pw-go.out{animation:pwGoOut .24s steps(1,end) forwards}
+.pw-go.short{animation:pwGoShort .4s steps(1,end) forwards}
+
+@keyframes pwBob{0%{transform:none}50%{transform:translateY(calc(-1*var(--pxu)))}}
+@keyframes pwCur{0%{transform:none}50%{transform:translate(var(--pw-dx),var(--pw-dy))}}
+@keyframes pwBlink{0%{visibility:visible}60%{visibility:hidden}}
+@keyframes pwRise{0%{transform:translateY(calc(8*var(--pxu)))}34%{transform:translateY(calc(4*var(--pxu)))}67%{transform:translateY(var(--pxu))}100%{transform:none}}
+@keyframes pwWipe{0%{background:var(--lc)}
+  25%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  50%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  75%,100%{background:none}}
+@keyframes pwGoBg{0%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  8%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  16%,82%{background:var(--lc)}
+  88%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  94%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  100%{background:none}}
+@keyframes pwGoTx{0%{visibility:hidden}16%{visibility:visible}82%,100%{visibility:hidden}}
+@keyframes pwGoIn{0%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  50%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  100%{background:var(--lc)}}
+@keyframes pwGoTxIn{0%{visibility:hidden}100%{visibility:visible}}
+@keyframes pwGoOut{0%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  33%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  67%,100%{background:none}}
+@keyframes pwGoShort{0%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  20%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  40%{background:var(--lc)}
+  60%{background:repeating-conic-gradient(var(--lc) 0 25%,transparent 0 50%) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  80%{background:conic-gradient(from 270deg,var(--lc) 0 25%,transparent 0) 0 0/calc(2*var(--pxu)) calc(2*var(--pxu))}
+  100%{background:none}}
+@media(prefers-reduced-motion:reduce){
+  #pick *,#pick *::before,#pick *::after,#goFx,#goFx *{animation:none}
+  #pick :is(.pw-node:hover,.pw-node.hov)>:is(.pw-rd,.pw-boss){transform:none}
+  .pw-go:is(.run,.in){background:var(--lc)}
+  .pw-go:is(.run,.in)>:is(p,.pw-gobar){visibility:visible}
+  .pw-go.short{display:none}}
+
+/* ---------- phones (html.nar): the plate in 2 rows, the path swipes (snaps a node to the centre), the card a bottom sheet across the
+   gutters without its fact, the stub across the gutters ("from A →") ---------- */
+.nar .pw-prog{display:grid;grid-template-columns:auto 1fr;justify-content:start;gap:calc(3*var(--pxu)) calc(4*var(--pxu))}
+.nar .pw-meter{grid-column:1/-1;margin-left:0}
+.nar .pw-prog>.lbl{display:none}
+.nar .pw-strip{scroll-snap-type:x mandatory}
+.nar .pw-path{padding:0 calc(50% - 13*var(--pxu))}
+.nar .pw-card{left:calc(var(--gut) + var(--sil));right:calc(var(--gut) + var(--sir));top:auto;width:auto;max-height:none;bottom:calc(var(--dock) + 6*var(--pxu))}
+.nar .pw-rev>span,.nar .pw-best .long,.pl-side .pw-rev>span{display:none}
+.nar .pw-rev,.pl-side .pw-rev{padding:calc(5*var(--pxu))}
+.nar .pw-fact{display:none}
+.nar .pk-btn.pw-stub{left:calc(var(--gut) + var(--sil));width:calc(100% - 2*var(--gut) - var(--sil) - var(--sir));bottom:calc(var(--dock) + 6*var(--pxu))}
+.nar .pw-sm{flex:1 1 auto;padding-right:calc(6*var(--pxu))}
+
+@supports (width:round(down,1px,1px)){
+  .nar .pw-path{padding:0 round(down,50% - 13*var(--pxu),var(--pxu))}
+  .nar .pk-btn.pw-stub{width:round(down,100% - 2*var(--gut) - var(--sil) - var(--sir),var(--pxu))}}
+
+/* ---------- dialogs: widths in art px (max-width clamps them on a phone; game.js pxDlg places them on whole art px) ---------- */
+.pk-dlg.w-set{width:calc(224*var(--pxu))}
+.pk-dlg.w-acc{width:calc(210*var(--pxu))}
+.pk-dlg.w-in{width:calc(300*var(--pxu))}
+.pk-dlg.w-quit{width:calc(184*var(--pxu))}
+.pk-dlg.w-lb{width:calc(300*var(--pxu))}
+.pk-dlg.w-about{width:calc(248*var(--pxu))}
+dialog.pk-dlg{position:fixed;inset:auto;margin:0}
+@supports (width:round(down,1px,1px)){.pk-dlg{max-width:round(down,100vw - 16*var(--pxu),var(--pxu));max-height:round(down,100vh - 16*var(--pxu),var(--pxu))}}
+/* settings: rows wrap a control that no longer fits under its label */
+.srow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:calc(3*var(--pxu)) calc(8*var(--pxu));padding:calc(3*var(--pxu)) 0}
+.srow>:last-child{margin-left:auto}
+.srow>span{color:var(--px-text);white-space:nowrap}
+.srow .pk-btn:not(.pk-ico){min-width:calc(52*var(--pxu));text-align:center}
+.snote{margin:calc(4*var(--pxu)) 0 0;color:var(--px-dim);text-align:right}
+.qmsg{margin:0;color:var(--px-text)}
+.dbtns{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:calc(4*var(--pxu));margin-top:calc(9*var(--pxu))}
+.dmut{margin:0 0 calc(6*var(--pxu));color:var(--px-dim)}
+.pk-dlg h3.nick{font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(16*var(--pxu))}
+.pk-dlg h4{margin:calc(9*var(--pxu)) 0 calc(5*var(--pxu));font-weight:400;color:var(--px-dim)}
+.pk-dlg .pk-field+.pk-field{margin-top:calc(6*var(--pxu))}
+.pk-dlg .pk-msg{display:block;min-height:calc(7*var(--pxu));margin:calc(6*var(--pxu)) 0 0}
+.pk-dlg .bdgs{display:flex;flex-wrap:wrap;gap:calc(3*var(--pxu))}
+.dlink{display:inline-block;margin-top:calc(8*var(--pxu));padding:calc(2*var(--pxu)) 0;border:0;background:none;color:var(--px-accent-tx);cursor:pointer;font-family:FP10,var(--mono,monospace)}
+.dlink:hover{color:var(--px-text)}
+/* leaderboard (#lbDlg, cloud.js) + the account dialog's records: 20 mode tabs (the line number, the gauntlet's name), kit rows */
+.lbtabs,.rectabs{display:flex;flex-wrap:wrap;gap:calc(2*var(--pxu))}
+:is(.lbtabs,.rectabs) .pk-tab{min-width:calc(19*var(--pxu));text-align:center}
+.lbtabs{margin-bottom:calc(6*var(--pxu))}
+.rectabs{margin-bottom:calc(5*var(--pxu))}
+.lbbody{padding:var(--pxu) var(--pxu) calc(2*var(--pxu))}
+.pk-row>.rk{width:calc(14*var(--pxu));text-align:right}
+.pk-row>.w{width:calc(48*var(--pxu));text-align:right}
+.pk-row>.a{width:calc(30*var(--pxu));text-align:right}
+.pk-row>.sc{width:calc(34*var(--pxu));text-align:right}
+.lbmsg{margin:0;padding:calc(6*var(--pxu)) calc(4*var(--pxu));color:var(--px-dim)}
+.rec .grow>i{font-style:normal;color:var(--px-accent-tx);margin-left:calc(4*var(--pxu))}
+@media(max-width:560px){.pk-row>.a{display:none}.pk-row>.w{width:calc(40*var(--pxu))}}
+.nar #lbDlg .pk-row>:is(.w,.a){display:none}
+/* about (#aboutDlg): the logo (a Line 3 medallion with 键), the footnote (zh FP12 / en FP10 dim), credits */
+.pw-about .pw-logo{display:flex;align-items:center;gap:calc(6*var(--pxu));margin:0 0 calc(9*var(--pxu))}
+.pw-about .pw-logo>.pw-rd>b{left:calc(4*var(--pxu))}
+.pw-about .pw-logo>span{display:grid;gap:calc(5*var(--pxu))}
+.pw-about .pw-logo>span>*{font-weight:400;text-box:trim-both cap alphabetic}
+.pw-about .pw-logo i{font-style:normal;color:var(--px-dim)}
+.pw-about p{margin:0 0 calc(8*var(--pxu))}
+.pw-about .fn{font-family:FP12,var(--mono,monospace);font-size:calc(12*var(--pxu));line-height:calc(16*var(--pxu))}
+:root[lang=en] .pw-about .fn{font-family:FP10,var(--mono,monospace);font-size:calc(10*var(--pxu));line-height:calc(12*var(--pxu));color:var(--px-dim)}
+.pw-about .cred{color:var(--px-dim)}
+
+/* ---------- pixel ride chrome (v0.6.0, body.px): the chips, toast and "preparing map" veil over the canvas, at the ride's own art px
+   (game.js pxChrome sets body's --pxk from Settings; --pxu is redeclared here) with the ridden line's --px-line / --px-seg ---------- */
 body.px{--pxu:calc(var(--pxk,2)*1px)}
-body.px #mapWrap{background:var(--px-ground,var(--map2))}
-body.px #fchips{top:calc(7*var(--pxu));right:calc(7*var(--pxu));gap:calc(4*var(--pxu))}
-body.px #fchips .hbtn,body.px #toast,#pxVeil{font-family:FP12,var(--mono);font-size:calc(12*var(--pxu));line-height:calc(14*var(--pxu));
-  font-weight:400;letter-spacing:0;font-kerning:none;font-synthesis:none;-webkit-font-smoothing:none;font-smooth:never;
-  color:var(--px-text,var(--paper));background:var(--px-fill,var(--panel));border:var(--pxu) solid var(--px-edge,var(--ink));border-radius:0;
-  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),
-    var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
-body.px #fchips .hbtn,body.px #fchips #homeBtn{padding:calc(3*var(--pxu)) calc(6*var(--pxu));gap:calc(4*var(--pxu));line-height:calc(12*var(--pxu));
-  background:var(--px-fill,var(--panel));-webkit-backdrop-filter:none;backdrop-filter:none;transition:none}
-body.px #fchips #homeBtn{color:var(--px-bad,var(--bad))}
-body.px #fchips .hbtn:hover,body.px #fchips .hbtn:focus-visible{background:var(--px-fill2,var(--panel2))}
-body.px #fchips #homeBtn:hover,body.px #fchips #homeBtn:focus-visible{background:var(--px-bad,var(--bad));color:var(--px-onbad,#fff);
-  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),
-    var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
-body.px #fchips .hbtn:focus-visible{outline:var(--pxu) solid var(--px-accent,var(--amber));outline-offset:var(--pxu)}
-body.px #fchips .hbtn:active,body.px #fchips #homeBtn:active{transform:translate(var(--pxu),var(--pxu));
-  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-lo,var(--ink)),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-hi,var(--panel2))}
-#fchips .pxi,#fchips .pxt,body.px #setBtn>span:not(.pxt){display:none}
-body.px #fchips .pxt{display:inline}   /* (the pixel chips read in title case: "Settings" beside "Quit"; Classic keeps SETTINGS) */
-body.px #fchips .hbtn>svg{display:none}
-body.px #fchips .hbtn>svg.pxi{display:block;flex:none;width:calc(9*var(--pxu));height:calc(9*var(--pxu));fill:currentColor;stroke:none;shape-rendering:crispEdges}
-@media(max-width:560px){body.px.px3 #fchips .hbtn>span{display:none}}   /* (3× pixels: the labelled chips would outgrow a phone) */
-body.px #toast{padding:calc(3*var(--pxu)) calc(6*var(--pxu)) calc(3*var(--pxu)) calc(8*var(--pxu));transition:none;transform:translateX(-50%);
-  white-space:normal;width:max-content;overflow:visible;text-overflow:clip; /* (a narrow phone wraps it: the pixel font is wider) */
-  box-shadow:inset calc(2*var(--pxu)) 0 0 var(--px-line,var(--lc,var(--amber))),inset var(--pxu) var(--pxu) 0 var(--px-hi,var(--panel2)),
-    inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo,var(--ink)),var(--pxu) var(--pxu) 0 var(--px-shadow,var(--ink))}
+body.px .pk-dlg{--pxk:var(--pxkm,2);--pxu:calc(var(--pxk)*1px)}   /* (dialogs over the ride: the menu's scale, 2× on a phone) */
+body.px #mapWrap{background:var(--px-ground)}
+body.px #fchips{top:calc(7*var(--pxu));right:calc(7*var(--pxu))}
+@media(max-width:560px){   /* (3× pixels: the labelled chips would outgrow a phone) */
+  body.px.px3 #fchips .pk-chip{padding:calc(4*var(--pxu))}
+  body.px.px3 #fchips .pk-chip>span{display:none}
+  body.px.px3 #fchips .pk-chip>.pki{margin-right:0}}
+body.px #toast,#pxVeil{font-family:FP12,var(--mono);font-size:calc(12*var(--pxu));line-height:calc(14*var(--pxu));
+  color:var(--px-text);background:var(--px-fill);border:var(--pxu) solid var(--px-edge);border-radius:0;
+  box-shadow:inset var(--pxu) var(--pxu) 0 var(--px-hi),inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo),var(--pxu) var(--pxu) 0 var(--px-shadow)}
+body.px #toast{bottom:var(--pxbb,120px);left:var(--pxtl,50%);max-width:var(--pxtw,92%);   /* (tight: the map column) */
+  padding:calc(3*var(--pxu)) calc(6*var(--pxu)) calc(3*var(--pxu)) calc(8*var(--pxu));transition:none;transform:translateX(-50%);
+  white-space:normal;width:max-content;overflow:visible;text-overflow:clip;   /* (a narrow phone wraps it: the pixel font is wider) */
+  box-shadow:inset calc(2*var(--pxu)) 0 0 var(--px-line,var(--px-accent)),inset var(--pxu) var(--pxu) 0 var(--px-hi),
+    inset calc(-1*var(--pxu)) calc(-1*var(--pxu)) 0 var(--px-lo),var(--pxu) var(--pxu) 0 var(--px-shadow)}
+body.px #mapWrap.pxTight #toast{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-left:calc(5*var(--pxu));padding-right:calc(3*var(--pxu))} /* (≤ 2 lines) */
 #pxVeil{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;display:flex;flex-direction:column;
   align-items:center;gap:calc(5*var(--pxu));padding:calc(6*var(--pxu)) calc(9*var(--pxu));white-space:nowrap}
 #pxVeil[hidden]{display:none}
-/* the bar: a recessed LED screen (ui.js inset: dark top-left lip, lit bottom-right lip, led.bg) lighting game.js PX_SEG = 26 segments of
-   2 lit + 1 dark art px in the line's screen colour (lsh.txt), a whole segment at a time */
+/* the bar: a recessed LED screen lighting game.js PX_SEG = 26 segments of 2 lit + 1 dark art px in the line's screen colour (lsh.txt) */
 #pxVeil i{display:block;box-sizing:content-box;width:calc(78*var(--pxu));height:calc(3*var(--pxu));padding:var(--pxu) 0 var(--pxu) var(--pxu);
-  border:var(--pxu) solid;border-color:var(--px-edge,var(--ink)) var(--px-hi,var(--panel2)) var(--px-hi,var(--panel2)) var(--px-edge,var(--ink));
-  background:var(--px-screen,var(--rail))}
+  border:var(--pxu) solid;border-color:var(--px-edge) var(--px-hi) var(--px-hi) var(--px-edge);background:var(--px-screen)}
 #pxVeil b{display:block;height:100%;width:calc(var(--pxn,0)*3*var(--pxu));
-  background:repeating-linear-gradient(90deg,var(--px-seg,var(--lc,var(--amber))) 0 calc(2*var(--pxu)),transparent 0 calc(3*var(--pxu)))}
+  background:repeating-linear-gradient(90deg,var(--px-seg,var(--px-accent)) 0 calc(2*var(--pxu)),transparent 0 calc(3*var(--pxu)))}
+@media(prefers-reduced-motion:reduce){:is(.pk-btn,.pk-chip,.pk-tab,.pk-fab):is(:active,.is-active),.pk-tab:is([aria-selected=true],.on){transform:none}}
+/* ===== end of the pixel UI kit (check-kit.js lints everything from the kit header to here) ===== */
 
 /* ---------- result ---------- */
 #result{min-height:100svh;display:flex;align-items:center;justify-content:center;
@@ -786,9 +1062,8 @@ text{font-family:var(--sans);pointer-events:none}
   #preload{display:none} /* skip the boot splash; game.js also skips it and never adds .play */
   .hero.play .train{display:none}
   .scue{animation:none;opacity:1}
-  .fab,.hero{transition:none}
-  .cbody,.chev,.lpath,.stg,#ovMap .stg text,#gMap .stg text,.swi,.swi::after,.arrow,.ovreset{transition:none}
-  .hbtn:active,.go:active,.cacts .rev:active,.rbtns .alt:active,.lbtab:active,.dbtn:active,.arrow:active,.swi:active::after{transform:none}
-  .swi.on:active::after{transform:translateX(20px)}
+  .hero{transition:none}
+  .lpath,.stg,#ovMap .stg text,#gMap .stg text{transition:none}
+  .go:where(#startBtn,#result .go):active,.rbtns .alt:active{transform:none}
   #pxVeil b{transition:none}
 }

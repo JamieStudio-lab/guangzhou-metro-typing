@@ -7,7 +7,10 @@
    without sea, ≥ 5 buildings — LOD1/LOD2: whole built land-use areas — or ≥ 500 m of road that is no bridge standing in the sea);
    size budgets (tools/lib/osm-geom.js BUDGET, as pack-map.js: network ≤ 16 MB raw, cold ride ≤ 1.5 MB gz (Line 3 ≤ 1.3 MB), the first
    frame from the views js/px/ride.js asks for, replayed, ≤ 160 KB gz); the fetch cache's missing cells (tools/.cache/map/manifest.json, or --cache /
-   FETCH_MAP_CACHE).
+   FETCH_MAP_CACHE). The overview ov.js (tools/pack-ov.js; required in js/map): decodes itself (its own decoder, in a vm); a track per playable
+   line from its first to its last station, st strictly increasing vertex indices, each station ≤ 60 m (js/geo.js) from its vertex, a loop's
+   closing arc joining its ends; rings ≥ 3 points, not closed by a repeat, outer CCW / holes CW, on the q grid, inside ext (± q); roads / lanes
+   ≥ 2 points, a width per lane point; ≤ BUDGET.ov (120 KB gz).
    Usage: node tools/check-map.js [--dir=js/map] [--cache=DIR] [--strict]   (--strict: missing cache cells fail too) · exit 1 on any error.
    Dev-only, zero deps, Node ≥ 18. */
 "use strict";
@@ -122,6 +125,36 @@ for(const b of G.budgets(MAP,ML,(lod,key)=>size.get(lod+"/"+key)||0,ljz)){
   bud.push(`${b.id} ${kb(b.ride)} / ${kb(b.first)}`);
 }
 
+// --- the overview (tools/pack-ov.js) ---
+let ov="ov.js: not in "+(path.relative(REPO,DIR)||".")+" (skipped)";const ovf=path.join(DIR,"ov.js");
+if(fs.existsSync(ovf)){
+  const txt=fs.readFileSync(ovf,"utf8"),ob={};ob.window=ob;vm.createContext(ob);const t1=performance.now();let O=null;
+  try{vm.runInContext(txt,ob,{filename:"ov.js"});O=ob.MAPOV;if(!O)err("ov.js: no MAPOV")}catch(e){err(`ov.js: ${e.message}`)}
+  const ms=performance.now()-t1,oz=zlib.gzipSync(txt,{level:9}).length,n0=errs.length+(errs.more||0);
+  if(oz>BUDGET.ov)err(`ov.js ${kb(oz)} gz > ${kb(BUDGET.ov)}`);
+  ov=`ov.js: ${kb(Buffer.byteLength(txt))} raw / ${kb(oz)} gz — does not decode`;
+  if(O){const q=O.q,E=O.ext,ow=(nm,m)=>err(`ov.js ${nm}: ${m}`),int=p=>Number.isInteger(p[0])&&Number.isInteger(p[1]);let worst=0,pts=0;
+    for(const L of LINES){const o=O.lines[L.id],n=L.st.length,g=GEO.lines.find(x=>lineKey(x.ref)===L.id);if(!o){ow(L.id,"no track");continue}
+      if(o.st.length!==n){ow(L.id,`${o.st.length} stations for ${n}`);continue}
+      if(!o.pts.every(int))ow(L.id,"a point off the metre grid");pts+=o.pts.length;
+      if(o.st[0]!==0||o.st[n-1]!==o.pts.length-1)ow(L.id,`runs past its end stations (vertices ${o.st[0]} / ${o.st[n-1]} of ${o.pts.length})`);
+      for(let i=0;i<n;i++){const v=o.st[i];if(!Number.isInteger(v)||v<0||v>=o.pts.length){ow(L.id,`st[${i}] = ${v} is no vertex`);continue}
+        if(i&&!(v>o.st[i-1]))ow(L.id,`st not increasing at ${i} (${o.st[i-1]} → ${v})`);
+        const s=g&&g.stations.find(x=>x.zh===L.st[i][0]);if(!s)continue;const d=G.dist(G.P(s.lat,s.lon),o.pts[v]);worst=Math.max(worst,d);
+        if(d>NEAR)ow(L.id,`${L.st[i][0]} is ${d.toFixed(0)} m from its vertex ${v}`)}
+      if(!!L.loop!==o.loop)ow(L.id,`loop flag ${o.loop} vs data.js ${!!L.loop}`);
+      if(o.loop&&(!o.close||G.dist(o.close[0],o.pts[o.pts.length-1])>0||G.dist(o.close[o.close.length-1],o.pts[0])>0))ow(L.id,"the closing arc does not join the track's ends")}
+    const cnt={};
+    for(const [nm,F] of [["water",O.water],["green",O.green],["urban",O.urban]]){cnt[nm]=F.length;F.forEach((f,i)=>f.p.forEach((r,k)=>{
+      if(r.length<3)return ow(`${nm}#${i}`,`ring ${k} with ${r.length} points`);const a=r[0],b=r[r.length-1];if(a[0]===b[0]&&a[1]===b[1])ow(`${nm}#${i}`,`ring ${k} repeats its first point`);
+      const A=G.signedArea(r);if(k?!(A<0):!(A>0))ow(`${nm}#${i}`,`ring ${k} ${k?"hole not CW":"outer not CCW"} (area ${A})`);pts+=r.length;
+      if(r.some(p=>!int(p)||p[0]%q||p[1]%q))ow(`${nm}#${i}`,`ring ${k}: a point off the ${q} m grid`);
+      const B=G.bboxOf(r);if(B[0]<E[0]-q||B[1]<E[1]-q||B[2]>E[2]+q||B[3]>E[3]+q)ow(`${nm}#${i}`,`ring ${k} outside ext ${E}`)}))}
+    O.roads.forEach((f,i)=>{pts+=f.pts.length;if(f.pts.length<2||f.pts.some(p=>!int(p)||p[0]%q||p[1]%q))ow(`roads#${i}`,"fewer than 2 points or off the grid")});
+    O.lanes.forEach((l,i)=>{pts+=l.pts.length;if(l.pts.length<2||l.w.length!==l.pts.length||l.w.some(w=>!(w>0)))ow(`lanes#${i} ${l.zh}`,`${l.pts.length} points, ${l.w.length} widths`)});
+    ov=`ov.js: ${kb(Buffer.byteLength(txt))} raw / ${kb(oz)} gz (cap ${kb(BUDGET.ov)}), decoded in ${ms.toFixed(0)} ms (vm): ${Object.keys(O.lines).length} tracks (worst station offset ${worst.toFixed(1)} m), ${O.lanes.length} lanes, ${cnt.water} water / ${cnt.green} green / ${cnt.urban} urban areas, ${O.roads.length} roads, ${pts} points${errs.length+(errs.more||0)>n0?" — ERRORS":""}`}
+}else if(!args.dir)err("js/map/ov.js is missing (node tools/pack-ov.js)");
+
 // --- the fetch cache ---
 let cache="";
 if(fs.existsSync(path.join(CACHE,"manifest.json"))&&fs.existsSync(path.join(CACHE,"routes.net.json"))){
@@ -134,6 +167,7 @@ if(fs.existsSync(path.join(CACHE,"manifest.json"))&&fs.existsSync(path.join(CACH
 console.log(`check-map ${path.relative(REPO,DIR)||"."}: ${st.tiles.join("/")} tiles, ${st.feats} features (${st.pieces} tile-split pieces of ${sids.size} sources), ${st.rings} rings, ${st.pts} points decoded in ${st.decMs.toFixed(0)} ms (vm) · ${(raw/1e6).toFixed(2)} MB raw, ${(gz/1e6).toFixed(2)} MB gz + lines.js ${kb(lj.length)}/${kb(ljz)}`);
 console.log(`tracks: ${Object.keys(ML.lines).length} (${Object.values(ML.lines).filter(l=>l.src==="osm").length} OSM), worst station offset ${Math.max(0,...LINES.map(l=>st[l.id]||0)).toFixed(1)} m, ${lineWarn} hop warnings`);
 console.log(`budgets, gz (cold ride, cap ${kb(BUDGET.ride)}, ${Object.entries(BUDGET.rideOf).map(([k,v])=>k+" "+kb(v)).join(", ")} / first frame of the replayed ride views, cap ${kb(BUDGET.first)}; network ${(net/1e6).toFixed(2)} MB raw, cap ${(BUDGET.net/1e6).toFixed(0)} MB): ${bud.join(" · ")}`);
+console.log(ov);
 console.log(`sea: ${[0,1,2].map(l=>[...TI[l].values()].filter(t=>t.sea).length).join("/")} tiles with sea, ${seaWarn} suspicious`);
 console.log(cache);
 for(const w of warns)console.log("WARN "+w);

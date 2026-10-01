@@ -61,6 +61,14 @@ function shades(sw, o){
   }
   return out;
 }
+/* the menu kit's text roles (css pixel kit, Stage 2; the ride never reads them): every one ≥ 4.5:1 on each surface text sits on
+   (ui.panel, ui.panel2, the page bg), moved along its own hue in OKLab from the ride's colour it stands for. dim = textDim; accentTx =
+   accent as text; accentSign / badSign = accent / hud.bad as the fill under dark ink (sw.k0) / light ink (sw.k11) */
+function uiText(sw, o){
+  const up = o.night, bg = [o.panel, o.panel2, o.bg].reduce((a, b) => (lumOf(b) > lumOf(a)) === up ? b : a);   // the surface closest to the text
+  return {dim: shift(o.textDim, bg, SIGN_MIN, up) || o.textDim, accentTx: shift(o.accent, bg, SIGN_MIN, up) || o.accent,
+    accentSign: shift(o.accent, sw.k0, SIGN_MIN, true) || o.accent, badSign: o.night ? shift(o.bad, sw.k0, SIGN_MIN, true) || o.bad : shift(o.bad, sw.k11, SIGN_MIN, false) || o.bad};
+}
 function build(sw, o){
   return {
     ink: sw.k0, shadow: o.shadow, bg: o.bg,
@@ -88,7 +96,8 @@ function build(sw, o){
     wnd:   o.wnd,                                                                       // v2 facade windows (night: lit warm ×2, cool, off; day: glass ×2)
     tree:  o.tree,                                                                      // v2 3/4 trees: trunk
     text: o.text, textDim: o.textDim, textOutline: o.textOutline,
-    ui:    {panel: o.panel, panel2: o.panel2, edge: o.edge, hi: o.uiHi, lo: o.uiLo, accent: o.accent, accentLo: o.accentLo},
+    ui:    {panel: o.panel, panel2: o.panel2, edge: o.edge, hi: o.uiHi, lo: o.uiLo, accent: o.accent, accentLo: o.accentLo,
+            ...uiText(sw, o)},                                                          // the menu kit's text roles (below)
     led:   {on: o.ledOn, off: o.ledOff, glow: o.ledGlow, bg: o.ledBg},
     hud:   {good: o.good, warn: o.warn, bad: o.bad},
     fire:  {lo: o.fire[0], t1: o.fire[1], t2: o.fire[2], t3: o.fire[3], core: o.fire[4]},

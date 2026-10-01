@@ -1,6 +1,8 @@
 /* map.js — MAP: the tiled OpenStreetMap data of the pixel ride. tools/pack-map.js writes js/map/lines.js (MAPLINES, always loaded)
    and the tiles js/map/t<lod>/<tx>_<ty>.js; this classic script decodes them and streams tiles in by <script> injection, so it
    works from file:// and http alike. No dependencies. Globals MAP, MAPT. Map data © OpenStreetMap contributors, ODbL 1.0.
+   (js/map/ov.js, global MAPOV, is the menu's 48–512 m/px overview: tools/pack-ov.js packs it from lines.js + the LOD2 tiles in the c45
+   below; it decodes itself and needs nothing from MAP — its header is its API.)
 
    GRID  integer metres, x east / y NORTH of the origin (广州塔 station, MAPLINES.origin). Tile "tx_ty" of LOD l covers
    [tx·S, ty·S]–[(tx+1)·S, (ty+1)·S]; coordinates are stored in quanta q:

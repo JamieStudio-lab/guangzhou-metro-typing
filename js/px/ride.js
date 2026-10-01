@@ -12,7 +12,7 @@
    (planList), each zoom's target to WORLD.hint; zooms glide by residual scale with tier-boundary dithers (or dissolve); the focus
    target's motion is fed forward, only its jumps are eased (an overview keeps the next stop's sign in view before the train's
    margins); integer focus rounding never steps back. No speed-linked zoom.
-   Reduced motion: fit-hop camera with cuts (no glides), weather clear, no traffic, steady lamps, paged marquee, no shake.
+   Reduced motion: fit-hop camera with cuts (no glides), weather clear, no traffic, steady lamps, paged marquee, no shake, the recap at once.
    Data: PX.D for the ride, in RIDE ORDER (track oriented first → last ridden station, stations[].d increasing):
      {lineId, rev, track, trackLen, trackClose?, stations:[{zh, py (toned), en, x, y, d, transfers}], landmarks, otherLines, riverLanes,
       outer:[x0, y0, x1, y1], src:'tiles'|'object'} — from MAPLINES / MAP (js/map/), or RIDE.source (below) which also hands the
@@ -30,18 +30,28 @@
    RIDE.start(L, S)        mount #pxCv in #mapWrap and draw the first frame (S = game.js's state object)
    RIDE.frame(dt, S)       one frame from the game's numbers (game km → track metres per hop: s = Sᵢ + ΔS·(pos − cumᵢ)/segsᵢ)
    RIDE.key(n, miss)       n correct letters / a wrong key (flash + shake) · RIDE.done(i) station i's name typed (burst)
-   RIDE.finish()           zoom out to the city view around the terminus · RIDE.theme() night/day from html[data-theme]
+   RIDE.finish() → ms      the run is over: the glide out to the city view round the terminus (FIN, FIN_GLIDE s), then the recap — a
+                           DISS s Bayer dissolve (art px (x, y) turns once t / DISS > PX.bayer(x, y); no alpha) to OVM.drawWhole's
+                           picture over the whole canvas: the ridden line lit over the dimmed network, its terminus marked, at the
+                           finest step ≥ RECAP_MIN (48 m/px, so short lines like APM read) that fits the free area clear of the cluster / chips / attribution
+                           (recapBoxes); the chrome keeps drawing on top; held until game.js moves on. Reduced motion: the picture
+                           at once. Its tiles bake on OVM's idle time during the ride (OVM.prepWhole, from 3 s, re-asked each second
+                           for a new layout), so composing it is a blit; the dissolve waits for them ≤ FIN_GLIDE + DISS s → recapMs()
+   RIDE.recapMs()          ms game.js waits from RIDE.finish (call it after) to its results: RECAP_MS 3000 with the recap (reduced
+                           motion too), FIN_MS 1200 without (no OVM / MAPOV / the line, drawWhole threw, not running: the Stage 1
+                           finish) · RIDE.skip() → bool  the final picture from the next frame on (no drawing here: game.js shows
+                           its results at once) · RIDE.theme() night/day from html[data-theme]
    RIDE.set({scale 2|3, weather 'auto'|'clear'|'rain', kb, top (CSS px: bottom of #fchips over the canvas), right (CSS px: #fchips'
             left edge from the canvas' right edge), lab {time dist wpm acc combo score}: cluster labels (game.js t())}) — also before
             prepare / prefetch (stored while not running; during a prepare, a layout change re-aims its first frame)
-   RIDE.stop()             unmount, drop a prepare in flight, pause the ride's background work (MAP.cancelPlan + MAP.cancel('ride'): the
+   RIDE.stop()             unmount, drop a prepare in flight and the recap, pause the ride's background work (MAP.cancelPlan + MAP.cancel('ride'): the
                            wants of ride.js and PX.src, WORLD / TRAIN.suspend;
                            resumed by the next prepare / start); keeps the baked world for a replay · RIDE.stats() / audit() / probe() (tests)
    RIDE.giveUp             true once the frame governor gave up (game.js rides Classic from the next ride)
    RIDE.source             TEST HOOK (null in production): fn(L) → a whole-line data object (either direction; track | line3, trackLen |
                            line3Len, stations {zh, d, x?, y?, en?}, layers as above) or null for the tile source.
    Governor (rolling p95 frame time, drawn frames only): > 24 ms → WEATHER.wetFx = false + TRAFFIC.density = .5; > 33 ms → no weather,
-   no traffic, dissolve zooms; still > 33 ms → RIDE.giveUp. Needs every js/px module (WEATHER optional) and, for tiles, js/map/. */
+   no traffic, dissolve zooms; still > 33 ms → RIDE.giveUp. Needs every js/px module (WEATHER optional; ovmap.js + js/map/ov.js for the recap) and, for tiles, js/map/. */
 (function(){
 const RIDE = {source: null, giveUp: false};
 const CHASE = .17, ARRIVE_V = .3, EASE = .7;                              // = js/game.js feel knobs
@@ -537,8 +547,57 @@ function setGov(){
   if (typeof TRAFFIC !== 'undefined') TRAFFIC.density = gov < 1 ? 1 : .5;
   trans = gov >= 2 ? 'dissolve' : 'scale'; FT.length = 0; govN = 0;
 }
+/* ---------- the end-of-ride recap: after the glide out (FIN_GLIDE), a DISS s Bayer dissolve (art px (x, y) turns once t / DISS >
+   PX.bayer(x, y)) to OVM.drawWhole's whole-line picture over the whole canvas, the line fitted into the free area clear of the cluster /
+   chips / attribution; then it holds (the chrome on top) until game.js moves on (RIDE.recapMs). Reduced motion / RIDE.skip: the picture
+   at once. Its tiles are queued for OVM's idle bakes during the ride (OVM.prepWhole, from idle callbacks), so composing it is a blit;
+   no OVM / MAPOV / line, or a throwing drawWhole: the Stage 1 finish (FIN_MS) */
+const DISS = .4, RECAP_MS = 3000, FIN_MS = 1200, RECAP_MIN = 48;
+const RC = {t0: 0, tD: -1, u: -1, pic: null, key: '', pk: '', pT: -9, idle: 0, dead: false, skip: false};
+const hasRIC = typeof requestIdleCallback === 'function';
+const recapOk = () => running && !!D && !RC.dead && typeof OVM !== 'undefined' && typeof OVM.drawWhole === 'function' && typeof MAPOV !== 'undefined' && !!(MAPOV.lines && MAPOV.lines[L.id]);
+function recapBoxes(){                                                     // the free area, minus each overlay covering it (≥ 48 px pieces)
+  const F = free(), ob = [lay.cluster, chips, lay.attribution].filter(r => r && r.w > 0 && r.h > 0), out = [];
+  const cut = (b, i) => { for (; i < ob.length; i++){ const o = ob[i], x0 = o.x - 3, y0 = o.y - 3, x1 = o.x + o.w + 3, y1 = o.y + o.h + 3;
+      if (o.x >= b[0] + b[2] || o.x + o.w <= b[0] || o.y >= b[1] + b[3] || o.y + o.h <= b[1]) continue;
+      for (const c of [[b[0], b[1], x0 - b[0], b[3]], [x1, b[1], b[0] + b[2] - x1, b[3]], [b[0], b[1], b[2], y0 - b[1]], [b[0], y1, b[2], b[1] + b[3] - y1]]) if (c[2] >= 48 && c[3] >= 48) cut(c, i + 1);
+      return; }
+    out.push(b); };
+  cut([F.x, F.y, F.w, F.h], 0); return out.length ? out : [[F.x, F.y, F.w, F.h]];
+}
+const recapArgs = () => { const box = recapBoxes(); return {key: [L.id, D.rev ? 1 : 0, W, H, PX.theme, box.join(';')].join('|'), o: {rev: !!D.rev, theme: PX.theme, min: RECAP_MIN, box}}; };
+function recapPrep(){
+  if (RC.idle || !recapOk() || recapArgs().key === RC.pk) return;
+  const f = () => { RC.idle = 0; if (!recapOk()) return; const a = recapArgs();   // (idle: OVM's first data build is no frame's cost)
+    try { OVM.prepWhole(L.id, W, H, a.o); RC.pk = a.key; } catch (e){ console.error('OVM.prepWhole', e); RC.dead = true; } };
+  RC.idle = hasRIC ? requestIdleCallback(f, {timeout: 2000}) : setTimeout(f, 50);
+}
+const recapReady = () => { try { return OVM.prepWhole(L.id, W, H, recapArgs().o); } catch (e){ return true; } };   // (a throw: drawWhole reports it)
+function recapPic(){
+  const a = recapArgs(); if (RC.pic && RC.key === a.key) return RC.pic;
+  try { const c = OVM.drawWhole(L.id, W, H, a.o); if (RC.pic) RC.pic.width = 0; RC.pic = c; RC.key = a.key; return c; }
+  catch (e){ console.error('OVM.drawWhole', e); RC.dead = true; return null; }
+}
+function recapU(){                                                         // → the dissolve's progress 0..1, −1 = the ride's own picture
+  if (!fin || !recapOk()) return -1;
+  const now = performance.now(), el = now - RC.t0, landed = Z.u >= 1 && Z.xa < 0 && Z.pend === null && Z.to === FIN;
+  if (RC.tD < 0){                                                          // (after the glide, till its tiles are baked, ≤ FIN_GLIDE + DISS s)
+    if (!red && !RC.skip && (el < FIN_GLIDE * 1e3 || (el < (FIN_GLIDE + DISS) * 1e3 && !(landed && recapReady())))) return -1;
+    if (!recapPic()) return -1; RC.tD = now; }
+  else if (!recapPic()) return -1;
+  return red || RC.skip ? 1 : clamp((now - RC.tD) / (DISS * 1e3), 0, 1);
+}
+function recapReset(){ if (RC.idle) (hasRIC ? cancelIdleCallback : clearTimeout)(RC.idle); if (RC.pic) RC.pic.width = 0;
+  Object.assign(RC, {tD: -1, u: -1, pic: null, key: '', pk: '', pT: -9, idle: 0, dead: false, skip: false}); }
+function dissolve(pic, u){                                                 // pic over g where PX.bayer < q / 16 (bayerMask: opaque where ≥)
+  const q = clamp(Math.ceil(u * 16 - .5), 0, 16); if (!q) return; if (q >= 16){ g.drawImage(pic, 0, 0); return; }
+  const mk = bayerMask(q), a = aux.g; a.clearRect(0, 0, W, H); a.drawImage(pic, 0, 0);
+  a.save(); a.globalCompositeOperation = 'destination-out'; a.fillStyle = mk; a.fillRect(0, 0, W, H); a.restore(); g.drawImage(aux.c, 0, 0);
+}
 function frame(dt){
   const t0 = performance.now(); seq++;
+  const ru = RC.u = recapU();
+  if (ru >= 1){ g.drawImage(RC.pic, 0, 0); UI.reduced = red; UI.draw(g, uiState(), lay); blit(); return performance.now() - t0; }   // the hold: the picture + the chrome
   updateCamera(dt);
   const V = views(dt), ss = stationsState();
   WORLD.lazy = true;
@@ -554,6 +613,7 @@ function frame(dt){
   } else ss.cars = map(g, V.w, V.d);
   LABELS.draw(g, V.d, ss, [lay.cluster, lay.board, lay.attribution, chips].filter(r => r.w > 0 && r.h > 0));
   drawBursts(V.d, dt); toastDodge(ss);
+  if (ru > 0) dissolve(RC.pic, ru);
   UI.reduced = red; UI.draw(g, uiState(), lay);
   WORLD.lazy = false;
   blit();
@@ -707,7 +767,7 @@ RIDE.prefetch = async (Ln, rev, sz) => {
   feed(); return n;
 };
 RIDE.start = (Ln, S) => {
-  ensureCanvas(); L = Ln; G = S; running = true; fin = false; wrong = 0; bursts.length = 0; clock = 0; red = RED(); zoomMode = zmOf(); setGov(); pfTok++;
+  ensureCanvas(); L = Ln; G = S; running = true; fin = false; recapReset(); wrong = 0; bursts.length = 0; clock = 0; red = RED(); zoomMode = zmOf(); setGov(); pfTok++;
   t0ride = performance.now() / 1000; prAt = -1e9; pfDone.clear();
   const m = document.getElementById('mapWrap'); if (cv.parentNode !== m) m.insertBefore(cv, m.firstChild);
   setTheme(); PX.use(D, Ln.id);
@@ -727,14 +787,20 @@ RIDE.frame = (dt, S) => {
   G = S; red = RED(); zoomMode = zmOf();
   sync(); clock += dt; wrong = Math.max(0, wrong - dt / .45); planPush(false);
   if (D.src === 'tiles' && typeof MAP !== 'undefined' && MAP.prioritise && Math.abs(R.pos - prAt) > 250){ prAt = R.pos; const p = P(R.pos); MAP.prioritise(p.x, p.y); }
+  if (!fin && clock > 3 && clock - RC.pT >= 1){ RC.pT = clock; recapPrep(); }   // (the recap's tiles, once a second: a layout change re-queues)
   return frame(dt);
 };
 RIDE.key = (n, miss) => { if (miss) wrong = 1; };
 RIDE.done = i => { bursts.push({i, t: 0}); };
 RIDE.finish = () => {
-  if (!running) return; fin = true; if (red) snap();                   // reduced motion: a cut to the city view
+  if (!running) return FIN_MS; fin = true; if (red) snap();            // reduced motion: a cut to the city view (and at once to the recap)
   if (typeof MAP !== 'undefined' && D.src === 'tiles' && MAP.want){ const T = P(ST[LAST].d), hw = (W / 2 + 32) * FIN, hh = (H / 2 + 32) * FIN; MAP.want([T.x - hw, T.y - hh, T.x + hw, T.y + hh], 2, {tag: 'ride'}); }
+  RC.t0 = performance.now(); RC.tD = -1; RC.skip = false;
+  if (recapOk()) try { if (OVM.prepWhole(L.id, W, H, recapArgs().o)) recapPic(); } catch (e){ console.error('OVM.prepWhole', e); RC.dead = true; }
+  return RIDE.recapMs();
 };
+RIDE.recapMs = () => recapOk() ? RECAP_MS : FIN_MS;
+RIDE.skip = () => { if (!fin || !recapOk()) return false; RC.skip = true; return true; };
 RIDE.theme = () => { if (!PX.pal && typeof PAL === 'undefined') return; setTheme(); if (running){ if (SPR.prebake) SPR.prebake({levels: LEVELS(), k: kf}); frame(0); } };
 RIDE.set = (o = {}) => {
   let re = false;
@@ -747,8 +813,9 @@ RIDE.set = (o = {}) => {
   if (re && running){ resize(); snap(); frame(0); }                   // (live: lazy bakes, never a whole-tile bake in the frame)
   else if (re) layGen++;                                                // (a prepare in flight re-aims)
 };
-RIDE.stop = () => { prepSeq++; running = false; fin = false; if (cv && cv.parentNode) cv.parentNode.removeChild(cv); bgWork(false); mapCancel('ride'); plOn = false; };
+RIDE.stop = () => { prepSeq++; running = false; fin = false; recapReset(); if (cv && cv.parentNode) cv.parentNode.removeChild(cv); bgWork(false); mapCancel('ride'); plOn = false; };
 RIDE.stats = () => ({W, H, K, scale, running, frames: seq, lvl: last && last.v.lvl, lvlTo: Z.to, mpp: mppNow(), zs: last && last.v.zs, s: R.pos, cur: R.cur, idx: R.idx, phase: MX.phase, fin,
+  recap: {u: RC.u, pic: RC.pic ? [RC.pic.width, RC.pic.height] : null, key: RC.key, prepped: RC.pk, dead: RC.dead, skip: RC.skip, ms: RIDE.recapMs()},
   gov, p95: perf, ft: FT.slice(), giveUp: RIDE.giveUp, trans, zoomMode, weather, kb, layout: lay && {portrait: lay.portrait, kb: lay.kb, tight: lay.tight, view: lay.view, cluster: lay.cluster, board: lay.board, attribution: lay.attribution},
   world: typeof WORLD !== 'undefined' ? WORLD.stats : null, map: typeof MAP !== 'undefined' && MAP.stats ? MAP.stats() : null, src: D && D.src, rain: hasWX() ? +WEATHER.rain || 0 : 0});
 RIDE.audit = () => PX.audit(g, W, H);

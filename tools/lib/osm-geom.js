@@ -628,8 +628,9 @@ function rideViews(T,dir,lay,landmarks=[]){ // T = MAP.line(id) → {near, lvl, 
 }
 // --- size budgets of the packed map (tools/pack-map.js, tools/check-map.js; MB / KB = 10^6 / 10^3 bytes, gz = gzip -9 per file):
 // the whole network (tiles + lines.js) ≤ 16 MB raw; a line's cold ride (lines.js + every tile of MAP.tiles(id)) ≤ 1.5 MB gz (Line 3
-// 1.3 MB: the plan's caps); the first frame (the P0 of the replayed views, both directions, desktop + phone) ≤ 160 KB gz ---
-const BUDGET={net:16e6,ride:1.5e6,rideOf:{l3:1.3e6},first:160e3};
+// 1.3 MB: the plan's caps); the first frame (the P0 of the replayed views, both directions, desktop + phone) ≤ 160 KB gz; the overview
+// js/map/ov.js (tools/pack-ov.js: part of the menu's load) ≤ 120 KB gz ---
+const BUDGET={net:16e6,ride:1.5e6,rideOf:{l3:1.3e6},first:160e3,ov:120e3};
 const rideCap=id=>BUDGET.rideOf[id]||BUDGET.ride;
 // --- a hop's track length ÷ its js/data.js segKm outside this band is a warning (tools/check-map.js, tools/pack-map.js) ---
 const HOP_BAND=[.85,1.2];
